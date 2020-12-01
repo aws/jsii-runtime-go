@@ -1,17 +1,3 @@
-## My Project
+# JSII Go Runtime
 
-TODO: Fill this README out!
-
-Be sure to:
-
-* Change the title in this README
-* Edit your repository description on GitHub
-
-## Security
-
-See [CONTRIBUTING](CONTRIBUTING.md#security-issue-notifications) for more information.
-
-## License
-
-This project is licensed under the Apache-2.0 License.
-
+This is the JSII runtime for go. This repository is used only for publishing the go module. The source code is managed in [the main JSII repository](https://github.com/aws/jsii). Refer to the [go-runtime readme there](https://github.com/aws/jsii/blob/main/packages/%40jsii/go-runtime/README.md) for details on building and testing the module.
