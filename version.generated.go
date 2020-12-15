@@ -1,3 +1,3 @@
 package jsii
 
-const version = "0.0.0"
+const version = "1.16.0"
