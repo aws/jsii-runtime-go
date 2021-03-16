@@ -21,8 +21,9 @@ var __webpack_modules__ = {
 var __webpack_module_cache__ = {};
 
 function __webpack_require__(moduleId) {
-    if (__webpack_module_cache__[moduleId]) {
-        return __webpack_module_cache__[moduleId].exports;
+    var cachedModule = __webpack_module_cache__[moduleId];
+    if (cachedModule !== undefined) {
+        return cachedModule.exports;
     }
     var module = __webpack_module_cache__[moduleId] = {
         exports: {}
