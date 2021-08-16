@@ -1978,7 +1978,7 @@ var __webpack_modules__ = {
                 function close(fd, cb) {
                     return fs$close.call(fs, fd, (function(err) {
                         if (!err) {
-                            retry();
+                            resetQueue();
                         }
                         if (typeof cb === "function") cb.apply(this, arguments);
                     }));
@@ -1991,7 +1991,7 @@ var __webpack_modules__ = {
             fs.closeSync = function(fs$closeSync) {
                 function closeSync(fd) {
                     fs$closeSync.apply(fs, arguments);
-                    retry();
+                    resetQueue();
                 }
                 Object.defineProperty(closeSync, previousSymbol, {
                     value: fs$closeSync
@@ -2023,11 +2023,10 @@ var __webpack_modules__ = {
             function readFile(path, options, cb) {
                 if (typeof options === "function") cb = options, options = null;
                 return go$readFile(path, options, cb);
-                function go$readFile(path, options, cb) {
+                function go$readFile(path, options, cb, startTime) {
                     return fs$readFile(path, options, (function(err) {
-                        if (err && (err.code === "EMFILE" || err.code === "ENFILE")) enqueue([ go$readFile, [ path, options, cb ] ]); else {
+                        if (err && (err.code === "EMFILE" || err.code === "ENFILE")) enqueue([ go$readFile, [ path, options, cb ], err, startTime || Date.now(), Date.now() ]); else {
                             if (typeof cb === "function") cb.apply(this, arguments);
-                            retry();
                         }
                     }));
                 }
@@ -2037,11 +2036,10 @@ var __webpack_modules__ = {
             function writeFile(path, data, options, cb) {
                 if (typeof options === "function") cb = options, options = null;
                 return go$writeFile(path, data, options, cb);
-                function go$writeFile(path, data, options, cb) {
+                function go$writeFile(path, data, options, cb, startTime) {
                     return fs$writeFile(path, data, options, (function(err) {
-                        if (err && (err.code === "EMFILE" || err.code === "ENFILE")) enqueue([ go$writeFile, [ path, data, options, cb ] ]); else {
+                        if (err && (err.code === "EMFILE" || err.code === "ENFILE")) enqueue([ go$writeFile, [ path, data, options, cb ], err, startTime || Date.now(), Date.now() ]); else {
                             if (typeof cb === "function") cb.apply(this, arguments);
-                            retry();
                         }
                     }));
                 }
@@ -2051,11 +2049,10 @@ var __webpack_modules__ = {
             function appendFile(path, data, options, cb) {
                 if (typeof options === "function") cb = options, options = null;
                 return go$appendFile(path, data, options, cb);
-                function go$appendFile(path, data, options, cb) {
+                function go$appendFile(path, data, options, cb, startTime) {
                     return fs$appendFile(path, data, options, (function(err) {
-                        if (err && (err.code === "EMFILE" || err.code === "ENFILE")) enqueue([ go$appendFile, [ path, data, options, cb ] ]); else {
+                        if (err && (err.code === "EMFILE" || err.code === "ENFILE")) enqueue([ go$appendFile, [ path, data, options, cb ], err, startTime || Date.now(), Date.now() ]); else {
                             if (typeof cb === "function") cb.apply(this, arguments);
-                            retry();
                         }
                     }));
                 }
@@ -2067,34 +2064,28 @@ var __webpack_modules__ = {
                     cb = flags;
                     flags = 0;
                 }
-                return fs$copyFile(src, dest, flags, (function(err) {
-                    if (err && (err.code === "EMFILE" || err.code === "ENFILE")) enqueue([ fs$copyFile, [ src, dest, flags, cb ] ]); else {
-                        if (typeof cb === "function") cb.apply(this, arguments);
-                        retry();
-                    }
-                }));
+                return go$copyFile(src, dest, flags, cb);
+                function go$copyFile(src, dest, flags, cb, startTime) {
+                    return fs$copyFile(src, dest, flags, (function(err) {
+                        if (err && (err.code === "EMFILE" || err.code === "ENFILE")) enqueue([ go$copyFile, [ src, dest, flags, cb ], err, startTime || Date.now(), Date.now() ]); else {
+                            if (typeof cb === "function") cb.apply(this, arguments);
+                        }
+                    }));
+                }
             }
             var fs$readdir = fs.readdir;
             fs.readdir = readdir;
             function readdir(path, options, cb) {
-                var args = [ path ];
-                if (typeof options !== "function") {
-                    args.push(options);
-                } else {
-                    cb = options;
+                if (typeof options === "function") cb = options, options = null;
+                return go$readdir(path, options, cb);
+                function go$readdir(path, options, cb, startTime) {
+                    return fs$readdir(path, options, (function(err, files) {
+                        if (err && (err.code === "EMFILE" || err.code === "ENFILE")) enqueue([ go$readdir, [ path, options, cb ], err, startTime || Date.now(), Date.now() ]); else {
+                            if (files && files.sort) files.sort();
+                            if (typeof cb === "function") cb.call(this, err, files);
+                        }
+                    }));
                 }
-                args.push(go$readdir$cb);
-                return go$readdir(args);
-                function go$readdir$cb(err, files) {
-                    if (files && files.sort) files.sort();
-                    if (err && (err.code === "EMFILE" || err.code === "ENFILE")) enqueue([ go$readdir, [ args ] ]); else {
-                        if (typeof cb === "function") cb.apply(this, arguments);
-                        retry();
-                    }
-                }
-            }
-            function go$readdir(args) {
-                return fs$readdir.apply(fs, args);
             }
             if (process.version.substr(0, 4) === "v0.8") {
                 var legStreams = legacy(fs);
@@ -2195,11 +2186,10 @@ var __webpack_modules__ = {
             function open(path, flags, mode, cb) {
                 if (typeof mode === "function") cb = mode, mode = null;
                 return go$open(path, flags, mode, cb);
-                function go$open(path, flags, mode, cb) {
+                function go$open(path, flags, mode, cb, startTime) {
                     return fs$open(path, flags, mode, (function(err, fd) {
-                        if (err && (err.code === "EMFILE" || err.code === "ENFILE")) enqueue([ go$open, [ path, flags, mode, cb ] ]); else {
+                        if (err && (err.code === "EMFILE" || err.code === "ENFILE")) enqueue([ go$open, [ path, flags, mode, cb ], err, startTime || Date.now(), Date.now() ]); else {
                             if (typeof cb === "function") cb.apply(this, arguments);
-                            retry();
                         }
                     }));
                 }
@@ -2209,12 +2199,49 @@ var __webpack_modules__ = {
         function enqueue(elem) {
             debug("ENQUEUE", elem[0].name, elem[1]);
             fs[gracefulQueue].push(elem);
+            retry();
+        }
+        var retryTimer;
+        function resetQueue() {
+            var now = Date.now();
+            for (var i = 0; i < fs[gracefulQueue].length; ++i) {
+                if (fs[gracefulQueue][i].length > 2) {
+                    fs[gracefulQueue][i][3] = now;
+                    fs[gracefulQueue][i][4] = now;
+                }
+            }
+            retry();
         }
         function retry() {
+            clearTimeout(retryTimer);
+            retryTimer = undefined;
+            if (fs[gracefulQueue].length === 0) return;
             var elem = fs[gracefulQueue].shift();
-            if (elem) {
-                debug("RETRY", elem[0].name, elem[1]);
-                elem[0].apply(null, elem[1]);
+            var fn = elem[0];
+            var args = elem[1];
+            var err = elem[2];
+            var startTime = elem[3];
+            var lastTime = elem[4];
+            if (startTime === undefined) {
+                debug("RETRY", fn.name, args);
+                fn.apply(null, args);
+            } else if (Date.now() - startTime >= 6e4) {
+                debug("TIMEOUT", fn.name, args);
+                var cb = args.pop();
+                if (typeof cb === "function") cb.call(null, err);
+            } else {
+                var sinceAttempt = Date.now() - lastTime;
+                var sinceStart = Math.max(lastTime - startTime, 1);
+                var desiredDelay = Math.min(sinceStart * 1.2, 100);
+                if (sinceAttempt >= desiredDelay) {
+                    debug("RETRY", fn.name, args);
+                    fn.apply(null, args.concat([ startTime ]));
+                } else {
+                    fs[gracefulQueue].push(elem);
+                }
+            }
+            if (retryTimer === undefined) {
+                retryTimer = setTimeout(retry, 0);
             }
         }
     },
@@ -4903,6 +4930,7 @@ var __webpack_modules__ = {
         const fs = __webpack_require__(5747);
         const fsm = __webpack_require__(8553);
         const path = __webpack_require__(5622);
+        const stripSlash = __webpack_require__(6401);
         module.exports = (opt_, files, cb) => {
             if (typeof opt_ === "function") cb = opt_, files = null, opt_ = {}; else if (Array.isArray(opt_)) files = opt_, 
             opt_ = {};
@@ -4915,7 +4943,7 @@ var __webpack_modules__ = {
             return opt.file && opt.sync ? extractFileSync(opt) : opt.file ? extractFile(opt, cb) : opt.sync ? extractSync(opt) : extract(opt);
         };
         const filesFilter = (opt, files) => {
-            const map = new Map(files.map((f => [ f.replace(/\/+$/, ""), true ])));
+            const map = new Map(files.map((f => [ stripSlash(f), true ])));
             const filter = opt.filter;
             const mapHas = (file, r) => {
                 const root = r || path.parse(file).root || ".";
@@ -4923,7 +4951,7 @@ var __webpack_modules__ = {
                 map.set(file, ret);
                 return ret;
             };
-            opt.filter = filter ? (file, entry) => filter(file, entry) && mapHas(file.replace(/\/+$/, "")) : file => mapHas(file.replace(/\/+$/, ""));
+            opt.filter = filter ? (file, entry) => filter(file, entry) && mapHas(stripSlash(file)) : file => mapHas(stripSlash(file));
         };
         const extractFileSync = opt => {
             const u = new Unpack.Sync(opt);
@@ -5213,6 +5241,7 @@ var __webpack_modules__ = {
         const fs = __webpack_require__(5747);
         const fsm = __webpack_require__(8553);
         const path = __webpack_require__(5622);
+        const stripSlash = __webpack_require__(6401);
         module.exports = (opt_, files, cb) => {
             if (typeof opt_ === "function") cb = opt_, files = null, opt_ = {}; else if (Array.isArray(opt_)) files = opt_, 
             opt_ = {};
@@ -5233,7 +5262,7 @@ var __webpack_modules__ = {
             } : e => e.resume();
         };
         const filesFilter = (opt, files) => {
-            const map = new Map(files.map((f => [ f.replace(/\/+$/, ""), true ])));
+            const map = new Map(files.map((f => [ stripSlash(f), true ])));
             const filter = opt.filter;
             const mapHas = (file, r) => {
                 const root = r || path.parse(file).root || ".";
@@ -5241,7 +5270,7 @@ var __webpack_modules__ = {
                 map.set(file, ret);
                 return ret;
             };
-            opt.filter = filter ? (file, entry) => filter(file, entry) && mapHas(file.replace(/\/+$/, "")) : file => mapHas(file.replace(/\/+$/, ""));
+            opt.filter = filter ? (file, entry) => filter(file, entry) && mapHas(stripSlash(file)) : file => mapHas(stripSlash(file));
         };
         const listFileSync = opt => {
             const p = list(opt);
@@ -5299,6 +5328,7 @@ var __webpack_modules__ = {
         const fs = __webpack_require__(5747);
         const path = __webpack_require__(5622);
         const chownr = __webpack_require__(2047);
+        const normPath = __webpack_require__(4240);
         class SymlinkError extends Error {
             constructor(symlink, path) {
                 super("Cannot extract through symbolic link");
@@ -5319,7 +5349,16 @@ var __webpack_modules__ = {
                 return "CwdError";
             }
         }
+        const cGet = (cache, key) => cache.get(normPath(key));
+        const cSet = (cache, key, val) => cache.set(normPath(key), val);
+        const checkCwd = (dir, cb) => {
+            fs.stat(dir, ((er, st) => {
+                if (er || !st.isDirectory()) er = new CwdError(dir, er && er.code || "ENOTDIR");
+                cb(er);
+            }));
+        };
         module.exports = (dir, opt, cb) => {
+            dir = normPath(dir);
             const umask = opt.umask;
             const mode = opt.mode | 448;
             const needChmod = (mode & umask) !== 0;
@@ -5329,39 +5368,36 @@ var __webpack_modules__ = {
             const preserve = opt.preserve;
             const unlink = opt.unlink;
             const cache = opt.cache;
-            const cwd = opt.cwd;
+            const cwd = normPath(opt.cwd);
             const done = (er, created) => {
                 if (er) cb(er); else {
-                    cache.set(dir, true);
+                    cSet(cache, dir, true);
                     if (created && doChown) chownr(created, uid, gid, (er => done(er))); else if (needChmod) fs.chmod(dir, mode, cb); else cb();
                 }
             };
-            if (cache && cache.get(dir) === true) return done();
-            if (dir === cwd) {
-                return fs.stat(dir, ((er, st) => {
-                    if (er || !st.isDirectory()) er = new CwdError(dir, er && er.code || "ENOTDIR");
-                    done(er);
-                }));
-            }
+            if (cache && cGet(cache, dir) === true) return done();
+            if (dir === cwd) return checkCwd(dir, done);
             if (preserve) return mkdirp(dir, {
                 mode
             }).then((made => done(null, made)), done);
-            const sub = path.relative(cwd, dir);
-            const parts = sub.split(/\/|\\/);
+            const sub = normPath(path.relative(cwd, dir));
+            const parts = sub.split("/");
             mkdir_(cwd, parts, mode, cache, unlink, cwd, null, done);
         };
         const mkdir_ = (base, parts, mode, cache, unlink, cwd, created, cb) => {
             if (!parts.length) return cb(null, created);
             const p = parts.shift();
-            const part = base + "/" + p;
-            if (cache.get(part)) return mkdir_(part, parts, mode, cache, unlink, cwd, created, cb);
+            const part = normPath(path.resolve(base + "/" + p));
+            if (cGet(cache, part)) return mkdir_(part, parts, mode, cache, unlink, cwd, created, cb);
             fs.mkdir(part, mode, onmkdir(part, parts, mode, cache, unlink, cwd, created, cb));
         };
         const onmkdir = (part, parts, mode, cache, unlink, cwd, created, cb) => er => {
             if (er) {
-                if (er.path && path.dirname(er.path) === cwd && (er.code === "ENOTDIR" || er.code === "ENOENT")) return cb(new CwdError(cwd, er.code));
                 fs.lstat(part, ((statEr, st) => {
-                    if (statEr) cb(statEr); else if (st.isDirectory()) mkdir_(part, parts, mode, cache, unlink, cwd, created, cb); else if (unlink) {
+                    if (statEr) {
+                        statEr.path = statEr.path && normPath(statEr.path);
+                        cb(statEr);
+                    } else if (st.isDirectory()) mkdir_(part, parts, mode, cache, unlink, cwd, created, cb); else if (unlink) {
                         fs.unlink(part, (er => {
                             if (er) return cb(er);
                             fs.mkdir(part, mode, onmkdir(part, parts, mode, cache, unlink, cwd, created, cb));
@@ -5373,7 +5409,19 @@ var __webpack_modules__ = {
                 mkdir_(part, parts, mode, cache, unlink, cwd, created, cb);
             }
         };
+        const checkCwdSync = dir => {
+            let ok = false;
+            let code = "ENOTDIR";
+            try {
+                ok = fs.statSync(dir).isDirectory();
+            } catch (er) {
+                code = er.code;
+            } finally {
+                if (!ok) throw new CwdError(dir, code);
+            }
+        };
         module.exports.sync = (dir, opt) => {
+            dir = normPath(dir);
             const umask = opt.umask;
             const mode = opt.mode | 448;
             const needChmod = (mode & umask) !== 0;
@@ -5383,47 +5431,38 @@ var __webpack_modules__ = {
             const preserve = opt.preserve;
             const unlink = opt.unlink;
             const cache = opt.cache;
-            const cwd = opt.cwd;
+            const cwd = normPath(opt.cwd);
             const done = created => {
-                cache.set(dir, true);
+                cSet(cache, dir, true);
                 if (created && doChown) chownr.sync(created, uid, gid);
                 if (needChmod) fs.chmodSync(dir, mode);
             };
-            if (cache && cache.get(dir) === true) return done();
+            if (cache && cGet(cache, dir) === true) return done();
             if (dir === cwd) {
-                let ok = false;
-                let code = "ENOTDIR";
-                try {
-                    ok = fs.statSync(dir).isDirectory();
-                } catch (er) {
-                    code = er.code;
-                } finally {
-                    if (!ok) throw new CwdError(dir, code);
-                }
-                done();
-                return;
+                checkCwdSync(cwd);
+                return done();
             }
             if (preserve) return done(mkdirp.sync(dir, mode));
-            const sub = path.relative(cwd, dir);
-            const parts = sub.split(/\/|\\/);
+            const sub = normPath(path.relative(cwd, dir));
+            const parts = sub.split("/");
             let created = null;
             for (let p = parts.shift(), part = cwd; p && (part += "/" + p); p = parts.shift()) {
-                if (cache.get(part)) continue;
+                part = normPath(path.resolve(part));
+                if (cGet(cache, part)) continue;
                 try {
                     fs.mkdirSync(part, mode);
                     created = created || part;
-                    cache.set(part, true);
+                    cSet(cache, part, true);
                 } catch (er) {
-                    if (er.path && path.dirname(er.path) === cwd && (er.code === "ENOTDIR" || er.code === "ENOENT")) return new CwdError(cwd, er.code);
                     const st = fs.lstatSync(part);
                     if (st.isDirectory()) {
-                        cache.set(part, true);
+                        cSet(cache, part, true);
                         continue;
                     } else if (unlink) {
                         fs.unlinkSync(part);
                         fs.mkdirSync(part, mode);
                         created = created || part;
-                        cache.set(part, true);
+                        cSet(cache, part, true);
                         continue;
                     } else if (st.isSymbolicLink()) return new SymlinkError(part, part + "/" + parts.join("/"));
                 }
@@ -5443,6 +5482,10 @@ var __webpack_modules__ = {
             }
             return mode;
         };
+    },
+    4240: module => {
+        const platform = process.env.TESTING_TAR_FAKE_PLATFORM || process.platform;
+        module.exports = platform !== "win32" ? p => p : p => p && p.replace(/\\/g, "/");
     },
     5843: (module, __unused_webpack_exports, __webpack_require__) => {
         "use strict";
@@ -5489,6 +5532,7 @@ var __webpack_modules__ = {
         const fs = __webpack_require__(5747);
         const path = __webpack_require__(5622);
         const warner = __webpack_require__(8783);
+        const normPath = __webpack_require__(4240);
         const Pack = warner(class Pack extends MiniPass {
             constructor(opt) {
                 super(opt);
@@ -5500,7 +5544,7 @@ var __webpack_modules__ = {
                 this.preservePaths = !!opt.preservePaths;
                 this.strict = !!opt.strict;
                 this.noPax = !!opt.noPax;
-                this.prefix = (opt.prefix || "").replace(/(\\|\/)+$/, "");
+                this.prefix = normPath(opt.prefix || "");
                 this.linkCache = opt.linkCache || new Map;
                 this.statCache = opt.statCache || new Map;
                 this.readdirCache = opt.readdirCache || new Map;
@@ -5547,8 +5591,7 @@ var __webpack_modules__ = {
                 return this.flowing;
             }
             [ADDTARENTRY](p) {
-                const absolute = path.resolve(this.cwd, p.path);
-                if (this.prefix) p.path = this.prefix + "/" + p.path.replace(/^\.(\/+|$)/, "");
+                const absolute = normPath(path.resolve(this.cwd, p.path));
                 if (!this.filter(p.path, p)) p.resume(); else {
                     const job = new PackJob(p.path, absolute, false);
                     job.entry = new WriteEntryTar(p, this[ENTRYOPT](job));
@@ -5559,8 +5602,7 @@ var __webpack_modules__ = {
                 this[PROCESS]();
             }
             [ADDFSENTRY](p) {
-                const absolute = path.resolve(this.cwd, p);
-                if (this.prefix) p = this.prefix + "/" + p.replace(/^\.(\/+|$)/, "");
+                const absolute = normPath(path.resolve(this.cwd, p));
                 this[QUEUE].push(new PackJob(p, absolute));
                 this[PROCESS]();
             }
@@ -5657,7 +5699,8 @@ var __webpack_modules__ = {
                     linkCache: this.linkCache,
                     statCache: this.statCache,
                     noMtime: this.noMtime,
-                    mtime: this.mtime
+                    mtime: this.mtime,
+                    prefix: this.prefix
                 };
             }
             [ENTRY](job) {
@@ -5675,7 +5718,7 @@ var __webpack_modules__ = {
                 job.piped = true;
                 if (job.readdir) {
                     job.readdir.forEach((entry => {
-                        const p = this.prefix ? job.path.slice(this.prefix.length + 1) || "./" : job.path;
+                        const p = job.path;
                         const base = p === "./" ? "" : p.replace(/\/*$/, "/");
                         this[ADDFSENTRY](base + entry);
                     }));
@@ -5716,7 +5759,7 @@ var __webpack_modules__ = {
                 const zip = this.zip;
                 if (job.readdir) {
                     job.readdir.forEach((entry => {
-                        const p = this.prefix ? job.path.slice(this.prefix.length + 1) || "./" : job.path;
+                        const p = job.path;
                         const base = p === "./" ? "" : p.replace(/\/*$/, "/");
                         this[ADDFSENTRY](base + entry);
                     }));
@@ -6081,11 +6124,12 @@ var __webpack_modules__ = {
     },
     7119: (module, __unused_webpack_exports, __webpack_require__) => {
         const assert = __webpack_require__(2357);
+        const normPath = __webpack_require__(4240);
+        const {join} = __webpack_require__(5622);
         module.exports = () => {
             const queues = new Map;
             const reservations = new Map;
-            const {join} = __webpack_require__(5622);
-            const getDirs = path => join(path).split(/[\\/]/).slice(0, -1).reduce(((set, path) => set.length ? set.concat(join(set[set.length - 1], path)) : [ path ]), []);
+            const getDirs = path => path.split("/").slice(0, -1).reduce(((set, path) => set.length ? set.concat(normPath(join(set[set.length - 1], path))) : [ path ]), []);
             const running = new Set;
             const getQueues = fn => {
                 const res = reservations.get(fn);
@@ -6130,6 +6174,7 @@ var __webpack_modules__ = {
                 return true;
             };
             const reserve = (paths, fn) => {
+                paths = paths.map((p => normPath(join(p)).toLowerCase()));
                 const dirs = new Set(paths.map((path => getDirs(path))).reduce(((a, b) => a.concat(b))));
                 reservations.set(fn, {
                     dirs,
@@ -6234,6 +6279,7 @@ var __webpack_modules__ = {
     7847: (module, __unused_webpack_exports, __webpack_require__) => {
         "use strict";
         const MiniPass = __webpack_require__(2253);
+        const normPath = __webpack_require__(4240);
         const SLURP = Symbol("slurp");
         module.exports = class ReadEntry extends MiniPass {
             constructor(header, ex, gex) {
@@ -6273,7 +6319,7 @@ var __webpack_modules__ = {
                   default:
                     this.ignore = true;
                 }
-                this.path = header.path;
+                this.path = normPath(header.path);
                 this.mode = header.mode;
                 if (this.mode) this.mode = this.mode & 4095;
                 this.uid = header.uid;
@@ -6284,7 +6330,7 @@ var __webpack_modules__ = {
                 this.mtime = header.mtime;
                 this.atime = header.atime;
                 this.ctime = header.ctime;
-                this.linkpath = header.linkpath;
+                this.linkpath = normPath(header.linkpath);
                 this.uname = header.uname;
                 this.gname = header.gname;
                 if (ex) this[SLURP](ex);
@@ -6303,7 +6349,7 @@ var __webpack_modules__ = {
             }
             [SLURP](ex, global) {
                 for (const k in ex) {
-                    if (ex[k] !== null && ex[k] !== undefined && !(global && k === "path")) this[k] = ex[k];
+                    if (ex[k] !== null && ex[k] !== undefined && !(global && k === "path")) this[k] = k === "path" || k === "linkpath" ? normPath(ex[k]) : ex[k];
                 }
             }
         };
@@ -6410,7 +6456,7 @@ var __webpack_modules__ = {
                     }
                     if (er) return reject(er);
                     fs.fstat(fd, ((er, st) => {
-                        if (er) return reject(er);
+                        if (er) return fs.close(fd, (() => reject(er)));
                         getPos(fd, st.size, ((er, position) => {
                             if (er) return reject(er);
                             const stream = new fsm.WriteStream(opt.file, {
@@ -6455,6 +6501,27 @@ var __webpack_modules__ = {
             p.end();
         };
     },
+    6014: (module, __unused_webpack_exports, __webpack_require__) => {
+        const {isAbsolute, parse} = __webpack_require__(5622).win32;
+        module.exports = path => {
+            let r = "";
+            while (isAbsolute(path)) {
+                const root = path.charAt(0) === "/" ? "/" : parse(path).root;
+                path = path.substr(root.length);
+                r += root;
+            }
+            return [ r, path ];
+        };
+    },
+    6401: module => {
+        const batchStrings = [ "/".repeat(1024), "/".repeat(512), "/".repeat(256), "/".repeat(128), "/".repeat(64), "/".repeat(32), "/".repeat(16), "/".repeat(8), "/".repeat(4), "/".repeat(2), "/" ];
+        module.exports = str => {
+            for (const s of batchStrings) {
+                while (str.length >= s.length && str.slice(-1 * s.length) === s) str = str.slice(0, -1 * s.length);
+            }
+            return str;
+        };
+    },
     9806: (__unused_webpack_module, exports) => {
         "use strict";
         exports.name = new Map([ [ "0", "File" ], [ "", "OldFile" ], [ "1", "Link" ], [ "2", "SymbolicLink" ], [ "3", "CharacterDevice" ], [ "4", "BlockDevice" ], [ "5", "Directory" ], [ "6", "FIFO" ], [ "7", "ContiguousFile" ], [ "g", "GlobalExtendedHeader" ], [ "x", "ExtendedHeader" ], [ "A", "SolarisACL" ], [ "D", "GNUDumpDir" ], [ "I", "Inode" ], [ "K", "NextFileHasLongLinkpath" ], [ "L", "NextFileHasLongPath" ], [ "M", "ContinuationFile" ], [ "N", "OldGnuLongPath" ], [ "S", "SparseFile" ], [ "V", "TapeVolumeHeader" ], [ "X", "OldExtendedHeader" ] ]);
@@ -6470,6 +6537,8 @@ var __webpack_modules__ = {
         const mkdir = __webpack_require__(3956);
         const wc = __webpack_require__(6564);
         const pathReservations = __webpack_require__(7119);
+        const stripAbsolutePath = __webpack_require__(6014);
+        const normPath = __webpack_require__(4240);
         const ONENTRY = Symbol("onEntry");
         const CHECKFS = Symbol("checkFs");
         const CHECKFS2 = Symbol("checkFs2");
@@ -6493,11 +6562,9 @@ var __webpack_modules__ = {
         const DOCHOWN = Symbol("doChown");
         const UID = Symbol("uid");
         const GID = Symbol("gid");
+        const CHECKED_CWD = Symbol("checkedCwd");
         const crypto = __webpack_require__(6417);
         const getFlag = __webpack_require__(8512);
-        const neverCalled = () => {
-            throw new Error("sync function called cb somehow?!?");
-        };
         const unlinkFile = (path, cb) => {
             if (process.platform !== "win32") return fs.unlink(path, cb);
             const name = path + ".DELETE." + crypto.randomBytes(16).toString("hex");
@@ -6513,6 +6580,13 @@ var __webpack_modules__ = {
             fs.unlinkSync(name);
         };
         const uint32 = (a, b, c) => a === a >>> 0 ? a : b === b >>> 0 ? b : c;
+        const pruneCache = (cache, abs) => {
+            abs = normPath(abs).toLowerCase();
+            for (const path of cache.keys()) {
+                const plower = path.toLowerCase();
+                if (plower === abs || plower.toLowerCase().indexOf(abs + "/") === 0) cache.delete(path);
+            }
+        };
         class Unpack extends Parser {
             constructor(opt) {
                 if (!opt) opt = {};
@@ -6521,6 +6595,7 @@ var __webpack_modules__ = {
                     this[MAYBECLOSE]();
                 };
                 super(opt);
+                this[CHECKED_CWD] = false;
                 this.reservations = pathReservations();
                 this.transform = typeof opt.transform === "function" ? opt.transform : null;
                 this.writable = true;
@@ -6551,7 +6626,7 @@ var __webpack_modules__ = {
                 this.noMtime = !!opt.noMtime;
                 this.preservePaths = !!opt.preservePaths;
                 this.unlink = !!opt.unlink;
-                this.cwd = path.resolve(opt.cwd || process.cwd());
+                this.cwd = normPath(path.resolve(opt.cwd || process.cwd()));
                 this.strip = +opt.strip || 0;
                 this.processUmask = opt.noChmod ? 0 : process.umask();
                 this.umask = typeof opt.umask === "number" ? opt.umask : this.processUmask;
@@ -6573,38 +6648,40 @@ var __webpack_modules__ = {
             }
             [CHECKPATH](entry) {
                 if (this.strip) {
-                    const parts = entry.path.split(/\/|\\/);
+                    const parts = normPath(entry.path).split("/");
                     if (parts.length < this.strip) return false;
                     entry.path = parts.slice(this.strip).join("/");
                     if (entry.type === "Link") {
-                        const linkparts = entry.linkpath.split(/\/|\\/);
-                        if (linkparts.length >= this.strip) entry.linkpath = linkparts.slice(this.strip).join("/");
+                        const linkparts = normPath(entry.linkpath).split("/");
+                        if (linkparts.length >= this.strip) entry.linkpath = linkparts.slice(this.strip).join("/"); else return false;
                     }
                 }
                 if (!this.preservePaths) {
-                    const p = entry.path;
-                    if (p.match(/(^|\/|\\)\.\.(\\|\/|$)/)) {
+                    const p = normPath(entry.path);
+                    if (p.split("/").includes("..")) {
                         this.warn("TAR_ENTRY_ERROR", `path contains '..'`, {
                             entry,
                             path: p
                         });
                         return false;
                     }
-                    if (path.win32.isAbsolute(p)) {
-                        const parsed = path.win32.parse(p);
-                        entry.path = p.substr(parsed.root.length);
-                        const r = parsed.root;
-                        this.warn("TAR_ENTRY_INFO", `stripping ${r} from absolute path`, {
+                    const [root, stripped] = stripAbsolutePath(p);
+                    if (root) {
+                        entry.path = stripped;
+                        this.warn("TAR_ENTRY_INFO", `stripping ${root} from absolute path`, {
                             entry,
                             path: p
                         });
                     }
                 }
+                if (path.isAbsolute(entry.path)) entry.absolute = normPath(path.resolve(entry.path)); else entry.absolute = normPath(path.resolve(this.cwd, entry.path));
+                if (entry.absolute === this.cwd && entry.type !== "Directory" && entry.type !== "GNUDumpDir") return false;
                 if (this.win32) {
-                    const parsed = path.win32.parse(entry.path);
-                    entry.path = parsed.root === "" ? wc.encode(entry.path) : parsed.root + wc.encode(entry.path.substr(parsed.root.length));
+                    const {root: aRoot} = path.win32.parse(entry.absolute);
+                    entry.absolute = aRoot + wc.encode(entry.absolute.substr(aRoot.length));
+                    const {root: pRoot} = path.win32.parse(entry.path);
+                    entry.path = pRoot + wc.encode(entry.path.substr(pRoot.length));
                 }
-                if (path.isAbsolute(entry.path)) entry.absolute = entry.path; else entry.absolute = path.resolve(this.cwd, entry.path);
                 return true;
             }
             [ONENTRY](entry) {
@@ -6639,7 +6716,7 @@ var __webpack_modules__ = {
                 }
             }
             [MKDIR](dir, mode, cb) {
-                mkdir(dir, {
+                mkdir(normPath(dir), {
                     uid: this.uid,
                     gid: this.gid,
                     processUid: this.processUid,
@@ -6669,14 +6746,24 @@ var __webpack_modules__ = {
                     mode,
                     autoClose: false
                 });
-                stream.on("error", (er => this[ONERROR](er, entry)));
+                stream.on("error", (er => {
+                    if (stream.fd) fs.close(stream.fd, (() => {}));
+                    stream.write = () => true;
+                    this[ONERROR](er, entry);
+                    fullyDone();
+                }));
                 let actions = 1;
                 const done = er => {
-                    if (er) return this[ONERROR](er, entry);
+                    if (er) {
+                        if (stream.fd) fs.close(stream.fd, (() => {}));
+                        this[ONERROR](er, entry);
+                        fullyDone();
+                        return;
+                    }
                     if (--actions === 0) {
                         fs.close(stream.fd, (er => {
+                            if (er) this[ONERROR](er, entry); else this[UNPEND]();
                             fullyDone();
-                            er ? this[ONERROR](er, entry) : this[UNPEND]();
                         }));
                     }
                 };
@@ -6699,7 +6786,10 @@ var __webpack_modules__ = {
                 }));
                 const tx = this.transform ? this.transform(entry) || entry : entry;
                 if (tx !== entry) {
-                    tx.on("error", (er => this[ONERROR](er, entry)));
+                    tx.on("error", (er => {
+                        this[ONERROR](er, entry);
+                        fullyDone();
+                    }));
                     entry.pipe(tx);
                 }
                 tx.pipe(stream);
@@ -6708,8 +6798,9 @@ var __webpack_modules__ = {
                 const mode = entry.mode & 4095 || this.dmode;
                 this[MKDIR](entry.absolute, mode, (er => {
                     if (er) {
+                        this[ONERROR](er, entry);
                         fullyDone();
-                        return this[ONERROR](er, entry);
+                        return;
                     }
                     let actions = 1;
                     const done = _ => {
@@ -6741,7 +6832,8 @@ var __webpack_modules__ = {
                 this[LINK](entry, entry.linkpath, "symlink", done);
             }
             [HARDLINK](entry, done) {
-                this[LINK](entry, path.resolve(this.cwd, entry.linkpath), "link", done);
+                const linkpath = normPath(path.resolve(this.cwd, entry.linkpath));
+                this[LINK](entry, linkpath, "link", done);
             }
             [PEND]() {
                 this[PENDING]++;
@@ -6764,27 +6856,65 @@ var __webpack_modules__ = {
                 this.reservations.reserve(paths, (done => this[CHECKFS2](entry, done)));
             }
             [CHECKFS2](entry, done) {
-                this[MKDIR](path.dirname(entry.absolute), this.dmode, (er => {
-                    if (er) {
-                        done();
-                        return this[ONERROR](er, entry);
+                if (entry.type !== "Directory") pruneCache(this.dirCache, entry.absolute);
+                const checkCwd = () => {
+                    this[MKDIR](this.cwd, this.dmode, (er => {
+                        if (er) {
+                            this[ONERROR](er, entry);
+                            done();
+                            return;
+                        }
+                        this[CHECKED_CWD] = true;
+                        start();
+                    }));
+                };
+                const start = () => {
+                    if (entry.absolute !== this.cwd) {
+                        const parent = normPath(path.dirname(entry.absolute));
+                        if (parent !== this.cwd) {
+                            return this[MKDIR](parent, this.dmode, (er => {
+                                if (er) {
+                                    this[ONERROR](er, entry);
+                                    done();
+                                    return;
+                                }
+                                afterMakeParent();
+                            }));
+                        }
                     }
-                    fs.lstat(entry.absolute, ((er, st) => {
+                    afterMakeParent();
+                };
+                const afterMakeParent = () => {
+                    fs.lstat(entry.absolute, ((lstatEr, st) => {
                         if (st && (this.keep || this.newer && st.mtime > entry.mtime)) {
                             this[SKIP](entry);
                             done();
-                        } else if (er || this[ISREUSABLE](entry, st)) this[MAKEFS](null, entry, done); else if (st.isDirectory()) {
+                            return;
+                        }
+                        if (lstatEr || this[ISREUSABLE](entry, st)) return this[MAKEFS](null, entry, done);
+                        if (st.isDirectory()) {
                             if (entry.type === "Directory") {
-                                if (!this.noChmod && (!entry.mode || (st.mode & 4095) === entry.mode)) this[MAKEFS](null, entry, done); else {
-                                    fs.chmod(entry.absolute, entry.mode, (er => this[MAKEFS](er, entry, done)));
-                                }
-                            } else fs.rmdir(entry.absolute, (er => this[MAKEFS](er, entry, done)));
-                        } else unlinkFile(entry.absolute, (er => this[MAKEFS](er, entry, done)));
+                                const needChmod = !this.noChmod && entry.mode && (st.mode & 4095) !== entry.mode;
+                                const afterChmod = er => this[MAKEFS](er, entry, done);
+                                if (!needChmod) return afterChmod();
+                                return fs.chmod(entry.absolute, entry.mode, afterChmod);
+                            }
+                            if (entry.absolute !== this.cwd) {
+                                return fs.rmdir(entry.absolute, (er => this[MAKEFS](er, entry, done)));
+                            }
+                        }
+                        if (entry.absolute === this.cwd) return this[MAKEFS](null, entry, done);
+                        unlinkFile(entry.absolute, (er => this[MAKEFS](er, entry, done)));
                     }));
-                }));
+                };
+                if (this[CHECKED_CWD]) start(); else checkCwd();
             }
             [MAKEFS](er, entry, done) {
-                if (er) return this[ONERROR](er, entry);
+                if (er) {
+                    this[ONERROR](er, entry);
+                    done();
+                    return;
+                }
                 switch (entry.type) {
                   case "File":
                   case "OldFile":
@@ -6804,34 +6934,55 @@ var __webpack_modules__ = {
             }
             [LINK](entry, linkpath, link, done) {
                 fs[link](linkpath, entry.absolute, (er => {
-                    if (er) return this[ONERROR](er, entry);
+                    if (er) this[ONERROR](er, entry); else {
+                        this[UNPEND]();
+                        entry.resume();
+                    }
                     done();
-                    this[UNPEND]();
-                    entry.resume();
                 }));
             }
         }
+        const callSync = fn => {
+            try {
+                return [ null, fn() ];
+            } catch (er) {
+                return [ er, null ];
+            }
+        };
         class UnpackSync extends Unpack {
+            [MAKEFS](er, entry) {
+                return super[MAKEFS](er, entry, (() => {}));
+            }
             [CHECKFS](entry) {
-                const er = this[MKDIR](path.dirname(entry.absolute), this.dmode, neverCalled);
-                if (er) return this[ONERROR](er, entry);
-                try {
-                    const st = fs.lstatSync(entry.absolute);
-                    if (this.keep || this.newer && st.mtime > entry.mtime) return this[SKIP](entry); else if (this[ISREUSABLE](entry, st)) return this[MAKEFS](null, entry, neverCalled); else {
-                        try {
-                            if (st.isDirectory()) {
-                                if (entry.type === "Directory") {
-                                    if (!this.noChmod && entry.mode && (st.mode & 4095) !== entry.mode) fs.chmodSync(entry.absolute, entry.mode);
-                                } else fs.rmdirSync(entry.absolute);
-                            } else unlinkFileSync(entry.absolute);
-                            return this[MAKEFS](null, entry, neverCalled);
-                        } catch (er) {
-                            return this[ONERROR](er, entry);
-                        }
-                    }
-                } catch (er) {
-                    return this[MAKEFS](null, entry, neverCalled);
+                if (entry.type !== "Directory") pruneCache(this.dirCache, entry.absolute);
+                if (!this[CHECKED_CWD]) {
+                    const er = this[MKDIR](this.cwd, this.dmode);
+                    if (er) return this[ONERROR](er, entry);
+                    this[CHECKED_CWD] = true;
                 }
+                if (entry.absolute !== this.cwd) {
+                    const parent = normPath(path.dirname(entry.absolute));
+                    if (parent !== this.cwd) {
+                        const mkParent = this[MKDIR](parent, this.dmode);
+                        if (mkParent) return this[ONERROR](mkParent, entry);
+                    }
+                }
+                const [lstatEr, st] = callSync((() => fs.lstatSync(entry.absolute)));
+                if (st && (this.keep || this.newer && st.mtime > entry.mtime)) return this[SKIP](entry);
+                if (lstatEr || this[ISREUSABLE](entry, st)) return this[MAKEFS](null, entry);
+                if (st.isDirectory()) {
+                    if (entry.type === "Directory") {
+                        const needChmod = !this.noChmod && entry.mode && (st.mode & 4095) !== entry.mode;
+                        const [er] = needChmod ? callSync((() => {
+                            fs.chmodSync(entry.absolute, entry.mode);
+                        })) : [];
+                        return this[MAKEFS](er, entry);
+                    }
+                    const [er] = callSync((() => fs.rmdirSync(entry.absolute)));
+                    this[MAKEFS](er, entry);
+                }
+                const [er] = entry.absolute === this.cwd ? [] : callSync((() => unlinkFileSync(entry.absolute)));
+                this[MAKEFS](er, entry);
             }
             [FILE](entry, _) {
                 const mode = entry.mode & 4095 || this.fmode;
@@ -6911,7 +7062,7 @@ var __webpack_modules__ = {
             }
             [MKDIR](dir, mode) {
                 try {
-                    return mkdir.sync(dir, {
+                    return mkdir.sync(normPath(dir), {
                         uid: this.uid,
                         gid: this.gid,
                         processUid: this.processUid,
@@ -6994,6 +7145,13 @@ var __webpack_modules__ = {
         const Header = __webpack_require__(5017);
         const fs = __webpack_require__(5747);
         const path = __webpack_require__(5622);
+        const normPath = __webpack_require__(4240);
+        const stripSlash = __webpack_require__(6401);
+        const prefixPath = (path, prefix) => {
+            if (!prefix) return normPath(path);
+            path = normPath(path).replace(/^\.(\/|$)/, "");
+            return stripSlash(prefix) + "/" + path;
+        };
         const maxReadSize = 16 * 1024 * 1024;
         const PROCESS = Symbol("process");
         const FILE = Symbol("file");
@@ -7010,40 +7168,56 @@ var __webpack_modules__ = {
         const ONOPENFILE = Symbol("onopenfile");
         const CLOSE = Symbol("close");
         const MODE = Symbol("mode");
+        const AWAITDRAIN = Symbol("awaitDrain");
+        const ONDRAIN = Symbol("ondrain");
+        const PREFIX = Symbol("prefix");
+        const HAD_ERROR = Symbol("hadError");
         const warner = __webpack_require__(8783);
         const winchars = __webpack_require__(6564);
+        const stripAbsolutePath = __webpack_require__(6014);
         const modeFix = __webpack_require__(9574);
         const WriteEntry = warner(class WriteEntry extends MiniPass {
             constructor(p, opt) {
                 opt = opt || {};
                 super(opt);
                 if (typeof p !== "string") throw new TypeError("path is required");
-                this.path = p;
+                this.path = normPath(p);
                 this.portable = !!opt.portable;
-                this.myuid = process.getuid && process.getuid();
+                this.myuid = process.getuid && process.getuid() || 0;
                 this.myuser = process.env.USER || "";
                 this.maxReadSize = opt.maxReadSize || maxReadSize;
                 this.linkCache = opt.linkCache || new Map;
                 this.statCache = opt.statCache || new Map;
                 this.preservePaths = !!opt.preservePaths;
-                this.cwd = opt.cwd || process.cwd();
+                this.cwd = normPath(opt.cwd || process.cwd());
                 this.strict = !!opt.strict;
                 this.noPax = !!opt.noPax;
                 this.noMtime = !!opt.noMtime;
                 this.mtime = opt.mtime || null;
+                this.prefix = opt.prefix ? normPath(opt.prefix) : null;
+                this.fd = null;
+                this.blockLen = null;
+                this.blockRemain = null;
+                this.buf = null;
+                this.offset = null;
+                this.length = null;
+                this.pos = null;
+                this.remain = null;
                 if (typeof opt.onwarn === "function") this.on("warn", opt.onwarn);
                 let pathWarn = false;
-                if (!this.preservePaths && path.win32.isAbsolute(p)) {
-                    const parsed = path.win32.parse(p);
-                    this.path = p.substr(parsed.root.length);
-                    pathWarn = parsed.root;
+                if (!this.preservePaths) {
+                    const [root, stripped] = stripAbsolutePath(this.path);
+                    if (root) {
+                        this.path = stripped;
+                        pathWarn = root;
+                    }
                 }
                 this.win32 = !!opt.win32 || process.platform === "win32";
                 if (this.win32) {
                     this.path = winchars.decode(this.path.replace(/\\/g, "/"));
                     p = p.replace(/\\/g, "/");
                 }
-                this.absolute = opt.absolute || path.resolve(this.cwd, p);
+                this.absolute = normPath(opt.absolute || path.resolve(this.cwd, p));
                 if (this.path === "") this.path = "./";
                 if (pathWarn) {
                     this.warn("TAR_ENTRY_INFO", `stripping ${pathWarn} from absolute path`, {
@@ -7052,6 +7226,10 @@ var __webpack_modules__ = {
                     });
                 }
                 if (this.statCache.has(this.absolute)) this[ONLSTAT](this.statCache.get(this.absolute)); else this[LSTAT]();
+            }
+            emit(ev, ...data) {
+                if (ev === "error") this[HAD_ERROR] = true;
+                return super.emit(ev, ...data);
             }
             [LSTAT]() {
                 fs.lstat(this.absolute, ((er, stat) => {
@@ -7085,11 +7263,14 @@ var __webpack_modules__ = {
             [MODE](mode) {
                 return modeFix(mode, this.type === "Directory", this.portable);
             }
+            [PREFIX](path) {
+                return prefixPath(path, this.prefix);
+            }
             [HEADER]() {
                 if (this.type === "Directory" && this.portable) this.noMtime = true;
                 this.header = new Header({
-                    path: this.path,
-                    linkpath: this.linkpath,
+                    path: this[PREFIX](this.path),
+                    linkpath: this.type === "Link" ? this[PREFIX](this.linkpath) : this.linkpath,
                     mode: this[MODE](this.stat.mode),
                     uid: this.portable ? null : this.stat.uid,
                     gid: this.portable ? null : this.stat.gid,
@@ -7101,13 +7282,13 @@ var __webpack_modules__ = {
                     ctime: this.portable ? null : this.stat.ctime
                 });
                 if (this.header.encode() && !this.noPax) {
-                    this.write(new Pax({
+                    super.write(new Pax({
                         atime: this.portable ? null : this.header.atime,
                         ctime: this.portable ? null : this.header.ctime,
                         gid: this.portable ? null : this.header.gid,
                         mtime: this.noMtime ? null : this.mtime || this.header.mtime,
-                        path: this.path,
-                        linkpath: this.linkpath,
+                        path: this[PREFIX](this.path),
+                        linkpath: this.type === "Link" ? this[PREFIX](this.linkpath) : this.linkpath,
                         size: this.header.size,
                         uid: this.portable ? null : this.header.uid,
                         uname: this.portable ? null : this.header.uname,
@@ -7116,7 +7297,7 @@ var __webpack_modules__ = {
                         nlink: this.portable ? null : this.stat.nlink
                     }).encode());
                 }
-                this.write(this.header.block);
+                super.write(this.header.block);
             }
             [DIRECTORY]() {
                 if (this.path.substr(-1) !== "/") this.path += "/";
@@ -7131,13 +7312,13 @@ var __webpack_modules__ = {
                 }));
             }
             [ONREADLINK](linkpath) {
-                this.linkpath = linkpath.replace(/\\/g, "/");
+                this.linkpath = normPath(linkpath);
                 this[HEADER]();
                 this.end();
             }
             [HARDLINK](linkpath) {
                 this.type = "Link";
-                this.linkpath = path.relative(this.cwd, linkpath).replace(/\\/g, "/");
+                this.linkpath = normPath(path.relative(this.cwd, linkpath));
                 this.stat.size = 0;
                 this[HEADER]();
                 this.end();
@@ -7162,60 +7343,82 @@ var __webpack_modules__ = {
                 }));
             }
             [ONOPENFILE](fd) {
-                const blockLen = 512 * Math.ceil(this.stat.size / 512);
-                const bufLen = Math.min(blockLen, this.maxReadSize);
-                const buf = Buffer.allocUnsafe(bufLen);
-                this[READ](fd, buf, 0, buf.length, 0, this.stat.size, blockLen);
+                this.fd = fd;
+                if (this[HAD_ERROR]) return this[CLOSE]();
+                this.blockLen = 512 * Math.ceil(this.stat.size / 512);
+                this.blockRemain = this.blockLen;
+                const bufLen = Math.min(this.blockLen, this.maxReadSize);
+                this.buf = Buffer.allocUnsafe(bufLen);
+                this.offset = 0;
+                this.pos = 0;
+                this.remain = this.stat.size;
+                this.length = this.buf.length;
+                this[READ]();
             }
-            [READ](fd, buf, offset, length, pos, remain, blockRemain) {
+            [READ]() {
+                const {fd, buf, offset, length, pos} = this;
                 fs.read(fd, buf, offset, length, pos, ((er, bytesRead) => {
                     if (er) {
-                        return this[CLOSE](fd, (() => this.emit("error", er)));
+                        return this[CLOSE]((() => this.emit("error", er)));
                     }
-                    this[ONREAD](fd, buf, offset, length, pos, remain, blockRemain, bytesRead);
+                    this[ONREAD](bytesRead);
                 }));
             }
-            [CLOSE](fd, cb) {
-                fs.close(fd, cb);
+            [CLOSE](cb) {
+                fs.close(this.fd, cb);
             }
-            [ONREAD](fd, buf, offset, length, pos, remain, blockRemain, bytesRead) {
-                if (bytesRead <= 0 && remain > 0) {
+            [ONREAD](bytesRead) {
+                if (bytesRead <= 0 && this.remain > 0) {
                     const er = new Error("encountered unexpected EOF");
                     er.path = this.absolute;
                     er.syscall = "read";
                     er.code = "EOF";
-                    return this[CLOSE](fd, (() => this.emit("error", er)));
+                    return this[CLOSE]((() => this.emit("error", er)));
                 }
-                if (bytesRead > remain) {
+                if (bytesRead > this.remain) {
                     const er = new Error("did not encounter expected EOF");
                     er.path = this.absolute;
                     er.syscall = "read";
                     er.code = "EOF";
-                    return this[CLOSE](fd, (() => this.emit("error", er)));
+                    return this[CLOSE]((() => this.emit("error", er)));
                 }
-                if (bytesRead === remain) {
-                    for (let i = bytesRead; i < length && bytesRead < blockRemain; i++) {
-                        buf[i + offset] = 0;
+                if (bytesRead === this.remain) {
+                    for (let i = bytesRead; i < this.length && bytesRead < this.blockRemain; i++) {
+                        this.buf[i + this.offset] = 0;
                         bytesRead++;
-                        remain++;
+                        this.remain++;
                     }
                 }
-                const writeBuf = offset === 0 && bytesRead === buf.length ? buf : buf.slice(offset, offset + bytesRead);
-                remain -= bytesRead;
-                blockRemain -= bytesRead;
-                pos += bytesRead;
-                offset += bytesRead;
-                this.write(writeBuf);
-                if (!remain) {
-                    if (blockRemain) this.write(Buffer.alloc(blockRemain));
-                    return this[CLOSE](fd, (er => er ? this.emit("error", er) : this.end()));
+                const writeBuf = this.offset === 0 && bytesRead === this.buf.length ? this.buf : this.buf.slice(this.offset, this.offset + bytesRead);
+                const flushed = this.write(writeBuf);
+                if (!flushed) this[AWAITDRAIN]((() => this[ONDRAIN]())); else this[ONDRAIN]();
+            }
+            [AWAITDRAIN](cb) {
+                this.once("drain", cb);
+            }
+            write(writeBuf) {
+                if (this.blockRemain < writeBuf.length) {
+                    const er = new Error("writing more data than expected");
+                    er.path = this.absolute;
+                    return this.emit("error", er);
                 }
-                if (offset >= length) {
-                    buf = Buffer.allocUnsafe(length);
-                    offset = 0;
+                this.remain -= writeBuf.length;
+                this.blockRemain -= writeBuf.length;
+                this.pos += writeBuf.length;
+                this.offset += writeBuf.length;
+                return super.write(writeBuf);
+            }
+            [ONDRAIN]() {
+                if (!this.remain) {
+                    if (this.blockRemain) super.write(Buffer.alloc(this.blockRemain));
+                    return this[CLOSE]((er => er ? this.emit("error", er) : this.end()));
                 }
-                length = buf.length - offset;
-                this[READ](fd, buf, offset, length, pos, remain, blockRemain);
+                if (this.offset >= this.length) {
+                    this.buf = Buffer.allocUnsafe(Math.min(this.blockRemain, this.buf.length));
+                    this.offset = 0;
+                }
+                this.length = this.buf.length - this.offset;
+                this[READ]();
             }
         });
         class WriteEntrySync extends WriteEntry {
@@ -7228,22 +7431,26 @@ var __webpack_modules__ = {
             [OPENFILE]() {
                 this[ONOPENFILE](fs.openSync(this.absolute, "r"));
             }
-            [READ](fd, buf, offset, length, pos, remain, blockRemain) {
+            [READ]() {
                 let threw = true;
                 try {
+                    const {fd, buf, offset, length, pos} = this;
                     const bytesRead = fs.readSync(fd, buf, offset, length, pos);
-                    this[ONREAD](fd, buf, offset, length, pos, remain, blockRemain, bytesRead);
+                    this[ONREAD](bytesRead);
                     threw = false;
                 } finally {
                     if (threw) {
                         try {
-                            this[CLOSE](fd, (() => {}));
+                            this[CLOSE]((() => {}));
                         } catch (er) {}
                     }
                 }
             }
-            [CLOSE](fd, cb) {
-                fs.closeSync(fd);
+            [AWAITDRAIN](cb) {
+                cb();
+            }
+            [CLOSE](cb) {
+                fs.closeSync(this.fd);
                 cb();
             }
         }
@@ -7259,7 +7466,8 @@ var __webpack_modules__ = {
                 this.readEntry = readEntry;
                 this.type = readEntry.type;
                 if (this.type === "Directory" && this.portable) this.noMtime = true;
-                this.path = readEntry.path;
+                this.prefix = opt.prefix || null;
+                this.path = normPath(readEntry.path);
                 this.mode = this[MODE](readEntry.mode);
                 this.uid = this.portable ? null : readEntry.uid;
                 this.gid = this.portable ? null : readEntry.gid;
@@ -7269,19 +7477,21 @@ var __webpack_modules__ = {
                 this.mtime = this.noMtime ? null : opt.mtime || readEntry.mtime;
                 this.atime = this.portable ? null : readEntry.atime;
                 this.ctime = this.portable ? null : readEntry.ctime;
-                this.linkpath = readEntry.linkpath;
+                this.linkpath = normPath(readEntry.linkpath);
                 if (typeof opt.onwarn === "function") this.on("warn", opt.onwarn);
                 let pathWarn = false;
-                if (path.isAbsolute(this.path) && !this.preservePaths) {
-                    const parsed = path.parse(this.path);
-                    pathWarn = parsed.root;
-                    this.path = this.path.substr(parsed.root.length);
+                if (!this.preservePaths) {
+                    const [root, stripped] = stripAbsolutePath(this.path);
+                    if (root) {
+                        this.path = stripped;
+                        pathWarn = root;
+                    }
                 }
                 this.remain = readEntry.size;
                 this.blockRemain = readEntry.startBlockSize;
                 this.header = new Header({
-                    path: this.path,
-                    linkpath: this.linkpath,
+                    path: this[PREFIX](this.path),
+                    linkpath: this.type === "Link" ? this[PREFIX](this.linkpath) : this.linkpath,
                     mode: this.mode,
                     uid: this.portable ? null : this.uid,
                     gid: this.portable ? null : this.gid,
@@ -7304,8 +7514,8 @@ var __webpack_modules__ = {
                         ctime: this.portable ? null : this.ctime,
                         gid: this.portable ? null : this.gid,
                         mtime: this.noMtime ? null : this.mtime,
-                        path: this.path,
-                        linkpath: this.linkpath,
+                        path: this[PREFIX](this.path),
+                        linkpath: this.type === "Link" ? this[PREFIX](this.linkpath) : this.linkpath,
                         size: this.size,
                         uid: this.portable ? null : this.uid,
                         uname: this.portable ? null : this.uname,
@@ -7317,6 +7527,9 @@ var __webpack_modules__ = {
                 super.write(this.header.block);
                 readEntry.pipe(this);
             }
+            [PREFIX](path) {
+                return prefixPath(path, this.prefix);
+            }
             [MODE](mode) {
                 return modeFix(mode, this.type === "Directory", this.portable);
             }
@@ -7327,7 +7540,7 @@ var __webpack_modules__ = {
                 return super.write(data);
             }
             end() {
-                if (this.blockRemain) this.write(Buffer.alloc(this.blockRemain));
+                if (this.blockRemain) super.write(Buffer.alloc(this.blockRemain));
                 return super.end();
             }
         });
@@ -9820,7 +10033,7 @@ var __webpack_modules__ = {
         });
         exports.validateAssembly = exports.schema = void 0;
         const jsonschema_1 = __webpack_require__(6872);
-        exports.schema = __webpack_require__(373);
+        exports.schema = __webpack_require__(9402);
         function validateAssembly(obj) {
             const validator = new jsonschema_1.Validator;
             validator.addSchema(exports.schema);
@@ -9833,14 +10046,6 @@ var __webpack_modules__ = {
             throw new Error(`Invalid assembly:\n${result.toString()}`);
         }
         exports.validateAssembly = validateAssembly;
-    },
-    306: module => {
-        "use strict";
-        module.exports = JSON.parse('{"name":"@jsii/runtime","version":"1.32.0","description":"jsii runtime kernel process","license":"Apache-2.0","author":{"name":"Amazon Web Services","url":"https://aws.amazon.com"},"homepage":"https://github.com/aws/jsii","bugs":{"url":"https://github.com/aws/jsii/issues"},"repository":{"type":"git","url":"https://github.com/aws/jsii.git","directory":"packages/@jsii/runtime"},"engines":{"node":">= 10.3.0"},"main":"lib/index.js","types":"lib/index.d.ts","bin":{"jsii-runtime":"bin/jsii-runtime"},"scripts":{"build":"tsc --build && chmod +x bin/jsii-runtime && npx webpack-cli && npm run lint","watch":"tsc --build -w","lint":"eslint . --ext .js,.ts --ignore-path=.gitignore --ignore-pattern=webpack.config.js","lint:fix":"yarn lint --fix","test":"jest","test:update":"jest -u","package":"package-js"},"dependencies":{"@jsii/kernel":"^1.32.0","@jsii/spec":"^1.32.0"},"devDependencies":{"@scope/jsii-calc-base":"^1.32.0","@scope/jsii-calc-lib":"^1.32.0","@types/jest":"^26.0.23","@types/node":"^10.17.59","eslint":"^7.26.0","jest":"^26.6.3","jsii-build-tools":"^1.32.0","jsii-calc":"^3.20.120","prettier":"^2.3.0","source-map-loader":"^2.0.1","ts-jest":"^26.5.6","typescript":"~3.9.9","webpack":"^5.37.0","webpack-cli":"^4.7.0"}}');
-    },
-    373: module => {
-        "use strict";
-        module.exports = JSON.parse('{"$ref":"#/definitions/Assembly","$schema":"http://json-schema.org/draft-07/schema#","definitions":{"Assembly":{"description":"A JSII assembly specification.","properties":{"author":{"$ref":"#/definitions/Person","description":"The main author of this package."},"bin":{"additionalProperties":{"type":"string"},"default":"none","description":"List of bin-scripts","type":"object"},"bundled":{"additionalProperties":{"type":"string"},"default":"none","description":"List if bundled dependencies (these are not expected to be jsii\\nassemblies).","type":"object"},"contributors":{"default":"none","description":"Additional contributors to this package.","items":{"$ref":"#/definitions/Person"},"type":"array"},"dependencies":{"additionalProperties":{"type":"string"},"default":"none","description":"Direct dependencies on other assemblies (with semver), the key is the JSII\\nassembly name, and the value is a SemVer expression.","type":"object"},"dependencyClosure":{"additionalProperties":{"$ref":"#/definitions/AssemblyConfiguration"},"default":"none","description":"Target configuration for all the assemblies that are direct or transitive\\ndependencies of this assembly. This is needed to generate correct native\\ntype names for any transitively inherited member, in certain languages.","type":"object"},"description":{"description":"Description of the assembly, maps to \\"description\\" from package.json\\nThis is required since some package managers (like Maven) require it.","type":"string"},"docs":{"$ref":"#/definitions/Docs","default":"none","description":"Documentation for this entity."},"fingerprint":{"description":"A fingerprint that can be used to determine if the specification has\\nchanged.","minLength":1,"type":"string"},"homepage":{"description":"The url to the project homepage. Maps to \\"homepage\\" from package.json.","type":"string"},"jsiiVersion":{"description":"The version of the jsii compiler that was used to produce this Assembly.","minLength":1,"type":"string"},"keywords":{"description":"Keywords that help discover or identify this packages with respects to it\'s\\nintended usage, audience, etc... Where possible, this will be rendered in\\nthe corresponding metadata section of idiomatic package manifests, for\\nexample NuGet package tags.","items":{"type":"string"},"type":"array"},"license":{"description":"The SPDX name of the license this assembly is distributed on.","type":"string"},"metadata":{"additionalProperties":{},"default":"none","description":"Arbitrary key-value pairs of metadata, which the maintainer chose to\\ndocument with the assembly. These entries do not carry normative\\nsemantics and their interpretation is up to the assembly maintainer.","type":"object"},"name":{"description":"The name of the assembly","minLength":1,"type":"string"},"readme":{"$ref":"#/definitions/ReadMe","default":"none","description":"The readme document for this module (if any)."},"repository":{"description":"The module repository, maps to \\"repository\\" from package.json\\nThis is required since some package managers (like Maven) require it.","properties":{"directory":{"default":"the root of the repository","description":"If the package is not in the root directory (for example, when part\\nof a monorepo), you should specify the directory in which it lives.","type":"string"},"type":{"description":"The type of the repository (``git``, ``svn``, ...)","type":"string"},"url":{"description":"The URL of the repository.","type":"string"}},"required":["type","url"],"type":"object"},"schema":{"description":"The version of the spec schema","enum":["jsii/0.10.0"],"type":"string"},"submodules":{"additionalProperties":{"allOf":[{"$ref":"#/definitions/SourceLocatable"},{"$ref":"#/definitions/Targetable"}],"description":"A submodule\\n\\nThe difference between a top-level module (the assembly) and a submodule is\\nthat the submodule is annotated with its location in the repository."},"default":"none","description":"Submodules declared in this assembly.","type":"object"},"targets":{"$ref":"#/definitions/AssemblyTargets","default":"none","description":"A map of target name to configuration, which is used when generating\\npackages for various languages."},"types":{"additionalProperties":{"anyOf":[{"allOf":[{"$ref":"#/definitions/TypeBase"},{"$ref":"#/definitions/ClassType"}]},{"allOf":[{"$ref":"#/definitions/TypeBase"},{"$ref":"#/definitions/EnumType"}]},{"allOf":[{"$ref":"#/definitions/TypeBase"},{"$ref":"#/definitions/InterfaceType"}]}],"description":"Represents a type definition (not a type reference)."},"default":"none","description":"All types in the assembly, keyed by their fully-qualified-name","type":"object"},"version":{"description":"The version of the assembly","minLength":1,"type":"string"}},"required":["author","description","fingerprint","homepage","jsiiVersion","license","name","repository","schema","version"],"type":"object"},"AssemblyConfiguration":{"description":"Shareable configuration of a jsii Assembly.","properties":{"readme":{"$ref":"#/definitions/ReadMe","default":"none","description":"The readme document for this module (if any)."},"submodules":{"additionalProperties":{"allOf":[{"$ref":"#/definitions/SourceLocatable"},{"$ref":"#/definitions/Targetable"}],"description":"A submodule\\n\\nThe difference between a top-level module (the assembly) and a submodule is\\nthat the submodule is annotated with its location in the repository."},"default":"none","description":"Submodules declared in this assembly.","type":"object"},"targets":{"$ref":"#/definitions/AssemblyTargets","default":"none","description":"A map of target name to configuration, which is used when generating\\npackages for various languages."}},"type":"object"},"AssemblyTargets":{"additionalProperties":{"additionalProperties":{},"type":"object"},"description":"Configurable targets for an asembly.","type":"object"},"Callable":{"description":"An Initializer or a Method.","properties":{"docs":{"$ref":"#/definitions/Docs","default":"none","description":"Documentation for this entity."},"locationInModule":{"$ref":"#/definitions/SourceLocation","default":"none","description":"Where in the module this definition was found\\n\\nWhy is this not `locationInAssembly`? Because the assembly is the JSII\\nfile combining compiled code and its manifest, whereas this is referring\\nto the location of the source in the module the assembly was built from."},"overrides":{"default":"this member is not overriding anything","description":"The FQN of the parent type (class or interface) that this entity\\noverrides or implements. If undefined, then this entity is the first in\\nit\'s hierarchy to declare this entity.","type":"string"},"parameters":{"default":"none","description":"The parameters of the Initializer or Method.","items":{"$ref":"#/definitions/Parameter"},"type":"array"},"protected":{"default":false,"description":"Indicates if this Initializer or Method is protected (otherwise it is\\npublic, since private members are not modeled).","type":"boolean"},"variadic":{"default":false,"description":"Indicates whether this Initializer or Method is variadic or not. When\\n``true``, the last element of ``#parameters`` will also be flagged\\n``#variadic``.","type":"boolean"}},"type":"object"},"ClassType":{"description":"Represents classes.","properties":{"abstract":{"default":false,"description":"Indicates if this class is an abstract class.","type":"boolean"},"assembly":{"description":"The name of the assembly the type belongs to.","minLength":1,"type":"string"},"base":{"default":"no base class","description":"The FQN of the base class of this class, if it has one.","type":"string"},"docs":{"$ref":"#/definitions/Docs","default":"none","description":"Documentation for this entity."},"fqn":{"description":"The fully qualified name of the type (``<assembly>.<namespace>.<name>``)","minLength":3,"type":"string"},"initializer":{"$ref":"#/definitions/Callable","default":"no initializer","description":"Initializer (constructor) method."},"interfaces":{"default":"none","description":"The FQNs of the interfaces this class implements, if any.","items":{"type":"string"},"type":"array","uniqueItems":true},"kind":{"description":"The kind of the type.","enum":["class"],"type":"string"},"locationInModule":{"$ref":"#/definitions/SourceLocation","default":"none","description":"Where in the module this definition was found\\n\\nWhy is this not `locationInAssembly`? Because the assembly is the JSII\\nfile combining compiled code and its manifest, whereas this is referring\\nto the location of the source in the module the assembly was built from."},"methods":{"default":"none","description":"List of methods.","items":{"$ref":"#/definitions/Method"},"type":"array"},"name":{"description":"The simple name of the type (MyClass).","minLength":1,"type":"string"},"namespace":{"default":"none","description":"The namespace of the type (`foo.bar.baz`).\\n\\nWhen undefined, the type is located at the root of the assembly (its\\n`fqn` would be like `<assembly>.<name>`).\\n\\nFor types inside other types or inside submodules, the `<namespace>` corresponds to\\nthe namespace-qualified name of the container (can contain multiple segments like:\\n`<ns1>.<ns2>.<ns3>`).\\n\\nIn all cases:\\n\\n <fqn> = <assembly>[.<namespace>].<name>","type":"string"},"properties":{"default":"none","description":"List of properties.","items":{"$ref":"#/definitions/Property"},"type":"array"}},"required":["assembly","fqn","kind","name"],"type":"object"},"CollectionKind":{"description":"Kinds of collections.","enum":["array","map"],"type":"string"},"CollectionTypeReference":{"description":"Reference to a collection type.","properties":{"collection":{"properties":{"elementtype":{"$ref":"#/definitions/TypeReference","description":"The type of an element (map keys are always strings)."},"kind":{"$ref":"#/definitions/CollectionKind","description":"The kind of collection."}},"required":["elementtype","kind"],"type":"object"}},"required":["collection"],"type":"object"},"Docs":{"description":"Key value pairs of documentation nodes.\\nBased on TSDoc.","properties":{"custom":{"additionalProperties":{"type":"string"},"default":"none","description":"Custom tags that are not any of the default ones","type":"object"},"default":{"default":"none","description":"Description of the default","type":"string"},"deprecated":{"default":"none","description":"If present, this block indicates that an API item is no longer supported\\nand may be removed in a future release.  The `@deprecated` tag must be\\nfollowed by a sentence describing the recommended alternative.\\nDeprecation recursively applies to members of a container. For example,\\nif a class is deprecated, then so are all of its members.","type":"string"},"example":{"default":"none","description":"Example showing the usage of this API item\\n\\nStarts off in running text mode, may switch to code using fenced code\\nblocks.","type":"string"},"remarks":{"default":"none","description":"Detailed information about an API item.\\n\\nEither the explicitly tagged `@remarks` section, otherwise everything\\npast the first paragraph if there is no `@remarks` tag.","type":"string"},"returns":{"default":"none","description":"The `@returns` block for this doc comment, or undefined if there is not\\none.","type":"string"},"see":{"default":"none","description":"A `@see` link with more information","type":"string"},"stability":{"description":"Whether the API item is beta/experimental quality","enum":["deprecated","experimental","external","stable"],"type":"string"},"subclassable":{"default":false,"description":"Whether this class or interface was intended to be subclassed/implemented\\nby library users.\\n\\nClasses intended for subclassing, and interfaces intended to be\\nimplemented by consumers, are held to stricter standards of API\\ncompatibility.","type":"boolean"},"summary":{"default":"none","description":"Summary documentation for an API item.\\n\\nThe first part of the documentation before hitting a `@remarks` tags, or\\nthe first line of the doc comment block if there is no `@remarks` tag.","type":"string"}},"type":"object"},"EnumMember":{"description":"Represents a member of an enum.","properties":{"docs":{"$ref":"#/definitions/Docs","default":"none","description":"Documentation for this entity."},"name":{"description":"The name/symbol of the member.","type":"string"}},"required":["name"],"type":"object"},"EnumType":{"description":"Represents an enum type.","properties":{"assembly":{"description":"The name of the assembly the type belongs to.","minLength":1,"type":"string"},"docs":{"$ref":"#/definitions/Docs","default":"none","description":"Documentation for this entity."},"fqn":{"description":"The fully qualified name of the type (``<assembly>.<namespace>.<name>``)","minLength":3,"type":"string"},"kind":{"description":"The kind of the type.","enum":["enum"],"type":"string"},"locationInModule":{"$ref":"#/definitions/SourceLocation","default":"none","description":"Where in the module this definition was found\\n\\nWhy is this not `locationInAssembly`? Because the assembly is the JSII\\nfile combining compiled code and its manifest, whereas this is referring\\nto the location of the source in the module the assembly was built from."},"members":{"description":"Members of the enum.","items":{"$ref":"#/definitions/EnumMember"},"type":"array"},"name":{"description":"The simple name of the type (MyClass).","minLength":1,"type":"string"},"namespace":{"default":"none","description":"The namespace of the type (`foo.bar.baz`).\\n\\nWhen undefined, the type is located at the root of the assembly (its\\n`fqn` would be like `<assembly>.<name>`).\\n\\nFor types inside other types or inside submodules, the `<namespace>` corresponds to\\nthe namespace-qualified name of the container (can contain multiple segments like:\\n`<ns1>.<ns2>.<ns3>`).\\n\\nIn all cases:\\n\\n <fqn> = <assembly>[.<namespace>].<name>","type":"string"}},"required":["assembly","fqn","kind","members","name"],"type":"object"},"InterfaceType":{"properties":{"assembly":{"description":"The name of the assembly the type belongs to.","minLength":1,"type":"string"},"datatype":{"default":false,"description":"True if this interface only contains properties. Different backends might\\nhave idiomatic ways to allow defining concrete instances such interfaces.\\nFor example, in Java, the generator will produce a PoJo and a builder\\nwhich will allow users to create a concrete object with data which\\nadheres to this interface.","type":"boolean"},"docs":{"$ref":"#/definitions/Docs","default":"none","description":"Documentation for this entity."},"fqn":{"description":"The fully qualified name of the type (``<assembly>.<namespace>.<name>``)","minLength":3,"type":"string"},"interfaces":{"default":"none","description":"The FQNs of the interfaces this interface extends, if any.","items":{"type":"string"},"type":"array","uniqueItems":true},"kind":{"description":"The kind of the type.","enum":["interface"],"type":"string"},"locationInModule":{"$ref":"#/definitions/SourceLocation","default":"none","description":"Where in the module this definition was found\\n\\nWhy is this not `locationInAssembly`? Because the assembly is the JSII\\nfile combining compiled code and its manifest, whereas this is referring\\nto the location of the source in the module the assembly was built from."},"methods":{"default":"none","description":"List of methods.","items":{"$ref":"#/definitions/Method"},"type":"array"},"name":{"description":"The simple name of the type (MyClass).","minLength":1,"type":"string"},"namespace":{"default":"none","description":"The namespace of the type (`foo.bar.baz`).\\n\\nWhen undefined, the type is located at the root of the assembly (its\\n`fqn` would be like `<assembly>.<name>`).\\n\\nFor types inside other types or inside submodules, the `<namespace>` corresponds to\\nthe namespace-qualified name of the container (can contain multiple segments like:\\n`<ns1>.<ns2>.<ns3>`).\\n\\nIn all cases:\\n\\n <fqn> = <assembly>[.<namespace>].<name>","type":"string"},"properties":{"default":"none","description":"List of properties.","items":{"$ref":"#/definitions/Property"},"type":"array"}},"required":["assembly","fqn","kind","name"],"type":"object"},"Method":{"description":"A method with a name (i.e: not an initializer).","properties":{"abstract":{"default":false,"description":"Is this method an abstract method (this means the class will also be an abstract class)","type":"boolean"},"async":{"default":false,"description":"Indicates if this is an asynchronous method (it will return a promise).","type":"boolean"},"docs":{"$ref":"#/definitions/Docs","default":"none","description":"Documentation for this entity."},"locationInModule":{"$ref":"#/definitions/SourceLocation","default":"none","description":"Where in the module this definition was found\\n\\nWhy is this not `locationInAssembly`? Because the assembly is the JSII\\nfile combining compiled code and its manifest, whereas this is referring\\nto the location of the source in the module the assembly was built from."},"name":{"description":"The name of the method. Undefined if this method is a initializer.","type":"string"},"overrides":{"default":"this member is not overriding anything","description":"The FQN of the parent type (class or interface) that this entity\\noverrides or implements. If undefined, then this entity is the first in\\nit\'s hierarchy to declare this entity.","type":"string"},"parameters":{"default":"none","description":"The parameters of the Initializer or Method.","items":{"$ref":"#/definitions/Parameter"},"type":"array"},"protected":{"default":false,"description":"Indicates if this Initializer or Method is protected (otherwise it is\\npublic, since private members are not modeled).","type":"boolean"},"returns":{"$ref":"#/definitions/OptionalValue","default":"void","description":"The return type of the method (`undefined` if `void`)"},"static":{"default":false,"description":"Indicates if this is a static method.","type":"boolean"},"variadic":{"default":false,"description":"Indicates whether this Initializer or Method is variadic or not. When\\n``true``, the last element of ``#parameters`` will also be flagged\\n``#variadic``.","type":"boolean"}},"required":["name"],"type":"object"},"NamedTypeReference":{"description":"Reference to a named type, defined by this assembly or one of its\\ndependencies.","properties":{"fqn":{"description":"The fully-qualified-name of the type (can be located in the\\n``spec.types[fqn]``` of the assembly that defines the type).","type":"string"}},"required":["fqn"],"type":"object"},"OptionalValue":{"description":"A value that can possibly be optional.","properties":{"optional":{"default":false,"description":"Determines whether the value is, indeed, optional.","type":"boolean"},"type":{"$ref":"#/definitions/TypeReference","description":"The declared type of the value, when it\'s present."}},"required":["type"],"type":"object"},"Parameter":{"description":"Represents a method parameter.","properties":{"docs":{"$ref":"#/definitions/Docs","default":"none","description":"Documentation for this entity."},"name":{"description":"The name of the parameter.","minLength":1,"type":"string"},"optional":{"default":false,"description":"Determines whether the value is, indeed, optional.","type":"boolean"},"type":{"$ref":"#/definitions/TypeReference","description":"The declared type of the value, when it\'s present."},"variadic":{"default":false,"description":"Whether this is the last parameter of a variadic method. In such cases,\\nthe `#type` attribute is the type of each individual item of the variadic\\narguments list (as opposed to some array type, as for example TypeScript\\nwould model it).","type":"boolean"}},"required":["name","type"],"type":"object"},"Person":{"description":"Metadata about people or organizations associated with the project that\\nresulted in the Assembly. Some of this metadata is required in order to\\npublish to certain package repositories (for example, Maven Central), but is\\nnot normalized, and the meaning of fields (role, for example), is up to each\\nproject maintainer.","properties":{"email":{"default":"none","description":"The email of the person","type":"string"},"name":{"description":"The name of the person","type":"string"},"organization":{"default":false,"description":"If true, this person is, in fact, an organization","type":"boolean"},"roles":{"description":"A list of roles this person has in the project, for example `maintainer`,\\n`contributor`, `owner`, ...","items":{"type":"string"},"type":"array"},"url":{"default":"none","description":"The URL for the person","type":"string"}},"required":["name","roles"],"type":"object"},"PrimitiveType":{"description":"Kinds of primitive types.","enum":["any","boolean","date","json","number","string"],"type":"string"},"PrimitiveTypeReference":{"description":"Reference to a primitive type.","properties":{"primitive":{"$ref":"#/definitions/PrimitiveType","description":"If this is a reference to a primitive type, this will include the\\nprimitive type kind."}},"required":["primitive"],"type":"object"},"Property":{"description":"A class property.","properties":{"abstract":{"default":false,"description":"Indicates if this property is abstract","type":"boolean"},"const":{"default":false,"description":"A hint that indicates that this static, immutable property is initialized\\nduring startup. This allows emitting \\"const\\" idioms in different target\\nlanguages. Implies `static` and `immutable`.","type":"boolean"},"docs":{"$ref":"#/definitions/Docs","default":"none","description":"Documentation for this entity."},"immutable":{"default":false,"description":"Indicates if this property only has a getter (immutable).","type":"boolean"},"locationInModule":{"$ref":"#/definitions/SourceLocation","default":"none","description":"Where in the module this definition was found\\n\\nWhy is this not `locationInAssembly`? Because the assembly is the JSII\\nfile combining compiled code and its manifest, whereas this is referring\\nto the location of the source in the module the assembly was built from."},"name":{"description":"The name of the property.","minLength":1,"type":"string"},"optional":{"default":false,"description":"Determines whether the value is, indeed, optional.","type":"boolean"},"overrides":{"default":"this member is not overriding anything","description":"The FQN of the parent type (class or interface) that this entity\\noverrides or implements. If undefined, then this entity is the first in\\nit\'s hierarchy to declare this entity.","type":"string"},"protected":{"default":false,"description":"Indicates if this property is protected (otherwise it is public)","type":"boolean"},"static":{"default":false,"description":"Indicates if this is a static property.","type":"boolean"},"type":{"$ref":"#/definitions/TypeReference","description":"The declared type of the value, when it\'s present."}},"required":["name","type"],"type":"object"},"ReadMe":{"description":"README information","properties":{"markdown":{"type":"string"}},"required":["markdown"],"type":"object"},"SourceLocatable":{"description":"Indicates that an entity has a source location","properties":{"locationInModule":{"$ref":"#/definitions/SourceLocation","default":"none","description":"Where in the module this definition was found\\n\\nWhy is this not `locationInAssembly`? Because the assembly is the JSII\\nfile combining compiled code and its manifest, whereas this is referring\\nto the location of the source in the module the assembly was built from."}},"type":"object"},"SourceLocation":{"description":"Where in the module source the definition for this API item was found","properties":{"filename":{"description":"Relative filename","type":"string"},"line":{"description":"1-based line number in the indicated file","type":"number"}},"required":["filename","line"],"type":"object"},"Targetable":{"description":"A targetable module-like thing\\n\\nHas targets and a readme. Used for Assemblies and Submodules.","properties":{"readme":{"$ref":"#/definitions/ReadMe","default":"none","description":"The readme document for this module (if any)."},"targets":{"$ref":"#/definitions/AssemblyTargets","default":"none","description":"A map of target name to configuration, which is used when generating\\npackages for various languages."}},"type":"object"},"TypeBase":{"description":"Common attributes of a type definition.","properties":{"assembly":{"description":"The name of the assembly the type belongs to.","minLength":1,"type":"string"},"docs":{"$ref":"#/definitions/Docs","default":"none","description":"Documentation for this entity."},"fqn":{"description":"The fully qualified name of the type (``<assembly>.<namespace>.<name>``)","minLength":3,"type":"string"},"kind":{"$ref":"#/definitions/TypeKind","description":"The kind of the type."},"locationInModule":{"$ref":"#/definitions/SourceLocation","default":"none","description":"Where in the module this definition was found\\n\\nWhy is this not `locationInAssembly`? Because the assembly is the JSII\\nfile combining compiled code and its manifest, whereas this is referring\\nto the location of the source in the module the assembly was built from."},"name":{"description":"The simple name of the type (MyClass).","minLength":1,"type":"string"},"namespace":{"default":"none","description":"The namespace of the type (`foo.bar.baz`).\\n\\nWhen undefined, the type is located at the root of the assembly (its\\n`fqn` would be like `<assembly>.<name>`).\\n\\nFor types inside other types or inside submodules, the `<namespace>` corresponds to\\nthe namespace-qualified name of the container (can contain multiple segments like:\\n`<ns1>.<ns2>.<ns3>`).\\n\\nIn all cases:\\n\\n <fqn> = <assembly>[.<namespace>].<name>","type":"string"}},"required":["assembly","fqn","kind","name"],"type":"object"},"TypeKind":{"description":"Kinds of types.","enum":["class","enum","interface"],"type":"string"},"TypeReference":{"anyOf":[{"$ref":"#/definitions/NamedTypeReference"},{"$ref":"#/definitions/PrimitiveTypeReference"},{"$ref":"#/definitions/CollectionTypeReference"},{"$ref":"#/definitions/UnionTypeReference"}],"description":"A reference to a type (primitive, collection or fqn)."},"UnionTypeReference":{"description":"Reference to a union type.","properties":{"union":{"description":"Indicates that this is a union type, which means it can be one of a set\\nof types.","properties":{"types":{"description":"All the possible types (including the primary type).","items":{"$ref":"#/definitions/TypeReference"},"minItems":2,"type":"array"}},"required":["types"],"type":"object"}},"required":["union"],"type":"object"}}}');
     },
     2357: module => {
         "use strict";
@@ -9909,6 +10114,14 @@ var __webpack_modules__ = {
     8761: module => {
         "use strict";
         module.exports = require("zlib");
+    },
+    4147: module => {
+        "use strict";
+        module.exports = JSON.parse('{"name":"@jsii/runtime","version":"1.33.0","description":"jsii runtime kernel process","license":"Apache-2.0","author":{"name":"Amazon Web Services","url":"https://aws.amazon.com"},"homepage":"https://github.com/aws/jsii","bugs":{"url":"https://github.com/aws/jsii/issues"},"repository":{"type":"git","url":"https://github.com/aws/jsii.git","directory":"packages/@jsii/runtime"},"engines":{"node":">= 10.3.0"},"main":"lib/index.js","types":"lib/index.d.ts","bin":{"jsii-runtime":"bin/jsii-runtime"},"scripts":{"build":"tsc --build && chmod +x bin/jsii-runtime && npx webpack-cli && npm run lint","watch":"tsc --build -w","lint":"eslint . --ext .js,.ts --ignore-path=.gitignore --ignore-pattern=webpack.config.js","lint:fix":"yarn lint --fix","test":"jest","test:update":"jest -u","package":"package-js"},"dependencies":{"@jsii/kernel":"^1.33.0","@jsii/check-node":"1.33.0","@jsii/spec":"^1.33.0"},"devDependencies":{"@scope/jsii-calc-base":"^1.33.0","@scope/jsii-calc-lib":"^1.33.0","@types/jest":"^27.0.1","@types/node":"^10.17.60","eslint":"^7.32.0","jest":"^27.0.6","jsii-build-tools":"^1.33.0","jsii-calc":"^3.20.120","prettier":"^2.3.2","source-map-loader":"^2.0.2","ts-jest":"^27.0.4","typescript":"~3.9.10","webpack":"^5.50.0","webpack-cli":"^4.7.2"}}');
+    },
+    9402: module => {
+        "use strict";
+        module.exports = JSON.parse('{"$ref":"#/definitions/Assembly","$schema":"http://json-schema.org/draft-07/schema#","definitions":{"Assembly":{"description":"A JSII assembly specification.","properties":{"author":{"$ref":"#/definitions/Person","description":"The main author of this package."},"bin":{"additionalProperties":{"type":"string"},"default":"none","description":"List of bin-scripts","type":"object"},"bundled":{"additionalProperties":{"type":"string"},"default":"none","description":"List if bundled dependencies (these are not expected to be jsii\\nassemblies).","type":"object"},"contributors":{"default":"none","description":"Additional contributors to this package.","items":{"$ref":"#/definitions/Person"},"type":"array"},"dependencies":{"additionalProperties":{"type":"string"},"default":"none","description":"Direct dependencies on other assemblies (with semver), the key is the JSII\\nassembly name, and the value is a SemVer expression.","type":"object"},"dependencyClosure":{"additionalProperties":{"$ref":"#/definitions/AssemblyConfiguration"},"default":"none","description":"Target configuration for all the assemblies that are direct or transitive\\ndependencies of this assembly. This is needed to generate correct native\\ntype names for any transitively inherited member, in certain languages.","type":"object"},"description":{"description":"Description of the assembly, maps to \\"description\\" from package.json\\nThis is required since some package managers (like Maven) require it.","type":"string"},"docs":{"$ref":"#/definitions/Docs","default":"none","description":"Documentation for this entity."},"fingerprint":{"description":"A fingerprint that can be used to determine if the specification has\\nchanged.","minLength":1,"type":"string"},"homepage":{"description":"The url to the project homepage. Maps to \\"homepage\\" from package.json.","type":"string"},"jsiiVersion":{"description":"The version of the jsii compiler that was used to produce this Assembly.","minLength":1,"type":"string"},"keywords":{"description":"Keywords that help discover or identify this packages with respects to it\'s\\nintended usage, audience, etc... Where possible, this will be rendered in\\nthe corresponding metadata section of idiomatic package manifests, for\\nexample NuGet package tags.","items":{"type":"string"},"type":"array"},"license":{"description":"The SPDX name of the license this assembly is distributed on.","type":"string"},"metadata":{"additionalProperties":{},"default":"none","description":"Arbitrary key-value pairs of metadata, which the maintainer chose to\\ndocument with the assembly. These entries do not carry normative\\nsemantics and their interpretation is up to the assembly maintainer.","type":"object"},"name":{"description":"The name of the assembly","minLength":1,"type":"string"},"readme":{"$ref":"#/definitions/ReadMe","default":"none","description":"The readme document for this module (if any)."},"repository":{"description":"The module repository, maps to \\"repository\\" from package.json\\nThis is required since some package managers (like Maven) require it.","properties":{"directory":{"default":"the root of the repository","description":"If the package is not in the root directory (for example, when part\\nof a monorepo), you should specify the directory in which it lives.","type":"string"},"type":{"description":"The type of the repository (``git``, ``svn``, ...)","type":"string"},"url":{"description":"The URL of the repository.","type":"string"}},"required":["type","url"],"type":"object"},"schema":{"description":"The version of the spec schema","enum":["jsii/0.10.0"],"type":"string"},"submodules":{"additionalProperties":{"allOf":[{"$ref":"#/definitions/SourceLocatable"},{"$ref":"#/definitions/Targetable"}],"description":"A submodule\\n\\nThe difference between a top-level module (the assembly) and a submodule is\\nthat the submodule is annotated with its location in the repository."},"default":"none","description":"Submodules declared in this assembly.","type":"object"},"targets":{"$ref":"#/definitions/AssemblyTargets","default":"none","description":"A map of target name to configuration, which is used when generating\\npackages for various languages."},"types":{"additionalProperties":{"anyOf":[{"allOf":[{"$ref":"#/definitions/TypeBase"},{"$ref":"#/definitions/ClassType"}]},{"allOf":[{"$ref":"#/definitions/TypeBase"},{"$ref":"#/definitions/EnumType"}]},{"allOf":[{"$ref":"#/definitions/TypeBase"},{"$ref":"#/definitions/InterfaceType"}]}],"description":"Represents a type definition (not a type reference)."},"default":"none","description":"All types in the assembly, keyed by their fully-qualified-name","type":"object"},"version":{"description":"The version of the assembly","minLength":1,"type":"string"}},"required":["author","description","fingerprint","homepage","jsiiVersion","license","name","repository","schema","version"],"type":"object"},"AssemblyConfiguration":{"description":"Shareable configuration of a jsii Assembly.","properties":{"readme":{"$ref":"#/definitions/ReadMe","default":"none","description":"The readme document for this module (if any)."},"submodules":{"additionalProperties":{"allOf":[{"$ref":"#/definitions/SourceLocatable"},{"$ref":"#/definitions/Targetable"}],"description":"A submodule\\n\\nThe difference between a top-level module (the assembly) and a submodule is\\nthat the submodule is annotated with its location in the repository."},"default":"none","description":"Submodules declared in this assembly.","type":"object"},"targets":{"$ref":"#/definitions/AssemblyTargets","default":"none","description":"A map of target name to configuration, which is used when generating\\npackages for various languages."}},"type":"object"},"AssemblyTargets":{"additionalProperties":{"additionalProperties":{},"type":"object"},"description":"Configurable targets for an asembly.","type":"object"},"Callable":{"description":"An Initializer or a Method.","properties":{"docs":{"$ref":"#/definitions/Docs","default":"none","description":"Documentation for this entity."},"locationInModule":{"$ref":"#/definitions/SourceLocation","default":"none","description":"Where in the module this definition was found\\n\\nWhy is this not `locationInAssembly`? Because the assembly is the JSII\\nfile combining compiled code and its manifest, whereas this is referring\\nto the location of the source in the module the assembly was built from."},"overrides":{"default":"this member is not overriding anything","description":"The FQN of the parent type (class or interface) that this entity\\noverrides or implements. If undefined, then this entity is the first in\\nit\'s hierarchy to declare this entity.","type":"string"},"parameters":{"default":"none","description":"The parameters of the Initializer or Method.","items":{"$ref":"#/definitions/Parameter"},"type":"array"},"protected":{"default":false,"description":"Indicates if this Initializer or Method is protected (otherwise it is\\npublic, since private members are not modeled).","type":"boolean"},"variadic":{"default":false,"description":"Indicates whether this Initializer or Method is variadic or not. When\\n``true``, the last element of ``#parameters`` will also be flagged\\n``#variadic``.","type":"boolean"}},"type":"object"},"ClassType":{"description":"Represents classes.","properties":{"abstract":{"default":false,"description":"Indicates if this class is an abstract class.","type":"boolean"},"assembly":{"description":"The name of the assembly the type belongs to.","minLength":1,"type":"string"},"base":{"default":"no base class","description":"The FQN of the base class of this class, if it has one.","type":"string"},"docs":{"$ref":"#/definitions/Docs","default":"none","description":"Documentation for this entity."},"fqn":{"description":"The fully qualified name of the type (``<assembly>.<namespace>.<name>``)","minLength":3,"type":"string"},"initializer":{"$ref":"#/definitions/Callable","default":"no initializer","description":"Initializer (constructor) method."},"interfaces":{"default":"none","description":"The FQNs of the interfaces this class implements, if any.","items":{"type":"string"},"type":"array","uniqueItems":true},"kind":{"description":"The kind of the type.","enum":["class"],"type":"string"},"locationInModule":{"$ref":"#/definitions/SourceLocation","default":"none","description":"Where in the module this definition was found\\n\\nWhy is this not `locationInAssembly`? Because the assembly is the JSII\\nfile combining compiled code and its manifest, whereas this is referring\\nto the location of the source in the module the assembly was built from."},"methods":{"default":"none","description":"List of methods.","items":{"$ref":"#/definitions/Method"},"type":"array"},"name":{"description":"The simple name of the type (MyClass).","minLength":1,"type":"string"},"namespace":{"default":"none","description":"The namespace of the type (`foo.bar.baz`).\\n\\nWhen undefined, the type is located at the root of the assembly (its\\n`fqn` would be like `<assembly>.<name>`).\\n\\nFor types inside other types or inside submodules, the `<namespace>` corresponds to\\nthe namespace-qualified name of the container (can contain multiple segments like:\\n`<ns1>.<ns2>.<ns3>`).\\n\\nIn all cases:\\n\\n <fqn> = <assembly>[.<namespace>].<name>","type":"string"},"properties":{"default":"none","description":"List of properties.","items":{"$ref":"#/definitions/Property"},"type":"array"}},"required":["assembly","fqn","kind","name"],"type":"object"},"CollectionKind":{"description":"Kinds of collections.","enum":["array","map"],"type":"string"},"CollectionTypeReference":{"description":"Reference to a collection type.","properties":{"collection":{"properties":{"elementtype":{"$ref":"#/definitions/TypeReference","description":"The type of an element (map keys are always strings)."},"kind":{"$ref":"#/definitions/CollectionKind","description":"The kind of collection."}},"required":["elementtype","kind"],"type":"object"}},"required":["collection"],"type":"object"},"Docs":{"description":"Key value pairs of documentation nodes.\\nBased on TSDoc.","properties":{"custom":{"additionalProperties":{"type":"string"},"default":"none","description":"Custom tags that are not any of the default ones","type":"object"},"default":{"default":"none","description":"Description of the default","type":"string"},"deprecated":{"default":"none","description":"If present, this block indicates that an API item is no longer supported\\nand may be removed in a future release.  The `@deprecated` tag must be\\nfollowed by a sentence describing the recommended alternative.\\nDeprecation recursively applies to members of a container. For example,\\nif a class is deprecated, then so are all of its members.","type":"string"},"example":{"default":"none","description":"Example showing the usage of this API item\\n\\nStarts off in running text mode, may switch to code using fenced code\\nblocks.","type":"string"},"remarks":{"default":"none","description":"Detailed information about an API item.\\n\\nEither the explicitly tagged `@remarks` section, otherwise everything\\npast the first paragraph if there is no `@remarks` tag.","type":"string"},"returns":{"default":"none","description":"The `@returns` block for this doc comment, or undefined if there is not\\none.","type":"string"},"see":{"default":"none","description":"A `@see` link with more information","type":"string"},"stability":{"description":"Whether the API item is beta/experimental quality","enum":["deprecated","experimental","external","stable"],"type":"string"},"subclassable":{"default":false,"description":"Whether this class or interface was intended to be subclassed/implemented\\nby library users.\\n\\nClasses intended for subclassing, and interfaces intended to be\\nimplemented by consumers, are held to stricter standards of API\\ncompatibility.","type":"boolean"},"summary":{"default":"none","description":"Summary documentation for an API item.\\n\\nThe first part of the documentation before hitting a `@remarks` tags, or\\nthe first line of the doc comment block if there is no `@remarks` tag.","type":"string"}},"type":"object"},"EnumMember":{"description":"Represents a member of an enum.","properties":{"docs":{"$ref":"#/definitions/Docs","default":"none","description":"Documentation for this entity."},"name":{"description":"The name/symbol of the member.","type":"string"}},"required":["name"],"type":"object"},"EnumType":{"description":"Represents an enum type.","properties":{"assembly":{"description":"The name of the assembly the type belongs to.","minLength":1,"type":"string"},"docs":{"$ref":"#/definitions/Docs","default":"none","description":"Documentation for this entity."},"fqn":{"description":"The fully qualified name of the type (``<assembly>.<namespace>.<name>``)","minLength":3,"type":"string"},"kind":{"description":"The kind of the type.","enum":["enum"],"type":"string"},"locationInModule":{"$ref":"#/definitions/SourceLocation","default":"none","description":"Where in the module this definition was found\\n\\nWhy is this not `locationInAssembly`? Because the assembly is the JSII\\nfile combining compiled code and its manifest, whereas this is referring\\nto the location of the source in the module the assembly was built from."},"members":{"description":"Members of the enum.","items":{"$ref":"#/definitions/EnumMember"},"type":"array"},"name":{"description":"The simple name of the type (MyClass).","minLength":1,"type":"string"},"namespace":{"default":"none","description":"The namespace of the type (`foo.bar.baz`).\\n\\nWhen undefined, the type is located at the root of the assembly (its\\n`fqn` would be like `<assembly>.<name>`).\\n\\nFor types inside other types or inside submodules, the `<namespace>` corresponds to\\nthe namespace-qualified name of the container (can contain multiple segments like:\\n`<ns1>.<ns2>.<ns3>`).\\n\\nIn all cases:\\n\\n <fqn> = <assembly>[.<namespace>].<name>","type":"string"}},"required":["assembly","fqn","kind","members","name"],"type":"object"},"InterfaceType":{"properties":{"assembly":{"description":"The name of the assembly the type belongs to.","minLength":1,"type":"string"},"datatype":{"default":false,"description":"True if this interface only contains properties. Different backends might\\nhave idiomatic ways to allow defining concrete instances such interfaces.\\nFor example, in Java, the generator will produce a PoJo and a builder\\nwhich will allow users to create a concrete object with data which\\nadheres to this interface.","type":"boolean"},"docs":{"$ref":"#/definitions/Docs","default":"none","description":"Documentation for this entity."},"fqn":{"description":"The fully qualified name of the type (``<assembly>.<namespace>.<name>``)","minLength":3,"type":"string"},"interfaces":{"default":"none","description":"The FQNs of the interfaces this interface extends, if any.","items":{"type":"string"},"type":"array","uniqueItems":true},"kind":{"description":"The kind of the type.","enum":["interface"],"type":"string"},"locationInModule":{"$ref":"#/definitions/SourceLocation","default":"none","description":"Where in the module this definition was found\\n\\nWhy is this not `locationInAssembly`? Because the assembly is the JSII\\nfile combining compiled code and its manifest, whereas this is referring\\nto the location of the source in the module the assembly was built from."},"methods":{"default":"none","description":"List of methods.","items":{"$ref":"#/definitions/Method"},"type":"array"},"name":{"description":"The simple name of the type (MyClass).","minLength":1,"type":"string"},"namespace":{"default":"none","description":"The namespace of the type (`foo.bar.baz`).\\n\\nWhen undefined, the type is located at the root of the assembly (its\\n`fqn` would be like `<assembly>.<name>`).\\n\\nFor types inside other types or inside submodules, the `<namespace>` corresponds to\\nthe namespace-qualified name of the container (can contain multiple segments like:\\n`<ns1>.<ns2>.<ns3>`).\\n\\nIn all cases:\\n\\n <fqn> = <assembly>[.<namespace>].<name>","type":"string"},"properties":{"default":"none","description":"List of properties.","items":{"$ref":"#/definitions/Property"},"type":"array"}},"required":["assembly","fqn","kind","name"],"type":"object"},"Method":{"description":"A method with a name (i.e: not an initializer).","properties":{"abstract":{"default":false,"description":"Is this method an abstract method (this means the class will also be an abstract class)","type":"boolean"},"async":{"default":false,"description":"Indicates if this is an asynchronous method (it will return a promise).","type":"boolean"},"docs":{"$ref":"#/definitions/Docs","default":"none","description":"Documentation for this entity."},"locationInModule":{"$ref":"#/definitions/SourceLocation","default":"none","description":"Where in the module this definition was found\\n\\nWhy is this not `locationInAssembly`? Because the assembly is the JSII\\nfile combining compiled code and its manifest, whereas this is referring\\nto the location of the source in the module the assembly was built from."},"name":{"description":"The name of the method. Undefined if this method is a initializer.","type":"string"},"overrides":{"default":"this member is not overriding anything","description":"The FQN of the parent type (class or interface) that this entity\\noverrides or implements. If undefined, then this entity is the first in\\nit\'s hierarchy to declare this entity.","type":"string"},"parameters":{"default":"none","description":"The parameters of the Initializer or Method.","items":{"$ref":"#/definitions/Parameter"},"type":"array"},"protected":{"default":false,"description":"Indicates if this Initializer or Method is protected (otherwise it is\\npublic, since private members are not modeled).","type":"boolean"},"returns":{"$ref":"#/definitions/OptionalValue","default":"void","description":"The return type of the method (`undefined` if `void`)"},"static":{"default":false,"description":"Indicates if this is a static method.","type":"boolean"},"variadic":{"default":false,"description":"Indicates whether this Initializer or Method is variadic or not. When\\n``true``, the last element of ``#parameters`` will also be flagged\\n``#variadic``.","type":"boolean"}},"required":["name"],"type":"object"},"NamedTypeReference":{"description":"Reference to a named type, defined by this assembly or one of its\\ndependencies.","properties":{"fqn":{"description":"The fully-qualified-name of the type (can be located in the\\n``spec.types[fqn]``` of the assembly that defines the type).","type":"string"}},"required":["fqn"],"type":"object"},"OptionalValue":{"description":"A value that can possibly be optional.","properties":{"optional":{"default":false,"description":"Determines whether the value is, indeed, optional.","type":"boolean"},"type":{"$ref":"#/definitions/TypeReference","description":"The declared type of the value, when it\'s present."}},"required":["type"],"type":"object"},"Parameter":{"description":"Represents a method parameter.","properties":{"docs":{"$ref":"#/definitions/Docs","default":"none","description":"Documentation for this entity."},"name":{"description":"The name of the parameter.","minLength":1,"type":"string"},"optional":{"default":false,"description":"Determines whether the value is, indeed, optional.","type":"boolean"},"type":{"$ref":"#/definitions/TypeReference","description":"The declared type of the value, when it\'s present."},"variadic":{"default":false,"description":"Whether this is the last parameter of a variadic method. In such cases,\\nthe `#type` attribute is the type of each individual item of the variadic\\narguments list (as opposed to some array type, as for example TypeScript\\nwould model it).","type":"boolean"}},"required":["name","type"],"type":"object"},"Person":{"description":"Metadata about people or organizations associated with the project that\\nresulted in the Assembly. Some of this metadata is required in order to\\npublish to certain package repositories (for example, Maven Central), but is\\nnot normalized, and the meaning of fields (role, for example), is up to each\\nproject maintainer.","properties":{"email":{"default":"none","description":"The email of the person","type":"string"},"name":{"description":"The name of the person","type":"string"},"organization":{"default":false,"description":"If true, this person is, in fact, an organization","type":"boolean"},"roles":{"description":"A list of roles this person has in the project, for example `maintainer`,\\n`contributor`, `owner`, ...","items":{"type":"string"},"type":"array"},"url":{"default":"none","description":"The URL for the person","type":"string"}},"required":["name","roles"],"type":"object"},"PrimitiveType":{"description":"Kinds of primitive types.","enum":["any","boolean","date","json","number","string"],"type":"string"},"PrimitiveTypeReference":{"description":"Reference to a primitive type.","properties":{"primitive":{"$ref":"#/definitions/PrimitiveType","description":"If this is a reference to a primitive type, this will include the\\nprimitive type kind."}},"required":["primitive"],"type":"object"},"Property":{"description":"A class property.","properties":{"abstract":{"default":false,"description":"Indicates if this property is abstract","type":"boolean"},"const":{"default":false,"description":"A hint that indicates that this static, immutable property is initialized\\nduring startup. This allows emitting \\"const\\" idioms in different target\\nlanguages. Implies `static` and `immutable`.","type":"boolean"},"docs":{"$ref":"#/definitions/Docs","default":"none","description":"Documentation for this entity."},"immutable":{"default":false,"description":"Indicates if this property only has a getter (immutable).","type":"boolean"},"locationInModule":{"$ref":"#/definitions/SourceLocation","default":"none","description":"Where in the module this definition was found\\n\\nWhy is this not `locationInAssembly`? Because the assembly is the JSII\\nfile combining compiled code and its manifest, whereas this is referring\\nto the location of the source in the module the assembly was built from."},"name":{"description":"The name of the property.","minLength":1,"type":"string"},"optional":{"default":false,"description":"Determines whether the value is, indeed, optional.","type":"boolean"},"overrides":{"default":"this member is not overriding anything","description":"The FQN of the parent type (class or interface) that this entity\\noverrides or implements. If undefined, then this entity is the first in\\nit\'s hierarchy to declare this entity.","type":"string"},"protected":{"default":false,"description":"Indicates if this property is protected (otherwise it is public)","type":"boolean"},"static":{"default":false,"description":"Indicates if this is a static property.","type":"boolean"},"type":{"$ref":"#/definitions/TypeReference","description":"The declared type of the value, when it\'s present."}},"required":["name","type"],"type":"object"},"ReadMe":{"description":"README information","properties":{"markdown":{"type":"string"}},"required":["markdown"],"type":"object"},"SourceLocatable":{"description":"Indicates that an entity has a source location","properties":{"locationInModule":{"$ref":"#/definitions/SourceLocation","default":"none","description":"Where in the module this definition was found\\n\\nWhy is this not `locationInAssembly`? Because the assembly is the JSII\\nfile combining compiled code and its manifest, whereas this is referring\\nto the location of the source in the module the assembly was built from."}},"type":"object"},"SourceLocation":{"description":"Where in the module source the definition for this API item was found","properties":{"filename":{"description":"Relative filename","type":"string"},"line":{"description":"1-based line number in the indicated file","type":"number"}},"required":["filename","line"],"type":"object"},"Targetable":{"description":"A targetable module-like thing\\n\\nHas targets and a readme. Used for Assemblies and Submodules.","properties":{"readme":{"$ref":"#/definitions/ReadMe","default":"none","description":"The readme document for this module (if any)."},"targets":{"$ref":"#/definitions/AssemblyTargets","default":"none","description":"A map of target name to configuration, which is used when generating\\npackages for various languages."}},"type":"object"},"TypeBase":{"description":"Common attributes of a type definition.","properties":{"assembly":{"description":"The name of the assembly the type belongs to.","minLength":1,"type":"string"},"docs":{"$ref":"#/definitions/Docs","default":"none","description":"Documentation for this entity."},"fqn":{"description":"The fully qualified name of the type (``<assembly>.<namespace>.<name>``)","minLength":3,"type":"string"},"kind":{"$ref":"#/definitions/TypeKind","description":"The kind of the type."},"locationInModule":{"$ref":"#/definitions/SourceLocation","default":"none","description":"Where in the module this definition was found\\n\\nWhy is this not `locationInAssembly`? Because the assembly is the JSII\\nfile combining compiled code and its manifest, whereas this is referring\\nto the location of the source in the module the assembly was built from."},"name":{"description":"The simple name of the type (MyClass).","minLength":1,"type":"string"},"namespace":{"default":"none","description":"The namespace of the type (`foo.bar.baz`).\\n\\nWhen undefined, the type is located at the root of the assembly (its\\n`fqn` would be like `<assembly>.<name>`).\\n\\nFor types inside other types or inside submodules, the `<namespace>` corresponds to\\nthe namespace-qualified name of the container (can contain multiple segments like:\\n`<ns1>.<ns2>.<ns3>`).\\n\\nIn all cases:\\n\\n <fqn> = <assembly>[.<namespace>].<name>","type":"string"}},"required":["assembly","fqn","kind","name"],"type":"object"},"TypeKind":{"description":"Kinds of types.","enum":["class","enum","interface"],"type":"string"},"TypeReference":{"anyOf":[{"$ref":"#/definitions/NamedTypeReference"},{"$ref":"#/definitions/PrimitiveTypeReference"},{"$ref":"#/definitions/CollectionTypeReference"},{"$ref":"#/definitions/UnionTypeReference"}],"description":"A reference to a type (primitive, collection or fqn)."},"UnionTypeReference":{"description":"Reference to a union type.","properties":{"union":{"description":"Indicates that this is a union type, which means it can be one of a set\\nof types.","properties":{"types":{"description":"All the possible types (including the primary type).","items":{"$ref":"#/definitions/TypeReference"},"minItems":2,"type":"array"}},"required":["types"],"type":"object"}},"required":["union"],"type":"object"}}}');
     }
 };
 
@@ -9948,7 +10161,7 @@ var __webpack_exports__ = {};
         value: true
     };
     const process = __webpack_require__(1765);
-    const packageInfo = __webpack_require__(306);
+    const packageInfo = __webpack_require__(4147);
     const host_1 = __webpack_require__(7905);
     const in_out_1 = __webpack_require__(6156);
     const sync_stdio_1 = __webpack_require__(1416);
