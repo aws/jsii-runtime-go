@@ -1784,7 +1784,7 @@ var __webpack_modules__ = {
             }
         }
         module.exports = Comparator;
-        const parseOptions = __webpack_require__(4261);
+        const parseOptions = __webpack_require__(3867);
         const {re, t} = __webpack_require__(9541);
         const cmp = __webpack_require__(1918);
         const debug = __webpack_require__(5432);
@@ -1895,7 +1895,7 @@ var __webpack_modules__ = {
         const cache = new LRU({
             max: 1e3
         });
-        const parseOptions = __webpack_require__(4261);
+        const parseOptions = __webpack_require__(3867);
         const Comparator = __webpack_require__(7706);
         const debug = __webpack_require__(5432);
         const SemVer = __webpack_require__(3013);
@@ -2112,7 +2112,7 @@ var __webpack_modules__ = {
         const debug = __webpack_require__(5432);
         const {MAX_LENGTH, MAX_SAFE_INTEGER} = __webpack_require__(9041);
         const {re, t} = __webpack_require__(9541);
-        const parseOptions = __webpack_require__(4261);
+        const parseOptions = __webpack_require__(3867);
         const {compareIdentifiers} = __webpack_require__(3650);
         class SemVer {
             constructor(version, options) {
@@ -2524,7 +2524,7 @@ var __webpack_modules__ = {
         const {MAX_LENGTH} = __webpack_require__(9041);
         const {re, t} = __webpack_require__(9541);
         const SemVer = __webpack_require__(3013);
-        const parseOptions = __webpack_require__(4261);
+        const parseOptions = __webpack_require__(3867);
         const parse = (version, options) => {
             options = parseOptions(options);
             if (version instanceof SemVer) {
@@ -2678,7 +2678,7 @@ var __webpack_modules__ = {
             rcompareIdentifiers
         };
     },
-    4261: module => {
+    3867: module => {
         const opts = [ "includePrerelease", "loose", "rtl" ];
         const parseOptions = options => !options ? {} : typeof options !== "object" ? {
             loose: true
@@ -3081,8 +3081,8 @@ var __webpack_modules__ = {
     },
     9797: (module, __unused_webpack_exports, __webpack_require__) => {
         "use strict";
-        const os = __webpack_require__(2087);
-        const tty = __webpack_require__(3867);
+        const os = __webpack_require__(2037);
+        const tty = __webpack_require__(6224);
         const hasFlag = __webpack_require__(4288);
         const {env} = process;
         let forceColor;
@@ -3561,9 +3561,7 @@ var __webpack_modules__ = {
         exports.DEADLINE = "2021-09-01";
         exports.DEADLINE_EPOCH_MS = new Date(`${exports.DEADLINE}T00:00:00.000Z`).getTime();
         exports.VERSION_SUPPORT = {
-            "<10.3.0": "end-of-life",
-            "^10.3.0": "deprecated",
-            "^11.0.0-0": "end-of-life",
+            "<12.0.0-0": "end-of-life",
             "<12.7.0": "unsupported",
             "^12.7.0": "supported",
             "^13.0.0-0": "end-of-life",
@@ -3581,8 +3579,8 @@ var __webpack_modules__ = {
         });
         exports.checkNode = void 0;
         const chalk_1 = __webpack_require__(1201);
-        const console_1 = __webpack_require__(7082);
-        const process_1 = __webpack_require__(1765);
+        const console_1 = __webpack_require__(6206);
+        const process_1 = __webpack_require__(7282);
         const semver_1 = __webpack_require__(6027);
         const constants_1 = __webpack_require__(6829);
         function checkNode() {
@@ -3638,27 +3636,27 @@ var __webpack_modules__ = {
         index_1.checkNode();
         module.exports = {};
     },
-    3129: module => {
+    2081: module => {
         "use strict";
         module.exports = require("child_process");
     },
-    7082: module => {
+    6206: module => {
         "use strict";
         module.exports = require("console");
     },
-    2087: module => {
+    2037: module => {
         "use strict";
         module.exports = require("os");
     },
-    5622: module => {
+    4822: module => {
         "use strict";
         module.exports = require("path");
     },
-    1765: module => {
+    7282: module => {
         "use strict";
         module.exports = require("process");
     },
-    3867: module => {
+    6224: module => {
         "use strict";
         module.exports = require("tty");
     }
@@ -3699,11 +3697,11 @@ var __webpack_exports__ = {};
         value: true
     };
     __webpack_require__(9317);
-    const child_process_1 = __webpack_require__(3129);
-    const console_1 = __webpack_require__(7082);
-    const os_1 = __webpack_require__(2087);
-    const path_1 = __webpack_require__(5622);
-    const process_1 = __webpack_require__(1765);
+    const child_process_1 = __webpack_require__(2081);
+    const console_1 = __webpack_require__(6206);
+    const os_1 = __webpack_require__(2037);
+    const path_1 = __webpack_require__(4822);
+    const process_1 = __webpack_require__(7282);
     const child = child_process_1.spawn(process_1.execPath, [ ...process_1.execArgv, path_1.resolve(__dirname, "..", "lib", "program.js") ], {
         stdio: [ "ignore", "pipe", "pipe", "pipe" ]
     });

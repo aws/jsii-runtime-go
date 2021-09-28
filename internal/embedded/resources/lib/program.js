@@ -8,8 +8,8 @@ var __webpack_modules__ = {
     },
     2047: (module, __unused_webpack_exports, __webpack_require__) => {
         "use strict";
-        const fs = __webpack_require__(5747);
-        const path = __webpack_require__(5622);
+        const fs = __webpack_require__(7147);
+        const path = __webpack_require__(4822);
         const LCHOWN = fs.lchown ? "lchown" : "chown";
         const LCHOWNSYNC = fs.lchownSync ? "lchownSync" : "chownSync";
         const needEISDIRHandled = fs.lchown && !process.version.match(/v1[1-9]+\./) && !process.version.match(/v10\.[6-9]/);
@@ -113,7 +113,7 @@ var __webpack_modules__ = {
     2197: (module, __unused_webpack_exports, __webpack_require__) => {
         "use strict";
         const fs = __webpack_require__(6851);
-        const path = __webpack_require__(5622);
+        const path = __webpack_require__(4822);
         const mkdirsSync = __webpack_require__(7311).mkdirsSync;
         const utimesMillisSync = __webpack_require__(5302).utimesMillisSync;
         const stat = __webpack_require__(6637);
@@ -245,7 +245,7 @@ var __webpack_modules__ = {
     465: (module, __unused_webpack_exports, __webpack_require__) => {
         "use strict";
         const fs = __webpack_require__(6851);
-        const path = __webpack_require__(5622);
+        const path = __webpack_require__(4822);
         const mkdirs = __webpack_require__(7311).mkdirs;
         const pathExists = __webpack_require__(2569).pathExists;
         const utimesMillis = __webpack_require__(5302).utimesMillis;
@@ -441,7 +441,7 @@ var __webpack_modules__ = {
         "use strict";
         const u = __webpack_require__(2141).E;
         const fs = __webpack_require__(6851);
-        const path = __webpack_require__(5622);
+        const path = __webpack_require__(4822);
         const mkdir = __webpack_require__(7311);
         const remove = __webpack_require__(9117);
         const emptyDir = u((function emptyDir(dir, callback) {
@@ -482,7 +482,7 @@ var __webpack_modules__ = {
     7392: (module, __unused_webpack_exports, __webpack_require__) => {
         "use strict";
         const u = __webpack_require__(2141).E;
-        const path = __webpack_require__(5622);
+        const path = __webpack_require__(4822);
         const fs = __webpack_require__(6851);
         const mkdir = __webpack_require__(7311);
         function createFile(file, callback) {
@@ -557,7 +557,7 @@ var __webpack_modules__ = {
     8261: (module, __unused_webpack_exports, __webpack_require__) => {
         "use strict";
         const u = __webpack_require__(2141).E;
-        const path = __webpack_require__(5622);
+        const path = __webpack_require__(4822);
         const fs = __webpack_require__(6851);
         const mkdir = __webpack_require__(7311);
         const pathExists = __webpack_require__(2569).pathExists;
@@ -610,7 +610,7 @@ var __webpack_modules__ = {
     },
     1249: (module, __unused_webpack_exports, __webpack_require__) => {
         "use strict";
-        const path = __webpack_require__(5622);
+        const path = __webpack_require__(4822);
         const fs = __webpack_require__(6851);
         const pathExists = __webpack_require__(2569).pathExists;
         function symlinkPaths(srcpath, dstpath, callback) {
@@ -714,7 +714,7 @@ var __webpack_modules__ = {
     7618: (module, __unused_webpack_exports, __webpack_require__) => {
         "use strict";
         const u = __webpack_require__(2141).E;
-        const path = __webpack_require__(5622);
+        const path = __webpack_require__(4822);
         const fs = __webpack_require__(6851);
         const _mkdirs = __webpack_require__(7311);
         const mkdirs = _mkdirs.mkdirs;
@@ -851,7 +851,7 @@ var __webpack_modules__ = {
             ...__webpack_require__(2569),
             ...__webpack_require__(9117)
         };
-        const fs = __webpack_require__(5747);
+        const fs = __webpack_require__(7147);
         if (Object.getOwnPropertyDescriptor(fs, "promises")) {
             Object.defineProperty(module.exports, "promises", {
                 get() {
@@ -921,7 +921,7 @@ var __webpack_modules__ = {
     3057: (module, __unused_webpack_exports, __webpack_require__) => {
         "use strict";
         const fs = __webpack_require__(5093);
-        const path = __webpack_require__(5622);
+        const path = __webpack_require__(4822);
         const atLeastNode = __webpack_require__(761);
         const useNativeRecursiveOption = atLeastNode("10.12.0");
         const checkPath = pth => {
@@ -1041,7 +1041,7 @@ var __webpack_modules__ = {
     2727: (module, __unused_webpack_exports, __webpack_require__) => {
         "use strict";
         const fs = __webpack_require__(6851);
-        const path = __webpack_require__(5622);
+        const path = __webpack_require__(4822);
         const copySync = __webpack_require__(8992).copySync;
         const removeSync = __webpack_require__(9117).removeSync;
         const mkdirpSync = __webpack_require__(7311).mkdirpSync;
@@ -1090,7 +1090,7 @@ var __webpack_modules__ = {
     2521: (module, __unused_webpack_exports, __webpack_require__) => {
         "use strict";
         const fs = __webpack_require__(6851);
-        const path = __webpack_require__(5622);
+        const path = __webpack_require__(4822);
         const copy = __webpack_require__(6430).copy;
         const remove = __webpack_require__(9117).remove;
         const mkdirp = __webpack_require__(7311).mkdirp;
@@ -1150,7 +1150,7 @@ var __webpack_modules__ = {
         "use strict";
         const u = __webpack_require__(2141).E;
         const fs = __webpack_require__(6851);
-        const path = __webpack_require__(5622);
+        const path = __webpack_require__(4822);
         const mkdir = __webpack_require__(7311);
         const pathExists = __webpack_require__(2569).pathExists;
         function outputFile(file, data, encoding, callback) {
@@ -1205,8 +1205,8 @@ var __webpack_modules__ = {
     1683: (module, __unused_webpack_exports, __webpack_require__) => {
         "use strict";
         const fs = __webpack_require__(6851);
-        const path = __webpack_require__(5622);
-        const assert = __webpack_require__(2357);
+        const path = __webpack_require__(4822);
+        const assert = __webpack_require__(9491);
         const isWindows = process.platform === "win32";
         function defaults(options) {
             const methods = [ "unlink", "chmod", "stat", "lstat", "rmdir", "readdir" ];
@@ -1428,8 +1428,8 @@ var __webpack_modules__ = {
     6637: (module, __unused_webpack_exports, __webpack_require__) => {
         "use strict";
         const fs = __webpack_require__(5093);
-        const path = __webpack_require__(5622);
-        const util = __webpack_require__(1669);
+        const path = __webpack_require__(4822);
+        const util = __webpack_require__(3837);
         const atLeastNode = __webpack_require__(761);
         const nodeSupportsBigInt = atLeastNode("10.5.0");
         const stat = file => nodeSupportsBigInt ? fs.stat(file, {
@@ -1602,8 +1602,8 @@ var __webpack_modules__ = {
     8553: (__unused_webpack_module, exports, __webpack_require__) => {
         "use strict";
         const MiniPass = __webpack_require__(2253);
-        const EE = __webpack_require__(8614).EventEmitter;
-        const fs = __webpack_require__(5747);
+        const EE = __webpack_require__(2361).EventEmitter;
+        const fs = __webpack_require__(7147);
         let writev = fs.writev;
         if (!writev) {
             const binding = process.binding("fs");
@@ -1943,11 +1943,11 @@ var __webpack_modules__ = {
         }
     },
     6851: (module, __unused_webpack_exports, __webpack_require__) => {
-        var fs = __webpack_require__(5747);
+        var fs = __webpack_require__(7147);
         var polyfills = __webpack_require__(7994);
         var legacy = __webpack_require__(7885);
         var clone = __webpack_require__(9788);
-        var util = __webpack_require__(1669);
+        var util = __webpack_require__(3837);
         var gracefulQueue;
         var previousSymbol;
         if (typeof Symbol === "function" && typeof Symbol.for === "function") {
@@ -2001,7 +2001,7 @@ var __webpack_modules__ = {
             if (/\bgfs4\b/i.test(process.env.NODE_DEBUG || "")) {
                 process.on("exit", (function() {
                     debug(fs[gracefulQueue]);
-                    __webpack_require__(2357).equal(fs[gracefulQueue].length, 0);
+                    __webpack_require__(9491).equal(fs[gracefulQueue].length, 0);
                 }));
             }
         }
@@ -2246,7 +2246,7 @@ var __webpack_modules__ = {
         }
     },
     7885: (module, __unused_webpack_exports, __webpack_require__) => {
-        var Stream = __webpack_require__(2413).Stream;
+        var Stream = __webpack_require__(2781).Stream;
         module.exports = legacy;
         function legacy(fs) {
             return {
@@ -2338,7 +2338,7 @@ var __webpack_modules__ = {
         }
     },
     7994: (module, __unused_webpack_exports, __webpack_require__) => {
-        var constants = __webpack_require__(7619);
+        var constants = __webpack_require__(2057);
         var origCwd = process.cwd;
         var cwd = null;
         var platform = process.env.GRACEFUL_FS_PLATFORM || process.platform;
@@ -2602,7 +2602,7 @@ var __webpack_modules__ = {
         try {
             _fs = __webpack_require__(6851);
         } catch (_) {
-            _fs = __webpack_require__(5747);
+            _fs = __webpack_require__(7147);
         }
         const universalify = __webpack_require__(6267);
         const {stringify, stripBom} = __webpack_require__(9293);
@@ -3333,7 +3333,7 @@ var __webpack_modules__ = {
     },
     6495: (module, exports, __webpack_require__) => {
         "use strict";
-        var uri = __webpack_require__(8835);
+        var uri = __webpack_require__(7310);
         var ValidationError = exports.ValidationError = function ValidationError(message, instance, schema, path, name, argument) {
             if (Array.isArray(path)) {
                 this.path = path;
@@ -3644,7 +3644,7 @@ var __webpack_modules__ = {
     },
     4496: (module, __unused_webpack_exports, __webpack_require__) => {
         "use strict";
-        var urilib = __webpack_require__(8835);
+        var urilib = __webpack_require__(7310);
         var helpers = __webpack_require__(6495);
         module.exports.SchemaScanResult = SchemaScanResult;
         function SchemaScanResult(found, ref) {
@@ -3708,7 +3708,7 @@ var __webpack_modules__ = {
     },
     8175: (module, __unused_webpack_exports, __webpack_require__) => {
         "use strict";
-        var urilib = __webpack_require__(8835);
+        var urilib = __webpack_require__(7310);
         var attribute = __webpack_require__(6120);
         var helpers = __webpack_require__(6495);
         var scanSchema = __webpack_require__(4496).scan;
@@ -3938,14 +3938,19 @@ var __webpack_modules__ = {
     },
     2253: (module, __unused_webpack_exports, __webpack_require__) => {
         "use strict";
-        const EE = __webpack_require__(8614);
-        const Stream = __webpack_require__(2413);
+        const proc = typeof process === "object" && process ? process : {
+            stdout: null,
+            stderr: null
+        };
+        const EE = __webpack_require__(2361);
+        const Stream = __webpack_require__(2781);
         const Yallist = __webpack_require__(1455);
-        const SD = __webpack_require__(4304).StringDecoder;
+        const SD = __webpack_require__(1576).StringDecoder;
         const EOF = Symbol("EOF");
         const MAYBE_EMIT_END = Symbol("maybeEmitEnd");
         const EMITTED_END = Symbol("emittedEnd");
         const EMITTING_END = Symbol("emittingEnd");
+        const EMITTED_ERROR = Symbol("emittedError");
         const CLOSED = Symbol("closed");
         const READ = Symbol("read");
         const FLUSH = Symbol("flush");
@@ -3981,6 +3986,7 @@ var __webpack_modules__ = {
                 this[EMITTED_END] = false;
                 this[EMITTING_END] = false;
                 this[CLOSED] = false;
+                this[EMITTED_ERROR] = null;
                 this.writable = true;
                 this.readable = true;
                 this[BUFFERLENGTH] = 0;
@@ -4117,7 +4123,7 @@ var __webpack_modules__ = {
                 if (this[DESTROYED]) return;
                 const ended = this[EMITTED_END];
                 opts = opts || {};
-                if (dest === process.stdout || dest === process.stderr) opts.end = false; else opts.end = opts.end !== false;
+                if (dest === proc.stdout || dest === proc.stderr) opts.end = false; else opts.end = opts.end !== false;
                 const p = {
                     dest,
                     opts,
@@ -4139,6 +4145,8 @@ var __webpack_modules__ = {
                     if (ev === "data" && !this.pipes.length && !this.flowing) this[RESUME](); else if (isEndish(ev) && this[EMITTED_END]) {
                         super.emit(ev);
                         this.removeAllListeners(ev);
+                    } else if (ev === "error" && this[EMITTED_ERROR]) {
+                        fn.call(this, this[EMITTED_ERROR]);
                     }
                 }
             }
@@ -4177,6 +4185,8 @@ var __webpack_modules__ = {
                 } else if (ev === "close") {
                     this[CLOSED] = true;
                     if (!this[EMITTED_END] && !this[DESTROYED]) return;
+                } else if (ev === "error") {
+                    this[EMITTED_ERROR] = data;
                 }
                 const args = new Array(arguments.length);
                 args[0] = ev;
@@ -4208,8 +4218,8 @@ var __webpack_modules__ = {
             promise() {
                 return new Promise(((resolve, reject) => {
                     this.on(DESTROYED, (() => reject(new Error("stream destroyed"))));
-                    this.on("end", (() => resolve()));
                     this.on("error", (er => reject(er)));
+                    this.on("end", (() => resolve()));
                 }));
             }
             [ASYNCITERATOR]() {
@@ -4290,7 +4300,7 @@ var __webpack_modules__ = {
         };
     },
     8597: (module, __unused_webpack_exports, __webpack_require__) => {
-        const realZlibConstants = __webpack_require__(8761).constants || {
+        const realZlibConstants = __webpack_require__(9796).constants || {
             ZLIB_VERNUM: 4736
         };
         module.exports = Object.freeze(Object.assign(Object.create(null), {
@@ -4404,9 +4414,9 @@ var __webpack_modules__ = {
     },
     3704: (__unused_webpack_module, exports, __webpack_require__) => {
         "use strict";
-        const assert = __webpack_require__(2357);
-        const Buffer = __webpack_require__(4293).Buffer;
-        const realZlib = __webpack_require__(8761);
+        const assert = __webpack_require__(9491);
+        const Buffer = __webpack_require__(4300).Buffer;
+        const realZlib = __webpack_require__(9796);
         const constants = exports.constants = __webpack_require__(8597);
         const Minipass = __webpack_require__(2253);
         const OriginalBufferConcat = Buffer.concat;
@@ -4671,7 +4681,7 @@ var __webpack_modules__ = {
         module.exports = mkdirp;
     },
     1008: (module, __unused_webpack_exports, __webpack_require__) => {
-        const {dirname} = __webpack_require__(5622);
+        const {dirname} = __webpack_require__(4822);
         const findMade = (opts, parent, path = undefined) => {
             if (path === parent) return Promise.resolve();
             return opts.statAsync(parent).then((st => st.isDirectory() ? path : undefined), (er => er.code === "ENOENT" ? findMade(opts, dirname(parent), parent) : undefined));
@@ -4690,7 +4700,7 @@ var __webpack_modules__ = {
         };
     },
     8116: (module, __unused_webpack_exports, __webpack_require__) => {
-        const {dirname} = __webpack_require__(5622);
+        const {dirname} = __webpack_require__(4822);
         const mkdirpManual = (path, opts, made) => {
             opts.recursive = false;
             const parent = dirname(path);
@@ -4738,7 +4748,7 @@ var __webpack_modules__ = {
         };
     },
     5702: (module, __unused_webpack_exports, __webpack_require__) => {
-        const {dirname} = __webpack_require__(5622);
+        const {dirname} = __webpack_require__(4822);
         const {findMade, findMadeSync} = __webpack_require__(1008);
         const {mkdirpManual, mkdirpManualSync} = __webpack_require__(8116);
         const mkdirpNative = (path, opts) => {
@@ -4767,8 +4777,8 @@ var __webpack_modules__ = {
         };
     },
     2425: (module, __unused_webpack_exports, __webpack_require__) => {
-        const {promisify} = __webpack_require__(1669);
-        const fs = __webpack_require__(5747);
+        const {promisify} = __webpack_require__(3837);
+        const fs = __webpack_require__(7147);
         const optsArg = opts => {
             if (!opts) opts = {
                 mode: 511,
@@ -4796,7 +4806,7 @@ var __webpack_modules__ = {
     },
     7394: (module, __unused_webpack_exports, __webpack_require__) => {
         const platform = process.env.__TESTING_MKDIRP_PLATFORM__ || process.platform;
-        const {resolve, parse} = __webpack_require__(5622);
+        const {resolve, parse} = __webpack_require__(4822);
         const pathArg = path => {
             if (/\0/.test(path)) {
                 throw Object.assign(new TypeError("path must be a string without null bytes"), {
@@ -4820,7 +4830,7 @@ var __webpack_modules__ = {
         module.exports = pathArg;
     },
     6631: (module, __unused_webpack_exports, __webpack_require__) => {
-        const fs = __webpack_require__(5747);
+        const fs = __webpack_require__(7147);
         const version = process.env.__TESTING_MKDIRP_NODE_VERSION__ || process.version;
         const versArr = version.replace(/^v/, "").split(".");
         const hasNative = +versArr[0] > 10 || +versArr[0] === 10 && +versArr[1] >= 12;
@@ -4853,7 +4863,7 @@ var __webpack_modules__ = {
         const Pack = __webpack_require__(5843);
         const fsm = __webpack_require__(8553);
         const t = __webpack_require__(1090);
-        const path = __webpack_require__(5622);
+        const path = __webpack_require__(4822);
         module.exports = (opt_, files, cb) => {
             if (typeof files === "function") cb = files;
             if (Array.isArray(opt_)) files = opt_, opt_ = {};
@@ -4927,9 +4937,9 @@ var __webpack_modules__ = {
         "use strict";
         const hlo = __webpack_require__(7461);
         const Unpack = __webpack_require__(2864);
-        const fs = __webpack_require__(5747);
+        const fs = __webpack_require__(7147);
         const fsm = __webpack_require__(8553);
-        const path = __webpack_require__(5622);
+        const path = __webpack_require__(4822);
         const stripSlash = __webpack_require__(6401);
         module.exports = (opt_, files, cb) => {
             if (typeof opt_ === "function") cb = opt_, files = null, opt_ = {}; else if (Array.isArray(opt_)) files = opt_, 
@@ -4990,7 +5000,7 @@ var __webpack_modules__ = {
     8512: (module, __unused_webpack_exports, __webpack_require__) => {
         const platform = process.env.__FAKE_PLATFORM__ || process.platform;
         const isWindows = platform === "win32";
-        const fs = global.__FAKE_TESTING_FS__ || __webpack_require__(5747);
+        const fs = global.__FAKE_TESTING_FS__ || __webpack_require__(7147);
         const {O_CREAT, O_TRUNC, O_WRONLY, UV_FS_O_FILEMAP = 0} = fs.constants;
         const fMapEnabled = isWindows && !!UV_FS_O_FILEMAP;
         const fMapLimit = 512 * 1024;
@@ -5000,7 +5010,7 @@ var __webpack_modules__ = {
     5017: (module, __unused_webpack_exports, __webpack_require__) => {
         "use strict";
         const types = __webpack_require__(9806);
-        const pathModule = __webpack_require__(5622).posix;
+        const pathModule = __webpack_require__(4822).posix;
         const large = __webpack_require__(2795);
         const SLURP = Symbol("slurp");
         const TYPE = Symbol("type");
@@ -5238,9 +5248,9 @@ var __webpack_modules__ = {
         "use strict";
         const hlo = __webpack_require__(7461);
         const Parser = __webpack_require__(6234);
-        const fs = __webpack_require__(5747);
+        const fs = __webpack_require__(7147);
         const fsm = __webpack_require__(8553);
-        const path = __webpack_require__(5622);
+        const path = __webpack_require__(4822);
         const stripSlash = __webpack_require__(6401);
         module.exports = (opt_, files, cb) => {
             if (typeof opt_ === "function") cb = opt_, files = null, opt_ = {}; else if (Array.isArray(opt_)) files = opt_, 
@@ -5325,8 +5335,8 @@ var __webpack_modules__ = {
     3956: (module, __unused_webpack_exports, __webpack_require__) => {
         "use strict";
         const mkdirp = __webpack_require__(3179);
-        const fs = __webpack_require__(5747);
-        const path = __webpack_require__(5622);
+        const fs = __webpack_require__(7147);
+        const path = __webpack_require__(4822);
         const chownr = __webpack_require__(2047);
         const normPath = __webpack_require__(4240);
         class SymlinkError extends Error {
@@ -5483,6 +5493,14 @@ var __webpack_modules__ = {
             return mode;
         };
     },
+    1645: module => {
+        const normalizeCache = Object.create(null);
+        const {hasOwnProperty} = Object.prototype;
+        module.exports = s => {
+            if (!hasOwnProperty.call(normalizeCache, s)) normalizeCache[s] = s.normalize("NFKD");
+            return normalizeCache[s];
+        };
+    },
     4240: module => {
         const platform = process.env.TESTING_TAR_FAKE_PLATFORM || process.platform;
         module.exports = platform !== "win32" ? p => p : p => p && p.replace(/\\/g, "/");
@@ -5529,8 +5547,8 @@ var __webpack_modules__ = {
         const WRITEENTRYCLASS = Symbol("writeEntryClass");
         const WRITE = Symbol("write");
         const ONDRAIN = Symbol("ondrain");
-        const fs = __webpack_require__(5747);
-        const path = __webpack_require__(5622);
+        const fs = __webpack_require__(7147);
+        const path = __webpack_require__(4822);
         const warner = __webpack_require__(8783);
         const normPath = __webpack_require__(4240);
         const Pack = warner(class Pack extends MiniPass {
@@ -5782,7 +5800,7 @@ var __webpack_modules__ = {
         "use strict";
         const warner = __webpack_require__(8783);
         const Header = __webpack_require__(5017);
-        const EE = __webpack_require__(8614);
+        const EE = __webpack_require__(2361);
         const Yallist = __webpack_require__(1455);
         const maxMetaEntrySize = 1024 * 1024;
         const Entry = __webpack_require__(7847);
@@ -6123,13 +6141,23 @@ var __webpack_modules__ = {
         });
     },
     7119: (module, __unused_webpack_exports, __webpack_require__) => {
-        const assert = __webpack_require__(2357);
-        const normPath = __webpack_require__(4240);
-        const {join} = __webpack_require__(5622);
+        const assert = __webpack_require__(9491);
+        const normalize = __webpack_require__(1645);
+        const stripSlashes = __webpack_require__(6401);
+        const {join} = __webpack_require__(4822);
+        const platform = process.env.TESTING_TAR_FAKE_PLATFORM || process.platform;
+        const isWindows = platform === "win32";
         module.exports = () => {
             const queues = new Map;
             const reservations = new Map;
-            const getDirs = path => path.split("/").slice(0, -1).reduce(((set, path) => set.length ? set.concat(normPath(join(set[set.length - 1], path))) : [ path ]), []);
+            const getDirs = path => {
+                const dirs = path.split("/").slice(0, -1).reduce(((set, path) => {
+                    if (set.length) path = join(set[set.length - 1], path);
+                    set.push(path || "/");
+                    return set;
+                }), []);
+                return dirs;
+            };
             const running = new Set;
             const getQueues = fn => {
                 const res = reservations.get(fn);
@@ -6174,7 +6202,7 @@ var __webpack_modules__ = {
                 return true;
             };
             const reserve = (paths, fn) => {
-                paths = paths.map((p => normPath(join(p)).toLowerCase()));
+                paths = isWindows ? [ "win32 parallelization disabled" ] : paths.map((p => normalize(stripSlashes(join(p))).toLowerCase()));
                 const dirs = new Set(paths.map((path => getDirs(path))).reduce(((a, b) => a.concat(b))));
                 reservations.set(fn, {
                     dirs,
@@ -6199,7 +6227,7 @@ var __webpack_modules__ = {
     9154: (module, __unused_webpack_exports, __webpack_require__) => {
         "use strict";
         const Header = __webpack_require__(5017);
-        const path = __webpack_require__(5622);
+        const path = __webpack_require__(4822);
         class Pax {
             constructor(obj, global) {
                 this.atime = obj.atime || null;
@@ -6358,10 +6386,10 @@ var __webpack_modules__ = {
         "use strict";
         const hlo = __webpack_require__(7461);
         const Pack = __webpack_require__(5843);
-        const fs = __webpack_require__(5747);
+        const fs = __webpack_require__(7147);
         const fsm = __webpack_require__(8553);
         const t = __webpack_require__(1090);
-        const path = __webpack_require__(5622);
+        const path = __webpack_require__(4822);
         const Header = __webpack_require__(5017);
         module.exports = (opt_, files, cb) => {
             const opt = hlo(opt_);
@@ -6502,24 +6530,28 @@ var __webpack_modules__ = {
         };
     },
     6014: (module, __unused_webpack_exports, __webpack_require__) => {
-        const {isAbsolute, parse} = __webpack_require__(5622).win32;
+        const {isAbsolute, parse} = __webpack_require__(4822).win32;
         module.exports = path => {
             let r = "";
-            while (isAbsolute(path)) {
-                const root = path.charAt(0) === "/" ? "/" : parse(path).root;
+            let parsed = parse(path);
+            while (isAbsolute(path) || parsed.root) {
+                const root = path.charAt(0) === "/" && path.slice(0, 4) !== "//?/" ? "/" : parsed.root;
                 path = path.substr(root.length);
                 r += root;
+                parsed = parse(path);
             }
             return [ r, path ];
         };
     },
     6401: module => {
-        const batchStrings = [ "/".repeat(1024), "/".repeat(512), "/".repeat(256), "/".repeat(128), "/".repeat(64), "/".repeat(32), "/".repeat(16), "/".repeat(8), "/".repeat(4), "/".repeat(2), "/" ];
         module.exports = str => {
-            for (const s of batchStrings) {
-                while (str.length >= s.length && str.slice(-1 * s.length) === s) str = str.slice(0, -1 * s.length);
+            let i = str.length - 1;
+            let slashesStart = -1;
+            while (i > -1 && str.charAt(i) === "/") {
+                slashesStart = i;
+                i--;
             }
-            return str;
+            return slashesStart === -1 ? str : str.slice(0, slashesStart);
         };
     },
     9806: (__unused_webpack_module, exports) => {
@@ -6529,19 +6561,22 @@ var __webpack_modules__ = {
     },
     2864: (module, __unused_webpack_exports, __webpack_require__) => {
         "use strict";
-        const assert = __webpack_require__(2357);
+        const assert = __webpack_require__(9491);
         const Parser = __webpack_require__(6234);
-        const fs = __webpack_require__(5747);
+        const fs = __webpack_require__(7147);
         const fsm = __webpack_require__(8553);
-        const path = __webpack_require__(5622);
+        const path = __webpack_require__(4822);
         const mkdir = __webpack_require__(3956);
         const wc = __webpack_require__(6564);
         const pathReservations = __webpack_require__(7119);
         const stripAbsolutePath = __webpack_require__(6014);
         const normPath = __webpack_require__(4240);
+        const stripSlash = __webpack_require__(6401);
+        const normalize = __webpack_require__(1645);
         const ONENTRY = Symbol("onEntry");
         const CHECKFS = Symbol("checkFs");
         const CHECKFS2 = Symbol("checkFs2");
+        const PRUNECACHE = Symbol("pruneCache");
         const ISREUSABLE = Symbol("isReusable");
         const MAKEFS = Symbol("makeFs");
         const FILE = Symbol("file");
@@ -6563,10 +6598,12 @@ var __webpack_modules__ = {
         const UID = Symbol("uid");
         const GID = Symbol("gid");
         const CHECKED_CWD = Symbol("checkedCwd");
-        const crypto = __webpack_require__(6417);
+        const crypto = __webpack_require__(6113);
         const getFlag = __webpack_require__(8512);
+        const platform = process.env.TESTING_TAR_FAKE_PLATFORM || process.platform;
+        const isWindows = platform === "win32";
         const unlinkFile = (path, cb) => {
-            if (process.platform !== "win32") return fs.unlink(path, cb);
+            if (!isWindows) return fs.unlink(path, cb);
             const name = path + ".DELETE." + crypto.randomBytes(16).toString("hex");
             fs.rename(path, name, (er => {
                 if (er) return cb(er);
@@ -6574,18 +6611,22 @@ var __webpack_modules__ = {
             }));
         };
         const unlinkFileSync = path => {
-            if (process.platform !== "win32") return fs.unlinkSync(path);
+            if (!isWindows) return fs.unlinkSync(path);
             const name = path + ".DELETE." + crypto.randomBytes(16).toString("hex");
             fs.renameSync(path, name);
             fs.unlinkSync(name);
         };
         const uint32 = (a, b, c) => a === a >>> 0 ? a : b === b >>> 0 ? b : c;
+        const cacheKeyNormalize = path => normalize(stripSlash(normPath(path))).toLowerCase();
         const pruneCache = (cache, abs) => {
-            abs = normPath(abs).toLowerCase();
+            abs = cacheKeyNormalize(abs);
             for (const path of cache.keys()) {
-                const plower = path.toLowerCase();
-                if (plower === abs || plower.toLowerCase().indexOf(abs + "/") === 0) cache.delete(path);
+                const pnorm = cacheKeyNormalize(path);
+                if (pnorm === abs || pnorm.indexOf(abs + "/") === 0) cache.delete(path);
             }
+        };
+        const dropCache = cache => {
+            for (const key of cache.keys()) cache.delete(key);
         };
         class Unpack extends Parser {
             constructor(opt) {
@@ -6620,7 +6661,7 @@ var __webpack_modules__ = {
                 this.processUid = (this.preserveOwner || this.setOwner) && process.getuid ? process.getuid() : null;
                 this.processGid = (this.preserveOwner || this.setOwner) && process.getgid ? process.getgid() : null;
                 this.forceChown = opt.forceChown === true;
-                this.win32 = !!opt.win32 || process.platform === "win32";
+                this.win32 = !!opt.win32 || isWindows;
                 this.newer = !!opt.newer;
                 this.keep = !!opt.keep;
                 this.noMtime = !!opt.noMtime;
@@ -6658,7 +6699,8 @@ var __webpack_modules__ = {
                 }
                 if (!this.preservePaths) {
                     const p = normPath(entry.path);
-                    if (p.split("/").includes("..")) {
+                    const parts = p.split("/");
+                    if (parts.includes("..") || isWindows && /^[a-z]:\.\.$/i.test(parts[0])) {
                         this.warn("TAR_ENTRY_ERROR", `path contains '..'`, {
                             entry,
                             path: p
@@ -6675,6 +6717,15 @@ var __webpack_modules__ = {
                     }
                 }
                 if (path.isAbsolute(entry.path)) entry.absolute = normPath(path.resolve(entry.path)); else entry.absolute = normPath(path.resolve(this.cwd, entry.path));
+                if (!this.preservePaths && entry.absolute.indexOf(this.cwd + "/") !== 0 && entry.absolute !== this.cwd) {
+                    this.warn("TAR_ENTRY_ERROR", "path escaped extraction target", {
+                        entry,
+                        path: normPath(entry.path),
+                        resolvedPath: entry.absolute,
+                        cwd: this.cwd
+                    });
+                    return false;
+                }
                 if (entry.absolute === this.cwd && entry.type !== "Directory" && entry.type !== "GNUDumpDir") return false;
                 if (this.win32) {
                     const {root: aRoot} = path.win32.parse(entry.absolute);
@@ -6847,7 +6898,7 @@ var __webpack_modules__ = {
                 entry.resume();
             }
             [ISREUSABLE](entry, st) {
-                return entry.type === "File" && !this.unlink && st.isFile() && st.nlink <= 1 && process.platform !== "win32";
+                return entry.type === "File" && !this.unlink && st.isFile() && st.nlink <= 1 && !isWindows;
             }
             [CHECKFS](entry) {
                 this[PEND]();
@@ -6855,8 +6906,15 @@ var __webpack_modules__ = {
                 if (entry.linkpath) paths.push(entry.linkpath);
                 this.reservations.reserve(paths, (done => this[CHECKFS2](entry, done)));
             }
-            [CHECKFS2](entry, done) {
-                if (entry.type !== "Directory") pruneCache(this.dirCache, entry.absolute);
+            [PRUNECACHE](entry) {
+                if (entry.type === "SymbolicLink") dropCache(this.dirCache); else if (entry.type !== "Directory") pruneCache(this.dirCache, entry.absolute);
+            }
+            [CHECKFS2](entry, fullyDone) {
+                this[PRUNECACHE](entry);
+                const done = er => {
+                    this[PRUNECACHE](entry);
+                    fullyDone(er);
+                };
                 const checkCwd = () => {
                     this[MKDIR](this.cwd, this.dmode, (er => {
                         if (er) {
@@ -6954,7 +7012,7 @@ var __webpack_modules__ = {
                 return super[MAKEFS](er, entry, (() => {}));
             }
             [CHECKFS](entry) {
-                if (entry.type !== "Directory") pruneCache(this.dirCache, entry.absolute);
+                this[PRUNECACHE](entry);
                 if (!this[CHECKED_CWD]) {
                     const er = this[MKDIR](this.cwd, this.dmode);
                     if (er) return this[ONERROR](er, entry);
@@ -6984,7 +7042,7 @@ var __webpack_modules__ = {
                 const [er] = entry.absolute === this.cwd ? [] : callSync((() => unlinkFileSync(entry.absolute)));
                 this[MAKEFS](er, entry);
             }
-            [FILE](entry, _) {
+            [FILE](entry, done) {
                 const mode = entry.mode & 4095 || this.fmode;
                 const oner = er => {
                     let closeError;
@@ -6994,6 +7052,7 @@ var __webpack_modules__ = {
                         closeError = e;
                     }
                     if (er || closeError) this[ONERROR](er || closeError, entry);
+                    done();
                 };
                 let fd;
                 try {
@@ -7044,10 +7103,14 @@ var __webpack_modules__ = {
                     oner(er);
                 }));
             }
-            [DIRECTORY](entry, _) {
+            [DIRECTORY](entry, done) {
                 const mode = entry.mode & 4095 || this.dmode;
                 const er = this[MKDIR](entry.absolute, mode);
-                if (er) return this[ONERROR](er, entry);
+                if (er) {
+                    this[ONERROR](er, entry);
+                    done();
+                    return;
+                }
                 if (entry.mtime && !this.noMtime) {
                     try {
                         fs.utimesSync(entry.absolute, entry.atime || new Date, entry.mtime);
@@ -7058,6 +7121,7 @@ var __webpack_modules__ = {
                         fs.chownSync(entry.absolute, this[UID](entry), this[GID](entry));
                     } catch (er) {}
                 }
+                done();
                 entry.resume();
             }
             [MKDIR](dir, mode) {
@@ -7078,9 +7142,10 @@ var __webpack_modules__ = {
                     return er;
                 }
             }
-            [LINK](entry, linkpath, link, _) {
+            [LINK](entry, linkpath, link, done) {
                 try {
                     fs[link + "Sync"](linkpath, entry.absolute);
+                    done();
                     entry.resume();
                 } catch (er) {
                     return this[ONERROR](er, entry);
@@ -7143,8 +7208,8 @@ var __webpack_modules__ = {
         const MiniPass = __webpack_require__(2253);
         const Pax = __webpack_require__(9154);
         const Header = __webpack_require__(5017);
-        const fs = __webpack_require__(5747);
-        const path = __webpack_require__(5622);
+        const fs = __webpack_require__(7147);
+        const path = __webpack_require__(4822);
         const normPath = __webpack_require__(4240);
         const stripSlash = __webpack_require__(6401);
         const prefixPath = (path, prefix) => {
@@ -7997,17 +8062,17 @@ var __webpack_modules__ = {
         });
         exports.Kernel = void 0;
         const spec = __webpack_require__(1804);
-        const cp = __webpack_require__(3129);
+        const cp = __webpack_require__(2081);
         const fs = __webpack_require__(9728);
-        const os = __webpack_require__(2087);
-        const path = __webpack_require__(5622);
+        const os = __webpack_require__(2037);
+        const path = __webpack_require__(4822);
         const tar = __webpack_require__(1189);
-        const vm = __webpack_require__(2184);
+        const vm = __webpack_require__(6144);
         const api = __webpack_require__(2816);
         const api_1 = __webpack_require__(2816);
         const objects_1 = __webpack_require__(2309);
         const onExit = __webpack_require__(6703);
-        const wire = __webpack_require__(3837);
+        const wire = __webpack_require__(8614);
         class Kernel {
             constructor(callbackHandler) {
                 this.callbackHandler = callbackHandler;
@@ -8018,7 +8083,7 @@ var __webpack_modules__ = {
                 this.waiting = {};
                 this.promises = {};
                 this.nextid = 2e4;
-                const moduleLoad = __webpack_require__(2282).Module._load;
+                const moduleLoad = __webpack_require__(8188).Module._load;
                 const nodeRequire = p => moduleLoad(p, module, false);
                 this.sandbox = vm.createContext({
                     Buffer,
@@ -8819,7 +8884,7 @@ var __webpack_modules__ = {
         exports.ObjectTable = exports.tagJsiiConstructor = exports.objectReference = exports.jsiiTypeFqn = void 0;
         const spec = __webpack_require__(1804);
         const api = __webpack_require__(2816);
-        const serialization_1 = __webpack_require__(3837);
+        const serialization_1 = __webpack_require__(8614);
         const OBJID_SYMBOL = Symbol.for("$__jsii__objid__$");
         const IFACES_SYMBOL = Symbol.for("$__jsii__interfaces__$");
         const JSII_SYMBOL = Symbol.for("__jsii__");
@@ -8978,7 +9043,7 @@ var __webpack_modules__ = {
         });
         exports.removeSync = void 0;
         const fs = __webpack_require__(9728);
-        const process = __webpack_require__(1765);
+        const process = __webpack_require__(7282);
         const removeSyncPaths = new Array;
         function removeSync(path) {
             registerIfNeeded();
@@ -9001,7 +9066,7 @@ var __webpack_modules__ = {
             }
         }
     },
-    3837: (__unused_webpack_module, exports, __webpack_require__) => {
+    8614: (__unused_webpack_module, exports, __webpack_require__) => {
         "use strict";
         Object.defineProperty(exports, "__esModule", {
             value: true
@@ -9636,7 +9701,7 @@ var __webpack_modules__ = {
         });
         exports.KernelHost = void 0;
         const kernel_1 = __webpack_require__(8944);
-        const events_1 = __webpack_require__(8614);
+        const events_1 = __webpack_require__(2361);
         class KernelHost {
             constructor(inout, opts = {}) {
                 this.inout = inout;
@@ -9804,7 +9869,7 @@ var __webpack_modules__ = {
             value: true
         });
         exports.SyncStdio = void 0;
-        const fs = __webpack_require__(5747);
+        const fs = __webpack_require__(7147);
         const INPUT_BUFFER_SIZE = 1048576;
         class SyncStdio {
             constructor({errorFD, readFD, writeFD}) {
@@ -10047,77 +10112,77 @@ var __webpack_modules__ = {
         }
         exports.validateAssembly = validateAssembly;
     },
-    2357: module => {
+    9491: module => {
         "use strict";
         module.exports = require("assert");
     },
-    4293: module => {
+    4300: module => {
         "use strict";
         module.exports = require("buffer");
     },
-    3129: module => {
+    2081: module => {
         "use strict";
         module.exports = require("child_process");
     },
-    7619: module => {
+    2057: module => {
         "use strict";
         module.exports = require("constants");
     },
-    6417: module => {
+    6113: module => {
         "use strict";
         module.exports = require("crypto");
     },
-    8614: module => {
+    2361: module => {
         "use strict";
         module.exports = require("events");
     },
-    5747: module => {
+    7147: module => {
         "use strict";
         module.exports = require("fs");
     },
-    2282: module => {
+    8188: module => {
         "use strict";
         module.exports = require("module");
     },
-    2087: module => {
+    2037: module => {
         "use strict";
         module.exports = require("os");
     },
-    5622: module => {
+    4822: module => {
         "use strict";
         module.exports = require("path");
     },
-    1765: module => {
+    7282: module => {
         "use strict";
         module.exports = require("process");
     },
-    2413: module => {
+    2781: module => {
         "use strict";
         module.exports = require("stream");
     },
-    4304: module => {
+    1576: module => {
         "use strict";
         module.exports = require("string_decoder");
     },
-    8835: module => {
+    7310: module => {
         "use strict";
         module.exports = require("url");
     },
-    1669: module => {
+    3837: module => {
         "use strict";
         module.exports = require("util");
     },
-    2184: module => {
+    6144: module => {
         "use strict";
         module.exports = require("vm");
     },
-    8761: module => {
+    9796: module => {
         "use strict";
         module.exports = require("zlib");
     },
     4147: module => {
         "use strict";
-        module.exports = JSON.parse('{"name":"@jsii/runtime","version":"1.34.0","description":"jsii runtime kernel process","license":"Apache-2.0","author":{"name":"Amazon Web Services","url":"https://aws.amazon.com"},"homepage":"https://github.com/aws/jsii","bugs":{"url":"https://github.com/aws/jsii/issues"},"repository":{"type":"git","url":"https://github.com/aws/jsii.git","directory":"packages/@jsii/runtime"},"engines":{"node":">= 10.3.0"},"main":"lib/index.js","types":"lib/index.d.ts","bin":{"jsii-runtime":"bin/jsii-runtime"},"scripts":{"build":"tsc --build && chmod +x bin/jsii-runtime && npx webpack-cli && npm run lint","watch":"tsc --build -w","lint":"eslint . --ext .js,.ts --ignore-path=.gitignore --ignore-pattern=webpack.config.js","lint:fix":"yarn lint --fix","test":"jest","test:update":"jest -u","package":"package-js"},"dependencies":{"@jsii/kernel":"^1.34.0","@jsii/check-node":"1.34.0","@jsii/spec":"^1.34.0"},"devDependencies":{"@scope/jsii-calc-base":"^1.34.0","@scope/jsii-calc-lib":"^1.34.0","@types/jest":"^27.0.1","@types/node":"^10.17.60","eslint":"^7.32.0","jest":"^27.0.6","jsii-build-tools":"^1.34.0","jsii-calc":"^3.20.120","prettier":"^2.3.2","source-map-loader":"^2.0.2","ts-jest":"^27.0.4","typescript":"~3.9.10","webpack":"^5.50.0","webpack-cli":"^4.7.2"}}');
+        module.exports = JSON.parse('{"name":"@jsii/runtime","version":"1.35.0","description":"jsii runtime kernel process","license":"Apache-2.0","author":{"name":"Amazon Web Services","url":"https://aws.amazon.com"},"homepage":"https://github.com/aws/jsii","bugs":{"url":"https://github.com/aws/jsii/issues"},"repository":{"type":"git","url":"https://github.com/aws/jsii.git","directory":"packages/@jsii/runtime"},"engines":{"node":">= 12.7.0"},"main":"lib/index.js","types":"lib/index.d.ts","bin":{"jsii-runtime":"bin/jsii-runtime"},"scripts":{"build":"tsc --build && chmod +x bin/jsii-runtime && npx webpack-cli && npm run lint","watch":"tsc --build -w","lint":"eslint . --ext .js,.ts --ignore-path=.gitignore --ignore-pattern=webpack.config.js","lint:fix":"yarn lint --fix","test":"jest","test:update":"jest -u","package":"package-js"},"dependencies":{"@jsii/kernel":"^1.35.0","@jsii/check-node":"1.35.0","@jsii/spec":"^1.35.0"},"devDependencies":{"@scope/jsii-calc-base":"^1.35.0","@scope/jsii-calc-lib":"^1.35.0","@types/jest":"^27.0.2","@types/node":"^12.20.26","eslint":"^7.32.0","jest":"^27.2.1","jsii-build-tools":"^1.35.0","jsii-calc":"^3.20.120","prettier":"^2.4.1","source-map-loader":"^3.0.0","ts-jest":"^27.0.5","typescript":"~3.9.10","webpack":"^5.53.0","webpack-cli":"^4.8.0"}}');
     },
     9402: module => {
         "use strict";
@@ -10160,7 +10225,7 @@ var __webpack_exports__ = {};
     __webpack_unused_export__ = {
         value: true
     };
-    const process = __webpack_require__(1765);
+    const process = __webpack_require__(7282);
     const packageInfo = __webpack_require__(4147);
     const host_1 = __webpack_require__(7905);
     const in_out_1 = __webpack_require__(6156);
