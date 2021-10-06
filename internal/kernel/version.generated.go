@@ -1,3 +1,3 @@
 package kernel
 
-const version = "1.36.0"
+const version = "1.37.0"
