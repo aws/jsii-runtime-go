@@ -3569,7 +3569,9 @@ var __webpack_modules__ = {
             "^14.5.0": "supported",
             "^15.0.0-0": "end-of-life",
             "<16.3.0": "unsupported",
-            "^16.3.0": "supported"
+            "^16.3.0": "supported",
+            "<17.3.0": "unsupported",
+            "^17.3.0": "supported"
         };
     },
     7962: (__unused_webpack_module, exports, __webpack_require__) => {

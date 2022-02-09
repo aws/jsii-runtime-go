@@ -432,14 +432,14 @@ var __webpack_modules__ = {
     },
     6430: (module, __unused_webpack_exports, __webpack_require__) => {
         "use strict";
-        const u = __webpack_require__(2141).E;
+        const u = __webpack_require__(3459).fromCallback;
         module.exports = {
             copy: u(__webpack_require__(465))
         };
     },
     801: (module, __unused_webpack_exports, __webpack_require__) => {
         "use strict";
-        const u = __webpack_require__(2141).E;
+        const u = __webpack_require__(3459).fromCallback;
         const fs = __webpack_require__(6851);
         const path = __webpack_require__(4822);
         const mkdir = __webpack_require__(7311);
@@ -481,7 +481,7 @@ var __webpack_modules__ = {
     },
     7392: (module, __unused_webpack_exports, __webpack_require__) => {
         "use strict";
-        const u = __webpack_require__(2141).E;
+        const u = __webpack_require__(3459).fromCallback;
         const path = __webpack_require__(4822);
         const fs = __webpack_require__(6851);
         const mkdir = __webpack_require__(7311);
@@ -556,7 +556,7 @@ var __webpack_modules__ = {
     },
     8261: (module, __unused_webpack_exports, __webpack_require__) => {
         "use strict";
-        const u = __webpack_require__(2141).E;
+        const u = __webpack_require__(3459).fromCallback;
         const path = __webpack_require__(4822);
         const fs = __webpack_require__(6851);
         const mkdir = __webpack_require__(7311);
@@ -713,7 +713,7 @@ var __webpack_modules__ = {
     },
     7618: (module, __unused_webpack_exports, __webpack_require__) => {
         "use strict";
-        const u = __webpack_require__(2141).E;
+        const u = __webpack_require__(3459).fromCallback;
         const path = __webpack_require__(4822);
         const fs = __webpack_require__(6851);
         const _mkdirs = __webpack_require__(7311);
@@ -769,7 +769,7 @@ var __webpack_modules__ = {
     },
     5093: (__unused_webpack_module, exports, __webpack_require__) => {
         "use strict";
-        const u = __webpack_require__(2141).E;
+        const u = __webpack_require__(3459).fromCallback;
         const fs = __webpack_require__(6851);
         const api = [ "access", "appendFile", "chmod", "chown", "close", "copyFile", "fchmod", "fchown", "fdatasync", "fstat", "fsync", "ftruncate", "futimes", "lchmod", "lchown", "link", "lstat", "mkdir", "mkdtemp", "open", "opendir", "readdir", "readFile", "readlink", "realpath", "rename", "rm", "rmdir", "stat", "symlink", "truncate", "unlink", "utimes", "writeFile" ].filter((key => typeof fs[key] === "function"));
         Object.keys(fs).forEach((key => {
@@ -862,7 +862,7 @@ var __webpack_modules__ = {
     },
     3779: (module, __unused_webpack_exports, __webpack_require__) => {
         "use strict";
-        const u = __webpack_require__(2141).p;
+        const u = __webpack_require__(3459).fromPromise;
         const jsonFile = __webpack_require__(2002);
         jsonFile.outputJson = u(__webpack_require__(209));
         jsonFile.outputJsonSync = __webpack_require__(8757);
@@ -906,7 +906,7 @@ var __webpack_modules__ = {
     },
     7311: (module, __unused_webpack_exports, __webpack_require__) => {
         "use strict";
-        const u = __webpack_require__(2141).p;
+        const u = __webpack_require__(3459).fromPromise;
         const {makeDir: _makeDir, makeDirSync} = __webpack_require__(3057);
         const makeDir = u(_makeDir);
         module.exports = {
@@ -1082,7 +1082,7 @@ var __webpack_modules__ = {
     },
     1034: (module, __unused_webpack_exports, __webpack_require__) => {
         "use strict";
-        const u = __webpack_require__(2141).E;
+        const u = __webpack_require__(3459).fromCallback;
         module.exports = {
             move: u(__webpack_require__(2521))
         };
@@ -1148,7 +1148,7 @@ var __webpack_modules__ = {
     },
     836: (module, __unused_webpack_exports, __webpack_require__) => {
         "use strict";
-        const u = __webpack_require__(2141).E;
+        const u = __webpack_require__(3459).fromCallback;
         const fs = __webpack_require__(6851);
         const path = __webpack_require__(4822);
         const mkdir = __webpack_require__(7311);
@@ -1183,7 +1183,7 @@ var __webpack_modules__ = {
     },
     2569: (module, __unused_webpack_exports, __webpack_require__) => {
         "use strict";
-        const u = __webpack_require__(2141).p;
+        const u = __webpack_require__(3459).fromPromise;
         const fs = __webpack_require__(5093);
         function pathExists(path) {
             return fs.access(path).then((() => true)).catch((() => false));
@@ -1195,7 +1195,7 @@ var __webpack_modules__ = {
     },
     9117: (module, __unused_webpack_exports, __webpack_require__) => {
         "use strict";
-        const u = __webpack_require__(2141).E;
+        const u = __webpack_require__(3459).fromCallback;
         const rimraf = __webpack_require__(1683);
         module.exports = {
             remove: u(rimraf),
@@ -1575,28 +1575,6 @@ var __webpack_modules__ = {
         module.exports = {
             utimesMillis,
             utimesMillisSync
-        };
-    },
-    2141: (__unused_webpack_module, exports) => {
-        "use strict";
-        exports.E = function(fn) {
-            return Object.defineProperty((function(...args) {
-                if (typeof args[args.length - 1] === "function") fn.apply(this, args); else {
-                    return new Promise(((resolve, reject) => {
-                        fn.call(this, ...args, ((err, res) => err != null ? reject(err) : resolve(res)));
-                    }));
-                }
-            }), "name", {
-                value: fn.name
-            });
-        };
-        exports.p = function(fn) {
-            return Object.defineProperty((function(...args) {
-                const cb = args[args.length - 1];
-                if (typeof cb !== "function") return fn.apply(this, args); else fn.apply(this, args.slice(0, -1)).then((r => cb(null, r)), cb);
-            }), "name", {
-                value: fn.name
-            });
         };
     },
     8553: (__unused_webpack_module, exports, __webpack_require__) => {
@@ -2581,8 +2559,10 @@ var __webpack_modules__ = {
                 if (!orig) return orig;
                 return function(target, options) {
                     var stats = options ? orig.call(fs, target, options) : orig.call(fs, target);
-                    if (stats.uid < 0) stats.uid += 4294967296;
-                    if (stats.gid < 0) stats.gid += 4294967296;
+                    if (stats) {
+                        if (stats.uid < 0) stats.uid += 4294967296;
+                        if (stats.gid < 0) stats.gid += 4294967296;
+                    }
                     return stats;
                 };
             }
@@ -2604,7 +2584,7 @@ var __webpack_modules__ = {
         } catch (_) {
             _fs = __webpack_require__(7147);
         }
-        const universalify = __webpack_require__(6267);
+        const universalify = __webpack_require__(3459);
         const {stringify, stripBom} = __webpack_require__(9293);
         async function _readFile(file, options = {}) {
             if (typeof options === "string") {
@@ -2669,28 +2649,6 @@ var __webpack_modules__ = {
             writeFileSync
         };
         module.exports = jsonfile;
-    },
-    6267: (__unused_webpack_module, exports) => {
-        "use strict";
-        exports.fromCallback = function(fn) {
-            return Object.defineProperty((function(...args) {
-                if (typeof args[args.length - 1] === "function") fn.apply(this, args); else {
-                    return new Promise(((resolve, reject) => {
-                        fn.call(this, ...args, ((err, res) => err != null ? reject(err) : resolve(res)));
-                    }));
-                }
-            }), "name", {
-                value: fn.name
-            });
-        };
-        exports.fromPromise = function(fn) {
-            return Object.defineProperty((function(...args) {
-                const cb = args[args.length - 1];
-                if (typeof cb !== "function") return fn.apply(this, args); else fn.apply(this, args.slice(0, -1)).then((r => cb(null, r)), cb);
-            }), "name", {
-                value: fn.name
-            });
-        };
     },
     9293: module => {
         function stringify(obj, {EOL = "\n", finalEOL = true, replacer = null, spaces} = {}) {
@@ -7614,6 +7572,28 @@ var __webpack_modules__ = {
         const getType = stat => stat.isFile() ? "File" : stat.isDirectory() ? "Directory" : stat.isSymbolicLink() ? "SymbolicLink" : "Unsupported";
         module.exports = WriteEntry;
     },
+    3459: (__unused_webpack_module, exports) => {
+        "use strict";
+        exports.fromCallback = function(fn) {
+            return Object.defineProperty((function(...args) {
+                if (typeof args[args.length - 1] === "function") fn.apply(this, args); else {
+                    return new Promise(((resolve, reject) => {
+                        fn.call(this, ...args, ((err, res) => err != null ? reject(err) : resolve(res)));
+                    }));
+                }
+            }), "name", {
+                value: fn.name
+            });
+        };
+        exports.fromPromise = function(fn) {
+            return Object.defineProperty((function(...args) {
+                const cb = args[args.length - 1];
+                if (typeof cb !== "function") return fn.apply(this, args); else fn.apply(this, args.slice(0, -1)).then((r => cb(null, r)), cb);
+            }), "name", {
+                value: fn.name
+            });
+        };
+    },
     3278: module => {
         "use strict";
         module.exports = function(Yallist) {
@@ -8702,7 +8682,7 @@ var __webpack_modules__ = {
             _tryTypeInfoForMethod(methodName, classFqn, interfaces = []) {
                 var _a, _b;
                 for (const fqn of [ classFqn, ...interfaces ]) {
-                    if (fqn === "Object") {
+                    if (fqn === wire.EMPTY_OBJECT_FQN) {
                         continue;
                     }
                     const typeinfo = this._typeInfoForFqn(fqn);
@@ -8904,9 +8884,22 @@ var __webpack_modules__ = {
         }
         exports.objectReference = objectReference;
         function tagObject(obj, objid, interfaces) {
-            const managed = obj;
-            managed[OBJID_SYMBOL] = objid;
-            managed[IFACES_SYMBOL] = interfaces;
+            const privateField = {
+                enumerable: false,
+                configurable: true,
+                writable: true
+            };
+            if (Object.prototype.hasOwnProperty.call(obj, OBJID_SYMBOL)) {
+                console.error(`[jsii/kernel] WARNING: object ${JSON.stringify(obj)} was already tagged as ${obj[OBJID_SYMBOL]}!`);
+            }
+            Object.defineProperty(obj, OBJID_SYMBOL, {
+                ...privateField,
+                value: objid
+            });
+            Object.defineProperty(obj, IFACES_SYMBOL, {
+                ...privateField,
+                value: interfaces
+            });
         }
         function tagJsiiConstructor(constructor, fqn) {
             Object.defineProperty(constructor, JSII_SYMBOL, {
@@ -8937,6 +8930,9 @@ var __webpack_modules__ = {
                         for (const iface of (_a = existingRef[api.TOKEN_INTERFACES]) !== null && _a !== void 0 ? _a : []) {
                             allIfaces.add(iface);
                         }
+                        if (!Object.prototype.hasOwnProperty.call(obj, IFACES_SYMBOL)) {
+                            console.error(`[jsii/kernel] WARNING: referenced object ${existingRef[api.TOKEN_REF]} does not have the ${String(IFACES_SYMBOL)} property!`);
+                        }
                         this.objects[existingRef[api.TOKEN_REF]].interfaces = obj[IFACES_SYMBOL] = existingRef[api.TOKEN_INTERFACES] = interfaces = this.removeRedundant(Array.from(allIfaces), fqn);
                     }
                     return existingRef;
@@ -8955,6 +8951,7 @@ var __webpack_modules__ = {
                 };
             }
             findObject(objref) {
+                var _a;
                 if (typeof objref !== "object" || !(api.TOKEN_REF in objref)) {
                     throw new Error(`Malformed object reference: ${JSON.stringify(objref)}`);
                 }
@@ -8962,6 +8959,13 @@ var __webpack_modules__ = {
                 const obj = this.objects[objid];
                 if (!obj) {
                     throw new Error(`Object ${objid} not found`);
+                }
+                const additionalInterfaces = objref[api.TOKEN_INTERFACES];
+                if (additionalInterfaces != null && additionalInterfaces.length > 0) {
+                    return {
+                        ...obj,
+                        interfaces: [ ...(_a = obj.interfaces) !== null && _a !== void 0 ? _a : [], ...additionalInterfaces ]
+                    };
                 }
                 return obj;
             }
@@ -9306,7 +9310,7 @@ var __webpack_modules__ = {
                         throw new Error(`Expected object, got ${JSON.stringify(value)}`);
                     }
                     host.debug("Returning value type by reference");
-                    return host.objects.registerObject(value, "Object", [ optionalValue.type.fqn ]);
+                    return host.objects.registerObject(value, exports.EMPTY_OBJECT_FQN, [ optionalValue.type.fqn ]);
                 },
                 deserialize(value, optionalValue, host) {
                     if (typeof value === "object" && Object.keys(value !== null && value !== void 0 ? value : {}).length === 0) {
@@ -9363,7 +9367,7 @@ var __webpack_modules__ = {
                     }
                     const expectedType = host.lookupType(optionalValue.type.fqn);
                     const interfaces = spec.isInterfaceType(expectedType) ? [ expectedType.fqn ] : undefined;
-                    const jsiiType = (_a = objects_1.jsiiTypeFqn(value)) !== null && _a !== void 0 ? _a : spec.isClassType(expectedType) ? expectedType.fqn : "Object";
+                    const jsiiType = (_a = objects_1.jsiiTypeFqn(value)) !== null && _a !== void 0 ? _a : spec.isClassType(expectedType) ? expectedType.fqn : exports.EMPTY_OBJECT_FQN;
                     return host.objects.registerObject(value, jsiiType, interfaces);
                 },
                 deserialize(value, optionalValue, host) {
@@ -10182,7 +10186,7 @@ var __webpack_modules__ = {
     },
     4147: module => {
         "use strict";
-        module.exports = JSON.parse('{"name":"@jsii/runtime","version":"1.52.1","description":"jsii runtime kernel process","license":"Apache-2.0","author":{"name":"Amazon Web Services","url":"https://aws.amazon.com"},"homepage":"https://github.com/aws/jsii","bugs":{"url":"https://github.com/aws/jsii/issues"},"repository":{"type":"git","url":"https://github.com/aws/jsii.git","directory":"packages/@jsii/runtime"},"engines":{"node":">= 12.7.0"},"main":"lib/index.js","types":"lib/index.d.ts","bin":{"jsii-runtime":"bin/jsii-runtime"},"scripts":{"build":"tsc --build && chmod +x bin/jsii-runtime && npx webpack-cli && npm run lint","watch":"tsc --build -w","lint":"eslint . --ext .js,.ts --ignore-path=.gitignore --ignore-pattern=webpack.config.js","lint:fix":"yarn lint --fix","test":"jest","test:update":"jest -u","package":"package-js"},"dependencies":{"@jsii/kernel":"^1.52.1","@jsii/check-node":"1.52.1","@jsii/spec":"^1.52.1"},"devDependencies":{"@scope/jsii-calc-base":"^1.52.1","@scope/jsii-calc-lib":"^1.52.1","@types/jest":"^27.0.3","@types/node":"^12.20.39","eslint":"^8.5.0","jest":"^27.4.5","jsii-build-tools":"^1.52.1","jsii-calc":"^3.20.120","prettier":"^2.5.1","source-map-loader":"^3.0.0","ts-jest":"^27.1.2","typescript":"~3.9.10","webpack":"^5.65.0","webpack-cli":"^4.9.1"}}');
+        module.exports = JSON.parse('{"name":"@jsii/runtime","version":"1.53.0","description":"jsii runtime kernel process","license":"Apache-2.0","author":{"name":"Amazon Web Services","url":"https://aws.amazon.com"},"homepage":"https://github.com/aws/jsii","bugs":{"url":"https://github.com/aws/jsii/issues"},"repository":{"type":"git","url":"https://github.com/aws/jsii.git","directory":"packages/@jsii/runtime"},"engines":{"node":">= 12.7.0"},"main":"lib/index.js","types":"lib/index.d.ts","bin":{"jsii-runtime":"bin/jsii-runtime"},"scripts":{"build":"tsc --build && chmod +x bin/jsii-runtime && npx webpack-cli && npm run lint","watch":"tsc --build -w","lint":"eslint . --ext .js,.ts --ignore-path=.gitignore --ignore-pattern=webpack.config.js","lint:fix":"yarn lint --fix","test":"jest","test:update":"jest -u","package":"package-js"},"dependencies":{"@jsii/kernel":"^1.53.0","@jsii/check-node":"1.53.0","@jsii/spec":"^1.53.0"},"devDependencies":{"@scope/jsii-calc-base":"^1.53.0","@scope/jsii-calc-lib":"^1.53.0","@types/jest":"^27.4.0","@types/node":"^12.20.43","eslint":"^8.8.0","jest":"^27.4.7","jsii-build-tools":"^1.53.0","jsii-calc":"^3.20.120","prettier":"^2.5.1","source-map-loader":"^3.0.1","ts-jest":"^27.1.3","typescript":"~3.9.10","webpack":"^5.68.0","webpack-cli":"^4.9.2"}}');
     },
     9402: module => {
         "use strict";
