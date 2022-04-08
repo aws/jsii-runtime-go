@@ -2053,16 +2053,22 @@ var __webpack_modules__ = {
             }
             var fs$readdir = fs.readdir;
             fs.readdir = readdir;
+            var noReaddirOptionVersions = /^v[0-5]\./;
             function readdir(path, options, cb) {
                 if (typeof options === "function") cb = options, options = null;
+                var go$readdir = noReaddirOptionVersions.test(process.version) ? function go$readdir(path, options, cb, startTime) {
+                    return fs$readdir(path, fs$readdirCallback(path, options, cb, startTime));
+                } : function go$readdir(path, options, cb, startTime) {
+                    return fs$readdir(path, options, fs$readdirCallback(path, options, cb, startTime));
+                };
                 return go$readdir(path, options, cb);
-                function go$readdir(path, options, cb, startTime) {
-                    return fs$readdir(path, options, (function(err, files) {
+                function fs$readdirCallback(path, options, cb, startTime) {
+                    return function(err, files) {
                         if (err && (err.code === "EMFILE" || err.code === "ENFILE")) enqueue([ go$readdir, [ path, options, cb ], err, startTime || Date.now(), Date.now() ]); else {
                             if (files && files.sort) files.sort();
                             if (typeof cb === "function") cb.call(this, err, files);
                         }
-                    }));
+                    };
                 }
             }
             if (process.version.substr(0, 4) === "v0.8") {
@@ -2361,21 +2367,21 @@ var __webpack_modules__ = {
             fs.statSync = statFixSync(fs.statSync);
             fs.fstatSync = statFixSync(fs.fstatSync);
             fs.lstatSync = statFixSync(fs.lstatSync);
-            if (!fs.lchmod) {
+            if (fs.chmod && !fs.lchmod) {
                 fs.lchmod = function(path, mode, cb) {
                     if (cb) process.nextTick(cb);
                 };
                 fs.lchmodSync = function() {};
             }
-            if (!fs.lchown) {
+            if (fs.chown && !fs.lchown) {
                 fs.lchown = function(path, uid, gid, cb) {
                     if (cb) process.nextTick(cb);
                 };
                 fs.lchownSync = function() {};
             }
             if (platform === "win32") {
-                fs.rename = function(fs$rename) {
-                    return function(from, to, cb) {
+                fs.rename = typeof fs.rename !== "function" ? fs.rename : function(fs$rename) {
+                    function rename(from, to, cb) {
                         var start = Date.now();
                         var backoff = 0;
                         fs$rename(from, to, (function CB(er) {
@@ -2390,10 +2396,12 @@ var __webpack_modules__ = {
                             }
                             if (cb) cb(er);
                         }));
-                    };
+                    }
+                    if (Object.setPrototypeOf) Object.setPrototypeOf(rename, fs$rename);
+                    return rename;
                 }(fs.rename);
             }
-            fs.read = function(fs$read) {
+            fs.read = typeof fs.read !== "function" ? fs.read : function(fs$read) {
                 function read(fd, buffer, offset, length, position, callback_) {
                     var callback;
                     if (callback_ && typeof callback_ === "function") {
@@ -2411,7 +2419,7 @@ var __webpack_modules__ = {
                 if (Object.setPrototypeOf) Object.setPrototypeOf(read, fs$read);
                 return read;
             }(fs.read);
-            fs.readSync = function(fs$readSync) {
+            fs.readSync = typeof fs.readSync !== "function" ? fs.readSync : function(fs$readSync) {
                 return function(fd, buffer, offset, length, position) {
                     var eagCounter = 0;
                     while (true) {
@@ -2461,7 +2469,7 @@ var __webpack_modules__ = {
                 };
             }
             function patchLutimes(fs) {
-                if (constants.hasOwnProperty("O_SYMLINK")) {
+                if (constants.hasOwnProperty("O_SYMLINK") && fs.futimes) {
                     fs.lutimes = function(path, at, mt, cb) {
                         fs.open(path, constants.O_SYMLINK, (function(er, fd) {
                             if (er) {
@@ -2493,7 +2501,7 @@ var __webpack_modules__ = {
                         }
                         return ret;
                     };
-                } else {
+                } else if (fs.futimes) {
                     fs.lutimes = function(_a, _b, _c, cb) {
                         if (cb) process.nextTick(cb);
                     };
@@ -9508,8 +9516,8 @@ var __webpack_modules__ = {
             if (sep === -1) {
                 throw new Error(`Malformed enum value: ${JSON.stringify(value)}`);
             }
-            const typeName = enumLocator.substr(0, sep);
-            const valueName = enumLocator.substr(sep + 1);
+            const typeName = enumLocator.slice(0, sep);
+            const valueName = enumLocator.slice(sep + 1);
             const enumValue = lookup(typeName)[valueName];
             if (enumValue === undefined) {
                 throw new Error(`No enum member named ${valueName} in ${typeName}`);
@@ -9856,7 +9864,7 @@ var __webpack_modules__ = {
                     return this.read();
                 }
                 if (reqLine.startsWith("> ")) {
-                    reqLine = reqLine.substr(2);
+                    reqLine = reqLine.slice(2);
                 }
                 const input = JSON.parse(reqLine);
                 if (this.debug) {
@@ -10186,7 +10194,7 @@ var __webpack_modules__ = {
     },
     4147: module => {
         "use strict";
-        module.exports = JSON.parse('{"name":"@jsii/runtime","version":"1.55.1","description":"jsii runtime kernel process","license":"Apache-2.0","author":{"name":"Amazon Web Services","url":"https://aws.amazon.com"},"homepage":"https://github.com/aws/jsii","bugs":{"url":"https://github.com/aws/jsii/issues"},"repository":{"type":"git","url":"https://github.com/aws/jsii.git","directory":"packages/@jsii/runtime"},"engines":{"node":">= 12.7.0"},"main":"lib/index.js","types":"lib/index.d.ts","bin":{"jsii-runtime":"bin/jsii-runtime"},"scripts":{"build":"tsc --build && chmod +x bin/jsii-runtime && npx webpack-cli && npm run lint","watch":"tsc --build -w","lint":"eslint . --ext .js,.ts --ignore-path=.gitignore --ignore-pattern=webpack.config.js","lint:fix":"yarn lint --fix","test":"jest","test:update":"jest -u","package":"package-js"},"dependencies":{"@jsii/kernel":"^1.55.1","@jsii/check-node":"1.55.1","@jsii/spec":"^1.55.1"},"devDependencies":{"@scope/jsii-calc-base":"^1.55.1","@scope/jsii-calc-lib":"^1.55.1","@types/jest":"^27.4.1","@types/node":"^12.20.47","eslint":"^8.10.0","jest":"^27.5.1","jsii-build-tools":"^1.55.1","jsii-calc":"^3.20.120","prettier":"^2.5.1","source-map-loader":"^3.0.1","ts-jest":"^27.1.3","typescript":"~3.9.10","webpack":"^5.70.0","webpack-cli":"^4.9.2"}}');
+        module.exports = JSON.parse('{"name":"@jsii/runtime","version":"1.56.0","description":"jsii runtime kernel process","license":"Apache-2.0","author":{"name":"Amazon Web Services","url":"https://aws.amazon.com"},"homepage":"https://github.com/aws/jsii","bugs":{"url":"https://github.com/aws/jsii/issues"},"repository":{"type":"git","url":"https://github.com/aws/jsii.git","directory":"packages/@jsii/runtime"},"engines":{"node":">= 12.7.0"},"main":"lib/index.js","types":"lib/index.d.ts","bin":{"jsii-runtime":"bin/jsii-runtime"},"scripts":{"build":"tsc --build && chmod +x bin/jsii-runtime && npx webpack-cli && npm run lint","watch":"tsc --build -w","lint":"eslint . --ext .js,.ts --ignore-path=.gitignore --ignore-pattern=webpack.config.js","lint:fix":"yarn lint --fix","test":"jest","test:update":"jest -u","package":"package-js"},"dependencies":{"@jsii/kernel":"^1.56.0","@jsii/check-node":"1.56.0","@jsii/spec":"^1.56.0"},"devDependencies":{"@scope/jsii-calc-base":"^1.56.0","@scope/jsii-calc-lib":"^1.56.0","@types/jest":"^27.4.1","@types/node":"^12.20.47","eslint":"^8.12.0","jest":"^27.5.1","jsii-build-tools":"^1.56.0","jsii-calc":"^3.20.120","prettier":"^2.6.2","source-map-loader":"^3.0.1","ts-jest":"^27.1.4","typescript":"~3.9.10","webpack":"^5.71.0","webpack-cli":"^4.9.2"}}');
     },
     9402: module => {
         "use strict";
