@@ -1812,14 +1812,16 @@ var __webpack_modules__ = {
                 this.loose = !!options.loose;
                 this.includePrerelease = !!options.includePrerelease;
                 this.raw = range;
-                this.set = range.split(/\s*\|\|\s*/).map((range => this.parseRange(range.trim()))).filter((c => c.length));
+                this.set = range.split("||").map((r => this.parseRange(r.trim()))).filter((c => c.length));
                 if (!this.set.length) {
                     throw new TypeError(`Invalid SemVer Range: ${range}`);
                 }
                 if (this.set.length > 1) {
                     const first = this.set[0];
                     this.set = this.set.filter((c => !isNullSet(c[0])));
-                    if (this.set.length === 0) this.set = [ first ]; else if (this.set.length > 1) {
+                    if (this.set.length === 0) {
+                        this.set = [ first ];
+                    } else if (this.set.length > 1) {
                         for (const c of this.set) {
                             if (c.length === 1 && isAny(c[0])) {
                                 this.set = [ c ];
@@ -1842,25 +1844,37 @@ var __webpack_modules__ = {
                 const memoOpts = Object.keys(this.options).join(",");
                 const memoKey = `parseRange:${memoOpts}:${range}`;
                 const cached = cache.get(memoKey);
-                if (cached) return cached;
+                if (cached) {
+                    return cached;
+                }
                 const loose = this.options.loose;
                 const hr = loose ? re[t.HYPHENRANGELOOSE] : re[t.HYPHENRANGE];
                 range = range.replace(hr, hyphenReplace(this.options.includePrerelease));
                 debug("hyphen replace", range);
                 range = range.replace(re[t.COMPARATORTRIM], comparatorTrimReplace);
-                debug("comparator trim", range, re[t.COMPARATORTRIM]);
+                debug("comparator trim", range);
                 range = range.replace(re[t.TILDETRIM], tildeTrimReplace);
                 range = range.replace(re[t.CARETTRIM], caretTrimReplace);
                 range = range.split(/\s+/).join(" ");
-                const compRe = loose ? re[t.COMPARATORLOOSE] : re[t.COMPARATOR];
-                const rangeList = range.split(" ").map((comp => parseComparator(comp, this.options))).join(" ").split(/\s+/).map((comp => replaceGTE0(comp, this.options))).filter(this.options.loose ? comp => !!comp.match(compRe) : () => true).map((comp => new Comparator(comp, this.options)));
-                const l = rangeList.length;
+                let rangeList = range.split(" ").map((comp => parseComparator(comp, this.options))).join(" ").split(/\s+/).map((comp => replaceGTE0(comp, this.options)));
+                if (loose) {
+                    rangeList = rangeList.filter((comp => {
+                        debug("loose invalid filter", comp, this.options);
+                        return !!comp.match(re[t.COMPARATORLOOSE]);
+                    }));
+                }
+                debug("range list", rangeList);
                 const rangeMap = new Map;
-                for (const comp of rangeList) {
-                    if (isNullSet(comp)) return [ comp ];
+                const comparators = rangeList.map((comp => new Comparator(comp, this.options)));
+                for (const comp of comparators) {
+                    if (isNullSet(comp)) {
+                        return [ comp ];
+                    }
                     rangeMap.set(comp.value, comp);
                 }
-                if (rangeMap.size > 1 && rangeMap.has("")) rangeMap.delete("");
+                if (rangeMap.size > 1 && rangeMap.has("")) {
+                    rangeMap.delete("");
+                }
                 const result = [ ...rangeMap.values() ];
                 cache.set(memoKey, result);
                 return result;
@@ -1925,7 +1939,7 @@ var __webpack_modules__ = {
             return comp;
         };
         const isX = id => !id || id.toLowerCase() === "x" || id === "*";
-        const replaceTildes = (comp, options) => comp.trim().split(/\s+/).map((comp => replaceTilde(comp, options))).join(" ");
+        const replaceTildes = (comp, options) => comp.trim().split(/\s+/).map((c => replaceTilde(c, options))).join(" ");
         const replaceTilde = (comp, options) => {
             const r = options.loose ? re[t.TILDELOOSE] : re[t.TILDE];
             return comp.replace(r, ((_, M, m, p, pr) => {
@@ -1947,7 +1961,7 @@ var __webpack_modules__ = {
                 return ret;
             }));
         };
-        const replaceCarets = (comp, options) => comp.trim().split(/\s+/).map((comp => replaceCaret(comp, options))).join(" ");
+        const replaceCarets = (comp, options) => comp.trim().split(/\s+/).map((c => replaceCaret(c, options))).join(" ");
         const replaceCaret = (comp, options) => {
             debug("caret", comp, options);
             const r = options.loose ? re[t.CARETLOOSE] : re[t.CARET];
@@ -1994,7 +2008,7 @@ var __webpack_modules__ = {
         };
         const replaceXRanges = (comp, options) => {
             debug("replaceXRanges", comp, options);
-            return comp.split(/\s+/).map((comp => replaceXRange(comp, options))).join(" ");
+            return comp.split(/\s+/).map((c => replaceXRange(c, options))).join(" ");
         };
         const replaceXRange = (comp, options) => {
             comp = comp.trim();
@@ -2038,7 +2052,9 @@ var __webpack_modules__ = {
                             m = +m + 1;
                         }
                     }
-                    if (gtlt === "<") pr = "-0";
+                    if (gtlt === "<") {
+                        pr = "-0";
+                    }
                     ret = `${gtlt + M}.${m}.${p}${pr}`;
                 } else if (xm) {
                     ret = `>=${M}.0.0${pr} <${+M + 1}.0.0-0`;
@@ -2316,7 +2332,7 @@ var __webpack_modules__ = {
                         }
                     }
                     if (identifier) {
-                        if (this.prerelease[0] === identifier) {
+                        if (compareIdentifiers(this.prerelease[0], identifier) === 0) {
                             if (isNaN(this.prerelease[1])) {
                                 this.prerelease = [ identifier, 0 ];
                             }
@@ -2354,13 +2370,21 @@ var __webpack_modules__ = {
         const cmp = (a, op, b, loose) => {
             switch (op) {
               case "===":
-                if (typeof a === "object") a = a.version;
-                if (typeof b === "object") b = b.version;
+                if (typeof a === "object") {
+                    a = a.version;
+                }
+                if (typeof b === "object") {
+                    b = b.version;
+                }
                 return a === b;
 
               case "!==":
-                if (typeof a === "object") a = a.version;
-                if (typeof b === "object") b = b.version;
+                if (typeof a === "object") {
+                    a = a.version;
+                }
+                if (typeof b === "object") {
+                    b = b.version;
+                }
                 return a !== b;
 
               case "":
@@ -2417,7 +2441,9 @@ var __webpack_modules__ = {
                 }
                 re[t.COERCERTL].lastIndex = -1;
             }
-            if (match === null) return null;
+            if (match === null) {
+                return null;
+            }
             return parse(`${match[2]}.${match[3] || "0"}.${match[4] || "0"}`, options);
         };
         module.exports = coerce;
@@ -2488,7 +2514,7 @@ var __webpack_modules__ = {
                 options = undefined;
             }
             try {
-                return new SemVer(version, options).inc(release, identifier).version;
+                return new SemVer(version instanceof SemVer ? version.version : version, options).inc(release, identifier).version;
             } catch (er) {
                 return null;
             }
@@ -2682,9 +2708,9 @@ var __webpack_modules__ = {
         const opts = [ "includePrerelease", "loose", "rtl" ];
         const parseOptions = options => !options ? {} : typeof options !== "object" ? {
             loose: true
-        } : opts.filter((k => options[k])).reduce(((options, k) => {
-            options[k] = true;
-            return options;
+        } : opts.filter((k => options[k])).reduce(((o, k) => {
+            o[k] = true;
+            return o;
         }), {});
         module.exports = parseOptions;
     },
@@ -2698,7 +2724,7 @@ var __webpack_modules__ = {
         let R = 0;
         const createToken = (name, value, isGlobal) => {
             const index = R++;
-            debug(index, value);
+            debug(name, index, value);
             t[name] = index;
             src[index] = value;
             re[index] = new RegExp(value, isGlobal ? "g" : undefined);
@@ -2744,8 +2770,8 @@ var __webpack_modules__ = {
         createToken("HYPHENRANGE", `^\\s*(${src[t.XRANGEPLAIN]})` + `\\s+-\\s+` + `(${src[t.XRANGEPLAIN]})` + `\\s*$`);
         createToken("HYPHENRANGELOOSE", `^\\s*(${src[t.XRANGEPLAINLOOSE]})` + `\\s+-\\s+` + `(${src[t.XRANGEPLAINLOOSE]})` + `\\s*$`);
         createToken("STAR", "(<|>)?=?\\s*\\*");
-        createToken("GTE0", "^\\s*>=\\s*0.0.0\\s*$");
-        createToken("GTE0PRE", "^\\s*>=\\s*0.0.0-0\\s*$");
+        createToken("GTE0", "^\\s*>=\\s*0\\.0\\.0\\s*$");
+        createToken("GTE0PRE", "^\\s*>=\\s*0\\.0\\.0-0\\s*$");
     },
     4933: (module, __unused_webpack_exports, __webpack_require__) => {
         const outside = __webpack_require__(939);
@@ -2858,7 +2884,9 @@ var __webpack_modules__ = {
                         throw new Error(`Unexpected operation: ${comparator.operator}`);
                     }
                 }));
-                if (setMin && (!minver || gt(minver, setMin))) minver = setMin;
+                if (setMin && (!minver || gt(minver, setMin))) {
+                    minver = setMin;
+                }
             }
             if (minver && range.test(minver)) {
                 return minver;
@@ -2938,26 +2966,40 @@ var __webpack_modules__ = {
         const compare = __webpack_require__(2247);
         module.exports = (versions, range, options) => {
             const set = [];
-            let min = null;
+            let first = null;
             let prev = null;
             const v = versions.sort(((a, b) => compare(a, b, options)));
             for (const version of v) {
                 const included = satisfies(version, range, options);
                 if (included) {
                     prev = version;
-                    if (!min) min = version;
+                    if (!first) {
+                        first = version;
+                    }
                 } else {
                     if (prev) {
-                        set.push([ min, prev ]);
+                        set.push([ first, prev ]);
                     }
                     prev = null;
-                    min = null;
+                    first = null;
                 }
             }
-            if (min) set.push([ min, null ]);
+            if (first) {
+                set.push([ first, null ]);
+            }
             const ranges = [];
             for (const [min, max] of set) {
-                if (min === max) ranges.push(min); else if (!max && min === v[0]) ranges.push("*"); else if (!max) ranges.push(`>=${min}`); else if (min === v[0]) ranges.push(`<=${max}`); else ranges.push(`${min} - ${max}`);
+                if (min === max) {
+                    ranges.push(min);
+                } else if (!max && min === v[0]) {
+                    ranges.push("*");
+                } else if (!max) {
+                    ranges.push(`>=${min}`);
+                } else if (min === v[0]) {
+                    ranges.push(`<=${max}`);
+                } else {
+                    ranges.push(`${min} - ${max}`);
+                }
             }
             const simplified = ranges.join(" || ");
             const original = typeof range.raw === "string" ? range.raw : String(range);
@@ -2971,7 +3013,9 @@ var __webpack_modules__ = {
         const satisfies = __webpack_require__(8915);
         const compare = __webpack_require__(2247);
         const subset = (sub, dom, options = {}) => {
-            if (sub === dom) return true;
+            if (sub === dom) {
+                return true;
+            }
             sub = new Range(sub, options);
             dom = new Range(dom, options);
             let sawNonNull = false;
@@ -2979,36 +3023,70 @@ var __webpack_modules__ = {
                 for (const simpleDom of dom.set) {
                     const isSub = simpleSubset(simpleSub, simpleDom, options);
                     sawNonNull = sawNonNull || isSub !== null;
-                    if (isSub) continue OUTER;
+                    if (isSub) {
+                        continue OUTER;
+                    }
                 }
-                if (sawNonNull) return false;
+                if (sawNonNull) {
+                    return false;
+                }
             }
             return true;
         };
         const simpleSubset = (sub, dom, options) => {
-            if (sub === dom) return true;
+            if (sub === dom) {
+                return true;
+            }
             if (sub.length === 1 && sub[0].semver === ANY) {
-                if (dom.length === 1 && dom[0].semver === ANY) return true; else if (options.includePrerelease) sub = [ new Comparator(">=0.0.0-0") ]; else sub = [ new Comparator(">=0.0.0") ];
+                if (dom.length === 1 && dom[0].semver === ANY) {
+                    return true;
+                } else if (options.includePrerelease) {
+                    sub = [ new Comparator(">=0.0.0-0") ];
+                } else {
+                    sub = [ new Comparator(">=0.0.0") ];
+                }
             }
             if (dom.length === 1 && dom[0].semver === ANY) {
-                if (options.includePrerelease) return true; else dom = [ new Comparator(">=0.0.0") ];
+                if (options.includePrerelease) {
+                    return true;
+                } else {
+                    dom = [ new Comparator(">=0.0.0") ];
+                }
             }
             const eqSet = new Set;
             let gt, lt;
             for (const c of sub) {
-                if (c.operator === ">" || c.operator === ">=") gt = higherGT(gt, c, options); else if (c.operator === "<" || c.operator === "<=") lt = lowerLT(lt, c, options); else eqSet.add(c.semver);
+                if (c.operator === ">" || c.operator === ">=") {
+                    gt = higherGT(gt, c, options);
+                } else if (c.operator === "<" || c.operator === "<=") {
+                    lt = lowerLT(lt, c, options);
+                } else {
+                    eqSet.add(c.semver);
+                }
             }
-            if (eqSet.size > 1) return null;
+            if (eqSet.size > 1) {
+                return null;
+            }
             let gtltComp;
             if (gt && lt) {
                 gtltComp = compare(gt.semver, lt.semver, options);
-                if (gtltComp > 0) return null; else if (gtltComp === 0 && (gt.operator !== ">=" || lt.operator !== "<=")) return null;
+                if (gtltComp > 0) {
+                    return null;
+                } else if (gtltComp === 0 && (gt.operator !== ">=" || lt.operator !== "<=")) {
+                    return null;
+                }
             }
             for (const eq of eqSet) {
-                if (gt && !satisfies(eq, String(gt), options)) return null;
-                if (lt && !satisfies(eq, String(lt), options)) return null;
+                if (gt && !satisfies(eq, String(gt), options)) {
+                    return null;
+                }
+                if (lt && !satisfies(eq, String(lt), options)) {
+                    return null;
+                }
                 for (const c of dom) {
-                    if (!satisfies(eq, String(c), options)) return false;
+                    if (!satisfies(eq, String(c), options)) {
+                        return false;
+                    }
                 }
                 return true;
             }
@@ -3030,8 +3108,12 @@ var __webpack_modules__ = {
                     }
                     if (c.operator === ">" || c.operator === ">=") {
                         higher = higherGT(gt, c, options);
-                        if (higher === c && higher !== gt) return false;
-                    } else if (gt.operator === ">=" && !satisfies(gt.semver, String(c), options)) return false;
+                        if (higher === c && higher !== gt) {
+                            return false;
+                        }
+                    } else if (gt.operator === ">=" && !satisfies(gt.semver, String(c), options)) {
+                        return false;
+                    }
                 }
                 if (lt) {
                     if (needDomLTPre) {
@@ -3041,23 +3123,39 @@ var __webpack_modules__ = {
                     }
                     if (c.operator === "<" || c.operator === "<=") {
                         lower = lowerLT(lt, c, options);
-                        if (lower === c && lower !== lt) return false;
-                    } else if (lt.operator === "<=" && !satisfies(lt.semver, String(c), options)) return false;
+                        if (lower === c && lower !== lt) {
+                            return false;
+                        }
+                    } else if (lt.operator === "<=" && !satisfies(lt.semver, String(c), options)) {
+                        return false;
+                    }
                 }
-                if (!c.operator && (lt || gt) && gtltComp !== 0) return false;
+                if (!c.operator && (lt || gt) && gtltComp !== 0) {
+                    return false;
+                }
             }
-            if (gt && hasDomLT && !lt && gtltComp !== 0) return false;
-            if (lt && hasDomGT && !gt && gtltComp !== 0) return false;
-            if (needDomGTPre || needDomLTPre) return false;
+            if (gt && hasDomLT && !lt && gtltComp !== 0) {
+                return false;
+            }
+            if (lt && hasDomGT && !gt && gtltComp !== 0) {
+                return false;
+            }
+            if (needDomGTPre || needDomLTPre) {
+                return false;
+            }
             return true;
         };
         const higherGT = (a, b, options) => {
-            if (!a) return b;
+            if (!a) {
+                return b;
+            }
             const comp = compare(a.semver, b.semver, options);
             return comp > 0 ? a : comp < 0 ? b : b.operator === ">" && a.operator === ">=" ? b : a;
         };
         const lowerLT = (a, b, options) => {
-            if (!a) return b;
+            if (!a) {
+                return b;
+            }
             const comp = compare(a.semver, b.semver, options);
             return comp < 0 ? a : comp > 0 ? b : b.operator === "<" && a.operator === "<=" ? b : a;
         };
@@ -3552,27 +3650,76 @@ var __webpack_modules__ = {
             __webpack_require__(3278)(Yallist);
         } catch (er) {}
     },
-    6829: (__unused_webpack_module, exports) => {
+    6829: (__unused_webpack_module, exports, __webpack_require__) => {
         "use strict";
         Object.defineProperty(exports, "__esModule", {
             value: true
         });
-        exports.VERSION_SUPPORT = exports.DEADLINE_EPOCH_MS = exports.DEADLINE = void 0;
-        exports.DEADLINE = "2021-09-01";
-        exports.DEADLINE_EPOCH_MS = new Date(`${exports.DEADLINE}T00:00:00.000Z`).getTime();
-        exports.VERSION_SUPPORT = {
-            "<12.0.0-0": "end-of-life",
-            "<12.7.0": "unsupported",
-            "^12.7.0": "supported",
-            "^13.0.0-0": "end-of-life",
-            "<14.5.0": "unsupported",
-            "^14.5.0": "supported",
-            "^15.0.0-0": "end-of-life",
-            "<16.3.0": "unsupported",
-            "^16.3.0": "supported",
-            "<17.3.0": "unsupported",
-            "^17.3.0": "supported"
-        };
+        exports.NodeRelease = void 0;
+        const process = __webpack_require__(7282);
+        const semver_1 = __webpack_require__(6027);
+        const ONE_DAY_IN_MILLISECONDS = 864e5;
+        class NodeRelease {
+            constructor(majorVersion, opts) {
+                var _a, _b;
+                this.majorVersion = majorVersion;
+                this.endOfLifeDate = opts.endOfLife === true ? undefined : opts.endOfLife;
+                this.untested = (_a = opts.untested) !== null && _a !== void 0 ? _a : false;
+                this.supportedRange = new semver_1.Range((_b = opts.supportedRange) !== null && _b !== void 0 ? _b : `^${majorVersion}.0.0`);
+                this.endOfLife = opts.endOfLife === true || opts.endOfLife.getTime() <= Date.now();
+                this.deprecated = !this.endOfLife && opts.endOfLife !== true && opts.endOfLife.getTime() - NodeRelease.DEPRECATION_WINDOW_MS <= Date.now();
+                this.supported = !this.untested && !this.endOfLife;
+            }
+            static forThisRuntime() {
+                const semver = new semver_1.SemVer(process.version);
+                const majorVersion = semver.major;
+                for (const nodeRelease of this.ALL_RELEASES) {
+                    if (nodeRelease.majorVersion === majorVersion) {
+                        return {
+                            nodeRelease,
+                            knownBroken: !nodeRelease.supportedRange.test(semver)
+                        };
+                    }
+                }
+                return {
+                    nodeRelease: undefined,
+                    knownBroken: false
+                };
+            }
+            toString() {
+                const eolInfo = this.endOfLifeDate ? ` (Planned end-of-life: ${this.endOfLifeDate.toISOString().slice(0, 10)})` : "";
+                return `${this.supportedRange.raw}${eolInfo}`;
+            }
+        }
+        exports.NodeRelease = NodeRelease;
+        NodeRelease.DEPRECATION_WINDOW_MS = 30 * ONE_DAY_IN_MILLISECONDS;
+        NodeRelease.ALL_RELEASES = [ ...[ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 ].map((majorVersion => new NodeRelease(majorVersion, {
+            endOfLife: true
+        }))), new NodeRelease(13, {
+            endOfLife: new Date("2020-06-01")
+        }), new NodeRelease(15, {
+            endOfLife: new Date("2021-06-01")
+        }), new NodeRelease(12, {
+            endOfLife: new Date("2022-04-30"),
+            supportedRange: "^12.7.0"
+        }), new NodeRelease(14, {
+            endOfLife: new Date("2023-04-30"),
+            supportedRange: "^14.5.0"
+        }), new NodeRelease(16, {
+            endOfLife: new Date("2024-04-30"),
+            supportedRange: "^16.3.0"
+        }), new NodeRelease(17, {
+            endOfLife: new Date("2022-06-01"),
+            supportedRange: "^17.3.0"
+        }), new NodeRelease(18, {
+            endOfLife: new Date("2025-04-30")
+        }), new NodeRelease(19, {
+            endOfLife: new Date("2023-06-01"),
+            untested: true
+        }), new NodeRelease(20, {
+            endOfLife: new Date("2026-04-30"),
+            untested: true
+        }) ];
     },
     7962: (__unused_webpack_module, exports, __webpack_require__) => {
         "use strict";
@@ -3583,41 +3730,25 @@ var __webpack_modules__ = {
         const chalk_1 = __webpack_require__(1201);
         const console_1 = __webpack_require__(6206);
         const process_1 = __webpack_require__(7282);
-        const semver_1 = __webpack_require__(6027);
         const constants_1 = __webpack_require__(6829);
         function checkNode() {
-            const runtimeVersion = new semver_1.SemVer(process_1.version);
-            let versionSupportLevel = "untested";
-            for (const [rangeExpr, supportLevel] of Object.entries(constants_1.VERSION_SUPPORT)) {
-                const range = new semver_1.Range(rangeExpr);
-                if (range.test(runtimeVersion)) {
-                    versionSupportLevel = supportLevel;
-                    break;
-                }
-            }
-            switch (versionSupportLevel) {
-              case "deprecated":
-                const deadlinePast = Date.now() > constants_1.DEADLINE_EPOCH_MS;
-                veryVisibleMessage(deadlinePast ? chalk_1.bgRed.white.bold : chalk_1.bgYellowBright.black, `Node ${process_1.version} has reached end-of-life and will no longer be supported in new releases after ${constants_1.DEADLINE}.`, `Please upgrade to a supported node version as soon as possible.`);
-                break;
-
-              case "end-of-life":
-                veryVisibleMessage(chalk_1.bgRed.white.bold, `Node ${process_1.version} has reached end-of-life and is not supported.`);
-                break;
-
-              case "unsupported":
-                veryVisibleMessage(chalk_1.bgRed.white.bold, `Node ${process_1.version} is not supported. Early releases a node major often lack essential features of that line.`);
-                break;
-
-              case "supported":
-                break;
-
-              case "untested":
+            const {nodeRelease, knownBroken} = constants_1.NodeRelease.forThisRuntime();
+            if (nodeRelease === null || nodeRelease === void 0 ? void 0 : nodeRelease.endOfLife) {
+                const qualifier = nodeRelease.endOfLifeDate ? ` on ${nodeRelease.endOfLifeDate.toISOString().slice(0, 10)}` : "";
+                veryVisibleMessage(chalk_1.bgRed.white.bold, `Node ${nodeRelease.majorVersion} has reached end-of-life${qualifier} and is not supported.`, `Please upgrade to a supported node version as soon as possible.`);
+            } else if (knownBroken) {
+                veryVisibleMessage(chalk_1.bgRed.white.bold, `Node ${process_1.version} is unsupported and has known compatibility issues with this software.`);
+            } else if (!nodeRelease || nodeRelease.untested) {
                 veryVisibleMessage(chalk_1.bgYellow.black, `This software has not been tested with node ${process_1.version}.`);
-                break;
+            } else if (nodeRelease === null || nodeRelease === void 0 ? void 0 : nodeRelease.deprecated) {
+                const deadline = nodeRelease.endOfLifeDate.toISOString().slice(0, 10);
+                veryVisibleMessage(chalk_1.bgYellowBright.black, `Node ${nodeRelease.majorVersion} is approaching end-of-life and will no longer be supported in new releases after ${deadline}.`, `Please upgrade to a supported node version as soon as possible.`);
             }
             function veryVisibleMessage(chalk, message, callToAction = "You may to encounter runtime issues, and should switch to a supported release.") {
-                const lines = [ message, callToAction, "", "As of the current release, supported versions of node are:", ...Object.entries(constants_1.VERSION_SUPPORT).filter((([, supportLevel]) => supportLevel === "supported")).map((([rangeExpr]) => `- ${rangeExpr}`)) ];
+                const lines = [ message, callToAction, "", `This software is currently running on node ${process_1.version}.`, "As of the current release of this software, supported node releases are:", ...constants_1.NodeRelease.ALL_RELEASES.filter((release => release.supported)).sort(((l, r) => {
+                    var _a, _b, _c, _d;
+                    return ((_b = (_a = r.endOfLifeDate) === null || _a === void 0 ? void 0 : _a.getTime()) !== null && _b !== void 0 ? _b : 0) - ((_d = (_c = l.endOfLifeDate) === null || _c === void 0 ? void 0 : _c.getTime()) !== null && _d !== void 0 ? _d : 0);
+                })).map((release => `- ${release.toString()}${release.deprecated ? " [DEPRECATED]" : ""}`)) ];
                 const len = Math.max(...lines.map((l => l.length)));
                 const border = chalk("!".repeat(len + 8));
                 const spacer = chalk(`!!  ${" ".repeat(len)}  !!`);
