@@ -3661,11 +3661,10 @@ var __webpack_modules__ = {
         const ONE_DAY_IN_MILLISECONDS = 864e5;
         class NodeRelease {
             constructor(majorVersion, opts) {
-                var _a, _b;
                 this.majorVersion = majorVersion;
                 this.endOfLifeDate = opts.endOfLife === true ? undefined : opts.endOfLife;
-                this.untested = (_a = opts.untested) !== null && _a !== void 0 ? _a : false;
-                this.supportedRange = new semver_1.Range((_b = opts.supportedRange) !== null && _b !== void 0 ? _b : `^${majorVersion}.0.0`);
+                this.untested = opts.untested ?? false;
+                this.supportedRange = new semver_1.Range(opts.supportedRange ?? `^${majorVersion}.0.0`);
                 this.endOfLife = opts.endOfLife === true || opts.endOfLife.getTime() <= Date.now();
                 this.deprecated = !this.endOfLife && opts.endOfLife !== true && opts.endOfLife.getTime() - NodeRelease.DEPRECATION_WINDOW_MS <= Date.now();
                 this.supported = !this.untested && !this.endOfLife;
@@ -3733,32 +3732,29 @@ var __webpack_modules__ = {
         const constants_1 = __webpack_require__(6829);
         function checkNode() {
             const {nodeRelease, knownBroken} = constants_1.NodeRelease.forThisRuntime();
-            if (nodeRelease === null || nodeRelease === void 0 ? void 0 : nodeRelease.endOfLife) {
+            if (nodeRelease?.endOfLife) {
                 const qualifier = nodeRelease.endOfLifeDate ? ` on ${nodeRelease.endOfLifeDate.toISOString().slice(0, 10)}` : "";
                 veryVisibleMessage(chalk_1.bgRed.white.bold, `Node ${nodeRelease.majorVersion} has reached end-of-life${qualifier} and is not supported.`, `Please upgrade to a supported node version as soon as possible.`);
             } else if (knownBroken) {
                 veryVisibleMessage(chalk_1.bgRed.white.bold, `Node ${process_1.version} is unsupported and has known compatibility issues with this software.`);
             } else if (!nodeRelease || nodeRelease.untested) {
                 veryVisibleMessage(chalk_1.bgYellow.black, `This software has not been tested with node ${process_1.version}.`);
-            } else if (nodeRelease === null || nodeRelease === void 0 ? void 0 : nodeRelease.deprecated) {
+            } else if (nodeRelease?.deprecated) {
                 const deadline = nodeRelease.endOfLifeDate.toISOString().slice(0, 10);
                 veryVisibleMessage(chalk_1.bgYellowBright.black, `Node ${nodeRelease.majorVersion} is approaching end-of-life and will no longer be supported in new releases after ${deadline}.`, `Please upgrade to a supported node version as soon as possible.`);
             }
             function veryVisibleMessage(chalk, message, callToAction = "You may to encounter runtime issues, and should switch to a supported release.") {
-                const lines = [ message, callToAction, "", `This software is currently running on node ${process_1.version}.`, "As of the current release of this software, supported node releases are:", ...constants_1.NodeRelease.ALL_RELEASES.filter((release => release.supported)).sort(((l, r) => {
-                    var _a, _b, _c, _d;
-                    return ((_b = (_a = r.endOfLifeDate) === null || _a === void 0 ? void 0 : _a.getTime()) !== null && _b !== void 0 ? _b : 0) - ((_d = (_c = l.endOfLifeDate) === null || _c === void 0 ? void 0 : _c.getTime()) !== null && _d !== void 0 ? _d : 0);
-                })).map((release => `- ${release.toString()}${release.deprecated ? " [DEPRECATED]" : ""}`)) ];
+                const lines = [ message, callToAction, "", `This software is currently running on node ${process_1.version}.`, "As of the current release of this software, supported node releases are:", ...constants_1.NodeRelease.ALL_RELEASES.filter((release => release.supported)).sort(((l, r) => (r.endOfLifeDate?.getTime() ?? 0) - (l.endOfLifeDate?.getTime() ?? 0))).map((release => `- ${release.toString()}${release.deprecated ? " [DEPRECATED]" : ""}`)) ];
                 const len = Math.max(...lines.map((l => l.length)));
                 const border = chalk("!".repeat(len + 8));
                 const spacer = chalk(`!!  ${" ".repeat(len)}  !!`);
-                console_1.error(border);
-                console_1.error(spacer);
+                (0, console_1.error)(border);
+                (0, console_1.error)(spacer);
                 for (const line of lines) {
-                    console_1.error(chalk(`!!  ${line.padEnd(len, " ")}  !!`));
+                    (0, console_1.error)(chalk(`!!  ${line.padEnd(len, " ")}  !!`));
                 }
-                console_1.error(spacer);
-                console_1.error(border);
+                (0, console_1.error)(spacer);
+                (0, console_1.error)(border);
             }
         }
         exports.checkNode = checkNode;
@@ -3766,7 +3762,7 @@ var __webpack_modules__ = {
     9317: (module, __unused_webpack_exports, __webpack_require__) => {
         "use strict";
         const index_1 = __webpack_require__(7962);
-        index_1.checkNode();
+        (0, index_1.checkNode)();
         module.exports = {};
     },
     2081: module => {
@@ -3834,31 +3830,30 @@ var __webpack_exports__ = {};
     const console_1 = __webpack_require__(6206);
     const os_1 = __webpack_require__(2037);
     const path_1 = __webpack_require__(4822);
-    const process_1 = __webpack_require__(7282);
-    const child = child_process_1.spawn(process_1.execPath, [ ...process_1.execArgv, path_1.resolve(__dirname, "..", "lib", "program.js") ], {
+    const child = (0, child_process_1.spawn)(process.execPath, [ ...process.execArgv, (0, 
+    path_1.resolve)(__dirname, "..", "lib", "program.js") ], {
         stdio: [ "ignore", "pipe", "pipe", "pipe" ]
     });
     child.once("end", ((code, signal) => {
-        var _a;
         if (signal != null) {
-            process_1.exit(128 + ((_a = os_1.constants.signals[signal]) !== null && _a !== void 0 ? _a : 0));
+            process.exit(128 + (os_1.constants.signals[signal] ?? 0));
         }
-        process_1.exit(code);
+        process.exit(code);
     }));
     child.once("error", (err => {
         console.error("Failed to spawn child process:", err.stack);
-        process_1.exit(-1);
+        process.exit(-1);
     }));
     for (const signal of Object.keys(os_1.constants.signals)) {
         if (signal === "SIGKILL" || signal === "SIGSTOP") {
             continue;
         }
-        process_1.on(signal, (sig => child.kill(sig)));
+        process.on(signal, (sig => child.kill(sig)));
     }
     function makeHandler(tag) {
         return chunk => {
             const buffer = Buffer.from(chunk);
-            console_1.error(JSON.stringify({
+            (0, console_1.error)(JSON.stringify({
                 [tag]: buffer.toString("base64")
             }));
         };
@@ -3866,7 +3861,7 @@ var __webpack_exports__ = {};
     child.stdout.on("data", makeHandler("stdout"));
     child.stderr.on("data", makeHandler("stderr"));
     const commands = child.stdio[3];
-    process_1.stdin.pipe(commands);
-    commands.pipe(process_1.stdout);
+    process.stdin.pipe(commands);
+    commands.pipe(process.stdout);
 })();
 //# sourceMappingURL=jsii-runtime.js.map
