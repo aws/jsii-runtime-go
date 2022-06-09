@@ -3661,10 +3661,11 @@ var __webpack_modules__ = {
         const ONE_DAY_IN_MILLISECONDS = 864e5;
         class NodeRelease {
             constructor(majorVersion, opts) {
+                var _a, _b;
                 this.majorVersion = majorVersion;
                 this.endOfLifeDate = opts.endOfLife === true ? undefined : opts.endOfLife;
-                this.untested = opts.untested ?? false;
-                this.supportedRange = new semver_1.Range(opts.supportedRange ?? `^${majorVersion}.0.0`);
+                this.untested = (_a = opts.untested) !== null && _a !== void 0 ? _a : false;
+                this.supportedRange = new semver_1.Range((_b = opts.supportedRange) !== null && _b !== void 0 ? _b : `^${majorVersion}.0.0`);
                 this.endOfLife = opts.endOfLife === true || opts.endOfLife.getTime() <= Date.now();
                 this.deprecated = !this.endOfLife && opts.endOfLife !== true && opts.endOfLife.getTime() - NodeRelease.DEPRECATION_WINDOW_MS <= Date.now();
                 this.supported = !this.untested && !this.endOfLife;
@@ -3732,19 +3733,22 @@ var __webpack_modules__ = {
         const constants_1 = __webpack_require__(6829);
         function checkNode() {
             const {nodeRelease, knownBroken} = constants_1.NodeRelease.forThisRuntime();
-            if (nodeRelease?.endOfLife) {
+            if (nodeRelease === null || nodeRelease === void 0 ? void 0 : nodeRelease.endOfLife) {
                 const qualifier = nodeRelease.endOfLifeDate ? ` on ${nodeRelease.endOfLifeDate.toISOString().slice(0, 10)}` : "";
                 veryVisibleMessage(chalk_1.bgRed.white.bold, `Node ${nodeRelease.majorVersion} has reached end-of-life${qualifier} and is not supported.`, `Please upgrade to a supported node version as soon as possible.`);
             } else if (knownBroken) {
                 veryVisibleMessage(chalk_1.bgRed.white.bold, `Node ${process_1.version} is unsupported and has known compatibility issues with this software.`);
             } else if (!nodeRelease || nodeRelease.untested) {
                 veryVisibleMessage(chalk_1.bgYellow.black, `This software has not been tested with node ${process_1.version}.`);
-            } else if (nodeRelease?.deprecated) {
+            } else if (nodeRelease === null || nodeRelease === void 0 ? void 0 : nodeRelease.deprecated) {
                 const deadline = nodeRelease.endOfLifeDate.toISOString().slice(0, 10);
                 veryVisibleMessage(chalk_1.bgYellowBright.black, `Node ${nodeRelease.majorVersion} is approaching end-of-life and will no longer be supported in new releases after ${deadline}.`, `Please upgrade to a supported node version as soon as possible.`);
             }
             function veryVisibleMessage(chalk, message, callToAction = "You may to encounter runtime issues, and should switch to a supported release.") {
-                const lines = [ message, callToAction, "", `This software is currently running on node ${process_1.version}.`, "As of the current release of this software, supported node releases are:", ...constants_1.NodeRelease.ALL_RELEASES.filter((release => release.supported)).sort(((l, r) => (r.endOfLifeDate?.getTime() ?? 0) - (l.endOfLifeDate?.getTime() ?? 0))).map((release => `- ${release.toString()}${release.deprecated ? " [DEPRECATED]" : ""}`)) ];
+                const lines = [ message, callToAction, "", `This software is currently running on node ${process_1.version}.`, "As of the current release of this software, supported node releases are:", ...constants_1.NodeRelease.ALL_RELEASES.filter((release => release.supported)).sort(((l, r) => {
+                    var _a, _b, _c, _d;
+                    return ((_b = (_a = r.endOfLifeDate) === null || _a === void 0 ? void 0 : _a.getTime()) !== null && _b !== void 0 ? _b : 0) - ((_d = (_c = l.endOfLifeDate) === null || _c === void 0 ? void 0 : _c.getTime()) !== null && _d !== void 0 ? _d : 0);
+                })).map((release => `- ${release.toString()}${release.deprecated ? " [DEPRECATED]" : ""}`)) ];
                 const len = Math.max(...lines.map((l => l.length)));
                 const border = chalk("!".repeat(len + 8));
                 const spacer = chalk(`!!  ${" ".repeat(len)}  !!`);
