@@ -3704,7 +3704,7 @@ var __webpack_modules__ = {
             supportedRange: "^12.7.0"
         }), new NodeRelease(14, {
             endOfLife: new Date("2023-04-30"),
-            supportedRange: "^14.5.0"
+            supportedRange: "^14.6.0"
         }), new NodeRelease(16, {
             endOfLife: new Date("2024-04-30"),
             supportedRange: "^16.3.0"
