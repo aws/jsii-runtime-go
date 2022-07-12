@@ -2674,7 +2674,6 @@ var __webpack_modules__ = {
         };
         const EE = __webpack_require__(2361);
         const Stream = __webpack_require__(2781);
-        const Yallist = __webpack_require__(1455);
         const SD = __webpack_require__(1576).StringDecoder;
         const EOF = Symbol("EOF");
         const MAYBE_EMIT_END = Symbol("maybeEmitEnd");
@@ -2695,22 +2694,40 @@ var __webpack_modules__ = {
         const BUFFERSHIFT = Symbol("bufferShift");
         const OBJECTMODE = Symbol("objectMode");
         const DESTROYED = Symbol("destroyed");
+        const EMITDATA = Symbol("emitData");
+        const EMITEND = Symbol("emitEnd");
+        const EMITEND2 = Symbol("emitEnd2");
+        const ASYNC = Symbol("async");
+        const defer = fn => Promise.resolve().then(fn);
         const doIter = global._MP_NO_ITERATOR_SYMBOLS_ !== "1";
         const ASYNCITERATOR = doIter && Symbol.asyncIterator || Symbol("asyncIterator not implemented");
         const ITERATOR = doIter && Symbol.iterator || Symbol("iterator not implemented");
         const isEndish = ev => ev === "end" || ev === "finish" || ev === "prefinish";
         const isArrayBuffer = b => b instanceof ArrayBuffer || typeof b === "object" && b.constructor && b.constructor.name === "ArrayBuffer" && b.byteLength >= 0;
         const isArrayBufferView = b => !Buffer.isBuffer(b) && ArrayBuffer.isView(b);
+        class Pipe {
+            constructor(src, dest, opts) {
+                this.dest = dest;
+                this.opts = opts;
+                this.ondrain = () => src[RESUME]();
+                dest.on("drain", this.ondrain);
+            }
+            end() {
+                if (this.opts.end) this.dest.end();
+                this.dest.removeListener("drain", this.ondrain);
+            }
+        }
         module.exports = class Minipass extends Stream {
             constructor(options) {
                 super();
                 this[FLOWING] = false;
                 this[PAUSED] = false;
-                this.pipes = new Yallist;
-                this.buffer = new Yallist;
+                this.pipes = [];
+                this.buffer = [];
                 this[OBJECTMODE] = options && options.objectMode || false;
                 if (this[OBJECTMODE]) this[ENCODING] = null; else this[ENCODING] = options && options.encoding || null;
                 if (this[ENCODING] === "buffer") this[ENCODING] = null;
+                this[ASYNC] = options && !!options.async || false;
                 this[DECODER] = this[ENCODING] ? new SD(this[ENCODING]) : null;
                 this[EOF] = false;
                 this[EMITTED_END] = false;
@@ -2746,6 +2763,12 @@ var __webpack_modules__ = {
             set objectMode(om) {
                 this[OBJECTMODE] = this[OBJECTMODE] || !!om;
             }
+            get ["async"]() {
+                return this[ASYNC];
+            }
+            set ["async"](a) {
+                this[ASYNC] = this[ASYNC] || !!a;
+            }
             write(chunk, encoding, cb) {
                 if (this[EOF]) throw new Error("write after end");
                 if (this[DESTROYED]) {
@@ -2756,42 +2779,49 @@ var __webpack_modules__ = {
                 }
                 if (typeof encoding === "function") cb = encoding, encoding = "utf8";
                 if (!encoding) encoding = "utf8";
+                const fn = this[ASYNC] ? defer : f => f();
                 if (!this[OBJECTMODE] && !Buffer.isBuffer(chunk)) {
                     if (isArrayBufferView(chunk)) chunk = Buffer.from(chunk.buffer, chunk.byteOffset, chunk.byteLength); else if (isArrayBuffer(chunk)) chunk = Buffer.from(chunk); else if (typeof chunk !== "string") this.objectMode = true;
                 }
-                if (!this.objectMode && !chunk.length) {
+                if (this[OBJECTMODE]) {
+                    if (this.flowing && this[BUFFERLENGTH] !== 0) this[FLUSH](true);
+                    if (this.flowing) this.emit("data", chunk); else this[BUFFERPUSH](chunk);
                     if (this[BUFFERLENGTH] !== 0) this.emit("readable");
-                    if (cb) cb();
+                    if (cb) fn(cb);
                     return this.flowing;
                 }
-                if (typeof chunk === "string" && !this[OBJECTMODE] && !(encoding === this[ENCODING] && !this[DECODER].lastNeed)) {
+                if (!chunk.length) {
+                    if (this[BUFFERLENGTH] !== 0) this.emit("readable");
+                    if (cb) fn(cb);
+                    return this.flowing;
+                }
+                if (typeof chunk === "string" && !(encoding === this[ENCODING] && !this[DECODER].lastNeed)) {
                     chunk = Buffer.from(chunk, encoding);
                 }
                 if (Buffer.isBuffer(chunk) && this[ENCODING]) chunk = this[DECODER].write(chunk);
-                if (this.flowing) {
-                    if (this[BUFFERLENGTH] !== 0) this[FLUSH](true);
-                    this.flowing ? this.emit("data", chunk) : this[BUFFERPUSH](chunk);
-                } else this[BUFFERPUSH](chunk);
+                if (this.flowing && this[BUFFERLENGTH] !== 0) this[FLUSH](true);
+                if (this.flowing) this.emit("data", chunk); else this[BUFFERPUSH](chunk);
                 if (this[BUFFERLENGTH] !== 0) this.emit("readable");
-                if (cb) cb();
+                if (cb) fn(cb);
                 return this.flowing;
             }
             read(n) {
                 if (this[DESTROYED]) return null;
-                try {
-                    if (this[BUFFERLENGTH] === 0 || n === 0 || n > this[BUFFERLENGTH]) return null;
-                    if (this[OBJECTMODE]) n = null;
-                    if (this.buffer.length > 1 && !this[OBJECTMODE]) {
-                        if (this.encoding) this.buffer = new Yallist([ Array.from(this.buffer).join("") ]); else this.buffer = new Yallist([ Buffer.concat(Array.from(this.buffer), this[BUFFERLENGTH]) ]);
-                    }
-                    return this[READ](n || null, this.buffer.head.value);
-                } finally {
+                if (this[BUFFERLENGTH] === 0 || n === 0 || n > this[BUFFERLENGTH]) {
                     this[MAYBE_EMIT_END]();
+                    return null;
                 }
+                if (this[OBJECTMODE]) n = null;
+                if (this.buffer.length > 1 && !this[OBJECTMODE]) {
+                    if (this.encoding) this.buffer = [ this.buffer.join("") ]; else this.buffer = [ Buffer.concat(this.buffer, this[BUFFERLENGTH]) ];
+                }
+                const ret = this[READ](n || null, this.buffer[0]);
+                this[MAYBE_EMIT_END]();
+                return ret;
             }
             [READ](n, chunk) {
                 if (n === chunk.length || n === null) this[BUFFERSHIFT](); else {
-                    this.buffer.head.value = chunk.slice(n);
+                    this.buffer[0] = chunk.slice(n);
                     chunk = chunk.slice(0, n);
                     this[BUFFERLENGTH] -= n;
                 }
@@ -2834,11 +2864,11 @@ var __webpack_modules__ = {
             }
             [BUFFERPUSH](chunk) {
                 if (this[OBJECTMODE]) this[BUFFERLENGTH] += 1; else this[BUFFERLENGTH] += chunk.length;
-                return this.buffer.push(chunk);
+                this.buffer.push(chunk);
             }
             [BUFFERSHIFT]() {
                 if (this.buffer.length) {
-                    if (this[OBJECTMODE]) this[BUFFERLENGTH] -= 1; else this[BUFFERLENGTH] -= this.buffer.head.value.length;
+                    if (this[OBJECTMODE]) this[BUFFERLENGTH] -= 1; else this[BUFFERLENGTH] -= this.buffer[0].length;
                 }
                 return this.buffer.shift();
             }
@@ -2854,31 +2884,26 @@ var __webpack_modules__ = {
                 const ended = this[EMITTED_END];
                 opts = opts || {};
                 if (dest === proc.stdout || dest === proc.stderr) opts.end = false; else opts.end = opts.end !== false;
-                const p = {
-                    dest,
-                    opts,
-                    ondrain: _ => this[RESUME]()
-                };
-                this.pipes.push(p);
-                dest.on("drain", p.ondrain);
-                this[RESUME]();
-                if (ended && p.opts.end) p.dest.end();
+                if (ended) {
+                    if (opts.end) dest.end();
+                } else {
+                    this.pipes.push(new Pipe(this, dest, opts));
+                    if (this[ASYNC]) defer((() => this[RESUME]())); else this[RESUME]();
+                }
                 return dest;
             }
             addListener(ev, fn) {
                 return this.on(ev, fn);
             }
             on(ev, fn) {
-                try {
-                    return super.on(ev, fn);
-                } finally {
-                    if (ev === "data" && !this.pipes.length && !this.flowing) this[RESUME](); else if (isEndish(ev) && this[EMITTED_END]) {
-                        super.emit(ev);
-                        this.removeAllListeners(ev);
-                    } else if (ev === "error" && this[EMITTED_ERROR]) {
-                        fn.call(this, this[EMITTED_ERROR]);
-                    }
+                const ret = super.on(ev, fn);
+                if (ev === "data" && !this.pipes.length && !this.flowing) this[RESUME](); else if (ev === "readable" && this[BUFFERLENGTH] !== 0) super.emit("readable"); else if (isEndish(ev) && this[EMITTED_END]) {
+                    super.emit(ev);
+                    this.removeAllListeners(ev);
+                } else if (ev === "error" && this[EMITTED_ERROR]) {
+                    if (this[ASYNC]) defer((() => fn.call(this, this[EMITTED_ERROR]))); else fn.call(this, this[EMITTED_ERROR]);
                 }
+                return ret;
             }
             get emittedEnd() {
                 return this[EMITTED_END];
@@ -2893,44 +2918,65 @@ var __webpack_modules__ = {
                     this[EMITTING_END] = false;
                 }
             }
-            emit(ev, data) {
+            emit(ev, data, ...extra) {
                 if (ev !== "error" && ev !== "close" && ev !== DESTROYED && this[DESTROYED]) return; else if (ev === "data") {
-                    if (!data) return;
-                    if (this.pipes.length) this.pipes.forEach((p => p.dest.write(data) === false && this.pause()));
+                    return !data ? false : this[ASYNC] ? defer((() => this[EMITDATA](data))) : this[EMITDATA](data);
                 } else if (ev === "end") {
-                    if (this[EMITTED_END] === true) return;
-                    this[EMITTED_END] = true;
-                    this.readable = false;
-                    if (this[DECODER]) {
-                        data = this[DECODER].end();
-                        if (data) {
-                            this.pipes.forEach((p => p.dest.write(data)));
-                            super.emit("data", data);
-                        }
-                    }
-                    this.pipes.forEach((p => {
-                        p.dest.removeListener("drain", p.ondrain);
-                        if (p.opts.end) p.dest.end();
-                    }));
+                    return this[EMITEND]();
                 } else if (ev === "close") {
                     this[CLOSED] = true;
                     if (!this[EMITTED_END] && !this[DESTROYED]) return;
+                    const ret = super.emit("close");
+                    this.removeAllListeners("close");
+                    return ret;
                 } else if (ev === "error") {
                     this[EMITTED_ERROR] = data;
+                    const ret = super.emit("error", data);
+                    this[MAYBE_EMIT_END]();
+                    return ret;
+                } else if (ev === "resume") {
+                    const ret = super.emit("resume");
+                    this[MAYBE_EMIT_END]();
+                    return ret;
+                } else if (ev === "finish" || ev === "prefinish") {
+                    const ret = super.emit(ev);
+                    this.removeAllListeners(ev);
+                    return ret;
                 }
-                const args = new Array(arguments.length);
-                args[0] = ev;
-                args[1] = data;
-                if (arguments.length > 2) {
-                    for (let i = 2; i < arguments.length; i++) {
-                        args[i] = arguments[i];
+                const ret = super.emit(ev, data, ...extra);
+                this[MAYBE_EMIT_END]();
+                return ret;
+            }
+            [EMITDATA](data) {
+                for (const p of this.pipes) {
+                    if (p.dest.write(data) === false) this.pause();
+                }
+                const ret = super.emit("data", data);
+                this[MAYBE_EMIT_END]();
+                return ret;
+            }
+            [EMITEND]() {
+                if (this[EMITTED_END]) return;
+                this[EMITTED_END] = true;
+                this.readable = false;
+                if (this[ASYNC]) defer((() => this[EMITEND2]())); else this[EMITEND2]();
+            }
+            [EMITEND2]() {
+                if (this[DECODER]) {
+                    const data = this[DECODER].end();
+                    if (data) {
+                        for (const p of this.pipes) {
+                            p.dest.write(data);
+                        }
+                        super.emit("data", data);
                     }
                 }
-                try {
-                    return super.emit.apply(this, args);
-                } finally {
-                    if (!isEndish(ev)) this[MAYBE_EMIT_END](); else this.removeAllListeners(ev);
+                for (const p of this.pipes) {
+                    p.end();
                 }
+                const ret = super.emit("end");
+                this.removeAllListeners("end");
+                return ret;
             }
             collect() {
                 const buf = [];
@@ -3018,7 +3064,7 @@ var __webpack_modules__ = {
                     return this;
                 }
                 this[DESTROYED] = true;
-                this.buffer = new Yallist;
+                this.buffer.length = 0;
                 this[BUFFERLENGTH] = 0;
                 if (typeof this.close === "function" && !this[CLOSED]) this.close();
                 if (er) this.emit("error", er); else this.emit(DESTROYED);
@@ -7810,6 +7856,7 @@ var __webpack_modules__ = {
         });
         exports.Kernel = void 0;
         const spec = __webpack_require__(1804);
+        const spec_1 = __webpack_require__(1804);
         const cp = __webpack_require__(2081);
         const fs = __webpack_require__(9728);
         const os = __webpack_require__(2037);
@@ -7825,11 +7872,11 @@ var __webpack_modules__ = {
             constructor(callbackHandler) {
                 this.callbackHandler = callbackHandler;
                 this.traceEnabled = false;
-                this.assemblies = {};
+                this.assemblies = new Map;
                 this.objects = new objects_1.ObjectTable(this._typeInfoForFqn.bind(this));
-                this.cbs = {};
-                this.waiting = {};
-                this.promises = {};
+                this.cbs = new Map;
+                this.waiting = new Map;
+                this.promises = new Map;
                 this.nextid = 2e4;
                 const moduleLoad = __webpack_require__(8188).Module._load;
                 const nodeRequire = p => moduleLoad(p, module, false);
@@ -7840,6 +7887,7 @@ var __webpack_modules__ = {
                 });
             }
             load(req) {
+                var _a, _b;
                 this._debug("load", req);
                 if ("assembly" in req) {
                     throw new Error('`assembly` field is deprecated for "load", use `name`, `version` and `tarball` instead');
@@ -7853,10 +7901,10 @@ var __webpack_modules__ = {
                         throw new Error(`Multiple versions ${pkgver} and ${epkg.version} of the ` + `package '${pkgname}' cannot be loaded together since this is unsupported by ` + "some runtime environments");
                     }
                     this._debug("look up already-loaded assembly", pkgname);
-                    const assm = this.assemblies[pkgname];
+                    const assm = this.assemblies.get(pkgname);
                     return {
                         assembly: assm.metadata.name,
-                        types: Object.keys(assm.metadata.types ?? {}).length
+                        types: Object.keys((_a = assm.metadata.types) !== null && _a !== void 0 ? _a : {}).length
                     };
                 }
                 fs.mkdirpSync(packageDir);
@@ -7873,20 +7921,22 @@ var __webpack_modules__ = {
                 } finally {
                     process.umask(originalUmask);
                 }
-                const jsiiMetadataFile = path.join(packageDir, spec.SPEC_FILE_NAME);
-                if (!fs.pathExistsSync(jsiiMetadataFile)) {
-                    throw new Error(`Package tarball ${req.tarball} must have a file named ${spec.SPEC_FILE_NAME} at the root`);
+                let assmSpec;
+                try {
+                    assmSpec = (0, spec_1.loadAssemblyFromPath)(packageDir);
+                } catch (e) {
+                    throw new Error(`Error for package tarball ${req.tarball}: ${e.message}`);
                 }
-                const assmSpec = fs.readJsonSync(jsiiMetadataFile);
                 const closure = this._execute(`require(String.raw\`${packageDir}\`)`, packageDir);
                 const assm = new Assembly(assmSpec, closure);
                 this._addAssembly(assm);
                 return {
                     assembly: assmSpec.name,
-                    types: Object.keys(assmSpec.types ?? {}).length
+                    types: Object.keys((_b = assmSpec.types) !== null && _b !== void 0 ? _b : {}).length
                 };
             }
             invokeBinScript(req) {
+                var _a;
                 const packageDir = this._getPackageDir(req.assembly);
                 if (fs.pathExistsSync(packageDir)) {
                     const epkg = fs.readJsonSync(path.join(packageDir, "package.json"));
@@ -7897,7 +7947,7 @@ var __webpack_modules__ = {
                     if (!epkg.bin) {
                         throw new Error(`Script with name ${req.script} was not defined.`);
                     }
-                    const result = cp.spawnSync(path.join(packageDir, scriptPath), req.args ?? [], {
+                    const result = cp.spawnSync(path.join(packageDir, scriptPath), (_a = req.args) !== null && _a !== void 0 ? _a : [], {
                         encoding: "utf-8",
                         env: {
                             ...process.env,
@@ -7935,7 +7985,7 @@ var __webpack_modules__ = {
                 const prototype = this._findSymbol(fqn);
                 const value = this._ensureSync(`property ${property}`, (() => this._wrapSandboxCode((() => prototype[property]))));
                 this._debug("value:", value);
-                const ret = this._fromSandbox(value, ti);
+                const ret = this._fromSandbox(value, ti, `of static property ${symbol}`);
                 this._debug("ret", ret);
                 return {
                     value: ret
@@ -7953,7 +8003,7 @@ var __webpack_modules__ = {
                     throw new Error(`static property ${symbol} is readonly`);
                 }
                 const prototype = this._findSymbol(fqn);
-                this._ensureSync(`property ${property}`, (() => this._wrapSandboxCode((() => prototype[property] = this._toSandbox(value, ti)))));
+                this._ensureSync(`property ${property}`, (() => this._wrapSandboxCode((() => prototype[property] = this._toSandbox(value, ti, `assigned to static property ${symbol}`)))));
                 return {};
             }
             get(req) {
@@ -7964,7 +8014,7 @@ var __webpack_modules__ = {
                 const propertyToGet = this._findPropertyTarget(instance, property);
                 const value = this._ensureSync(`property '${objref[api_1.TOKEN_REF]}.${propertyToGet}'`, (() => this._wrapSandboxCode((() => instance[propertyToGet]))));
                 this._debug("value:", value);
-                const ret = this._fromSandbox(value, ti);
+                const ret = this._fromSandbox(value, ti, `of property ${fqn}.${property}`);
                 this._debug("ret:", ret);
                 return {
                     value: ret
@@ -7979,27 +8029,30 @@ var __webpack_modules__ = {
                     throw new Error(`Cannot set value of immutable property ${req.property} to ${req.value}`);
                 }
                 const propertyToSet = this._findPropertyTarget(instance, property);
-                this._ensureSync(`property '${objref[api_1.TOKEN_REF]}.${propertyToSet}'`, (() => this._wrapSandboxCode((() => instance[propertyToSet] = this._toSandbox(value, propInfo)))));
+                this._ensureSync(`property '${objref[api_1.TOKEN_REF]}.${propertyToSet}'`, (() => this._wrapSandboxCode((() => instance[propertyToSet] = this._toSandbox(value, propInfo, `assigned to property ${fqn}.${property}`)))));
                 return {};
             }
             invoke(req) {
+                var _a, _b;
                 const {objref, method} = req;
-                const args = req.args ?? [];
+                const args = (_a = req.args) !== null && _a !== void 0 ? _a : [];
                 this._debug("invoke", objref, method, args);
                 const {ti, obj, fn} = this._findInvokeTarget(objref, method, args);
                 if (ti.async) {
                     throw new Error(`${method} is an async method, use "begin" instead`);
                 }
-                const ret = this._ensureSync(`method '${objref[api_1.TOKEN_REF]}.${method}'`, (() => this._wrapSandboxCode((() => fn.apply(obj, this._toSandboxValues(args, ti.parameters))))));
-                const result = this._fromSandbox(ret, ti.returns ?? "void");
+                const fqn = (0, objects_1.jsiiTypeFqn)(obj);
+                const ret = this._ensureSync(`method '${objref[api_1.TOKEN_REF]}.${method}'`, (() => this._wrapSandboxCode((() => fn.apply(obj, this._toSandboxValues(args, `method ${fqn ? `${fqn}#` : ""}${method}`, ti.parameters))))));
+                const result = this._fromSandbox(ret, (_b = ti.returns) !== null && _b !== void 0 ? _b : "void", `returned by method ${fqn ? `${fqn}#` : ""}${method}`);
                 this._debug("invoke result", result);
                 return {
                     result
                 };
             }
             sinvoke(req) {
+                var _a, _b;
                 const {fqn, method} = req;
-                const args = req.args ?? [];
+                const args = (_a = req.args) !== null && _a !== void 0 ? _a : [];
                 this._debug("sinvoke", fqn, method, args);
                 const ti = this._typeInfoForMethod(method, fqn);
                 if (!ti.static) {
@@ -8010,15 +8063,16 @@ var __webpack_modules__ = {
                 }
                 const prototype = this._findSymbol(fqn);
                 const fn = prototype[method];
-                const ret = this._ensureSync(`method '${fqn}.${method}'`, (() => this._wrapSandboxCode((() => fn.apply(prototype, this._toSandboxValues(args, ti.parameters))))));
+                const ret = this._ensureSync(`method '${fqn}.${method}'`, (() => this._wrapSandboxCode((() => fn.apply(prototype, this._toSandboxValues(args, `static method ${fqn}.${method}`, ti.parameters))))));
                 this._debug("method returned:", ret);
                 return {
-                    result: this._fromSandbox(ret, ti.returns ?? "void")
+                    result: this._fromSandbox(ret, (_b = ti.returns) !== null && _b !== void 0 ? _b : "void", `returned by static method ${fqn}.${method}`)
                 };
             }
             begin(req) {
+                var _a;
                 const {objref, method} = req;
-                const args = req.args ?? [];
+                const args = (_a = req.args) !== null && _a !== void 0 ? _a : [];
                 this._debug("begin", objref, method, args);
                 if (this.syncInProgress) {
                     throw new Error(`Cannot invoke async method '${req.objref[api_1.TOKEN_REF]}.${req.method}' while sync ${this.syncInProgress} is being processed`);
@@ -8027,24 +8081,27 @@ var __webpack_modules__ = {
                 if (!ti.async) {
                     throw new Error(`Method ${method} is expected to be an async method`);
                 }
-                const promise = this._wrapSandboxCode((() => fn.apply(obj, this._toSandboxValues(args, ti.parameters))));
+                const fqn = (0, objects_1.jsiiTypeFqn)(obj);
+                const promise = this._wrapSandboxCode((() => fn.apply(obj, this._toSandboxValues(args, `async method ${fqn ? `${fqn}#` : ""}${method}`, ti.parameters))));
                 promise.catch((_ => undefined));
                 const prid = this._makeprid();
-                this.promises[prid] = {
+                this.promises.set(prid, {
                     promise,
                     method: ti
-                };
+                });
                 return {
                     promiseid: prid
                 };
             }
             async end(req) {
+                var _a;
                 const {promiseid} = req;
                 this._debug("end", promiseid);
-                const {promise, method} = this.promises[promiseid];
-                if (promise == null) {
+                const storedPromise = this.promises.get(promiseid);
+                if (storedPromise == null) {
                     throw new Error(`Cannot find promise with ID: ${promiseid}`);
                 }
+                const {promise, method} = storedPromise;
                 let result;
                 try {
                     result = await promise;
@@ -8054,14 +8111,14 @@ var __webpack_modules__ = {
                     throw e;
                 }
                 return {
-                    result: this._fromSandbox(result, method.returns ?? "void")
+                    result: this._fromSandbox(result, (_a = method.returns) !== null && _a !== void 0 ? _a : "void", `returned by async method ${method.name}`)
                 };
             }
             callbacks(_req) {
                 this._debug("callbacks");
-                const ret = Object.keys(this.cbs).map((cbid => {
-                    const cb = this.cbs[cbid];
-                    this.waiting[cbid] = cb;
+                const ret = Array.from(this.cbs.entries()).map((([cbid, cb]) => {
+                    this.waiting.set(cbid, cb);
+                    this.cbs.delete(cbid);
                     const callback = {
                         cbid,
                         cookie: cb.override.cookie,
@@ -8073,27 +8130,27 @@ var __webpack_modules__ = {
                     };
                     return callback;
                 }));
-                this.cbs = {};
                 return {
                     callbacks: ret
                 };
             }
             complete(req) {
+                var _a;
                 const {cbid, err, result} = req;
                 this._debug("complete", cbid, err, result);
-                if (!(cbid in this.waiting)) {
+                const cb = this.waiting.get(cbid);
+                if (!cb) {
                     throw new Error(`Callback ${cbid} not found`);
                 }
-                const cb = this.waiting[cbid];
                 if (err) {
                     this._debug("completed with error:", err);
                     cb.fail(new Error(err));
                 } else {
-                    const sandoxResult = this._toSandbox(result, cb.expectedReturnType ?? "void");
+                    const sandoxResult = this._toSandbox(result, (_a = cb.expectedReturnType) !== null && _a !== void 0 ? _a : "void", `returned by callback ${cb.toString()}`);
                     this._debug("completed with result:", sandoxResult);
                     cb.succeed(sandoxResult);
                 }
-                delete this.waiting[cbid];
+                this.waiting.delete(cbid);
                 return {
                     cbid
                 };
@@ -8116,8 +8173,9 @@ var __webpack_modules__ = {
                 };
             }
             _addAssembly(assm) {
-                this.assemblies[assm.metadata.name] = assm;
-                for (const fqn of Object.keys(assm.metadata.types ?? {})) {
+                var _a;
+                this.assemblies.set(assm.metadata.name, assm);
+                for (const fqn of Object.keys((_a = assm.metadata.types) !== null && _a !== void 0 ? _a : {})) {
                     const typedef = assm.metadata.types[fqn];
                     switch (typedef.kind) {
                       case spec.TypeKind.Interface:
@@ -8163,13 +8221,14 @@ var __webpack_modules__ = {
                 return path.join(this.installDir, "node_modules", pkgname);
             }
             _create(req) {
+                var _a, _b;
                 this._debug("create", req);
                 const {fqn, interfaces, overrides} = req;
-                const requestArgs = req.args ?? [];
+                const requestArgs = (_a = req.args) !== null && _a !== void 0 ? _a : [];
                 const ctorResult = this._findCtor(fqn, requestArgs);
                 const ctor = ctorResult.ctor;
-                const obj = this._wrapSandboxCode((() => new ctor(...this._toSandboxValues(requestArgs, ctorResult.parameters))));
-                const objref = this.objects.registerObject(obj, fqn, req.interfaces ?? []);
+                const obj = this._wrapSandboxCode((() => new ctor(...this._toSandboxValues(requestArgs, `new ${fqn}`, ctorResult.parameters))));
+                const objref = this.objects.registerObject(obj, fqn, (_b = req.interfaces) !== null && _b !== void 0 ? _b : []);
                 if (overrides) {
                     this._debug("overrides", overrides);
                     const overrideTypeErrorMessage = 'Override can either be "method" or "property"';
@@ -8222,9 +8281,10 @@ var __webpack_modules__ = {
                 this._defineOverridenProperty(obj, objref, override, propInfo);
             }
             _defineOverridenProperty(obj, objref, override, propInfo) {
+                var _a;
                 const propertyName = override.property;
                 this._debug("apply override", propertyName);
-                const prev = getPropertyDescriptor(obj, propertyName) ?? {
+                const prev = (_a = getPropertyDescriptor(obj, propertyName)) !== null && _a !== void 0 ? _a : {
                     value: obj[propertyName],
                     writable: true,
                     enumerable: true,
@@ -8249,7 +8309,7 @@ var __webpack_modules__ = {
                             }
                         });
                         this._debug("callback returned", result);
-                        return this._toSandbox(result, propInfo);
+                        return this._toSandbox(result, propInfo, `returned by callback property ${propertyName}`);
                     },
                     set: value => {
                         this._debug("virtual set", objref, propertyName, {
@@ -8261,7 +8321,7 @@ var __webpack_modules__ = {
                             set: {
                                 objref,
                                 property: propertyName,
-                                value: this._fromSandbox(value, propInfo)
+                                value: this._fromSandbox(value, propInfo, `assigned to callback property ${propertyName}`)
                             }
                         });
                     }
@@ -8305,6 +8365,8 @@ var __webpack_modules__ = {
             }
             _defineOverridenMethod(obj, objref, override, methodInfo) {
                 const methodName = override.method;
+                const fqn = (0, objects_1.jsiiTypeFqn)(obj);
+                const methodContext = `${methodInfo.async ? "async " : ""}method${fqn ? `${fqn}#` : methodName}`;
                 if (methodInfo.async) {
                     Object.defineProperty(obj, methodName, {
                         enumerable: false,
@@ -8312,18 +8374,19 @@ var __webpack_modules__ = {
                         writable: false,
                         value: (...methodArgs) => {
                             this._debug("invoke async method override", override);
-                            const args = this._toSandboxValues(methodArgs, methodInfo.parameters);
+                            const args = this._toSandboxValues(methodArgs, methodContext, methodInfo.parameters);
                             return new Promise(((succeed, fail) => {
+                                var _a;
                                 const cbid = this._makecbid();
                                 this._debug("adding callback to queue", cbid);
-                                this.cbs[cbid] = {
+                                this.cbs.set(cbid, {
                                     objref,
                                     override,
                                     args,
-                                    expectedReturnType: methodInfo.returns ?? "void",
+                                    expectedReturnType: (_a = methodInfo.returns) !== null && _a !== void 0 ? _a : "void",
                                     succeed,
                                     fail
-                                };
+                                });
                             }));
                         }
                     });
@@ -8333,6 +8396,7 @@ var __webpack_modules__ = {
                         configurable: false,
                         writable: false,
                         value: (...methodArgs) => {
+                            var _a;
                             this._debug("invoke sync method override", override, "args", methodArgs);
                             const result = this.callbackHandler({
                                 cookie: override.cookie,
@@ -8340,11 +8404,11 @@ var __webpack_modules__ = {
                                 invoke: {
                                     objref,
                                     method: methodName,
-                                    args: this._fromSandboxValues(methodArgs, methodInfo.parameters)
+                                    args: this._fromSandboxValues(methodArgs, methodContext, methodInfo.parameters)
                                 }
                             });
                             this._debug("Result", result);
-                            return this._toSandbox(result, methodInfo.returns ?? "void");
+                            return this._toSandbox(result, (_a = methodInfo.returns) !== null && _a !== void 0 ? _a : "void", `returned by callback method ${methodName}`);
                         }
                     });
                 }
@@ -8367,7 +8431,8 @@ var __webpack_modules__ = {
                 };
             }
             _validateMethodArguments(method, args) {
-                const params = method?.parameters ?? [];
+                var _a;
+                const params = (_a = method === null || method === void 0 ? void 0 : method.parameters) !== null && _a !== void 0 ? _a : [];
                 if (args.length > params.length && !(method && method.variadic)) {
                     throw new Error(`Too many arguments (method accepts ${params.length} parameters, got ${args.length} arguments)`);
                 }
@@ -8389,7 +8454,7 @@ var __webpack_modules__ = {
                 }
             }
             _assemblyFor(assemblyName) {
-                const assembly = this.assemblies[assemblyName];
+                const assembly = this.assemblies.get(assemblyName);
                 if (!assembly) {
                     throw new Error(`Could not find assembly: ${assemblyName}`);
                 }
@@ -8412,13 +8477,14 @@ var __webpack_modules__ = {
                 return curr;
             }
             _typeInfoForFqn(fqn) {
+                var _a;
                 const components = fqn.split(".");
                 const moduleName = components[0];
-                const assembly = this.assemblies[moduleName];
+                const assembly = this.assemblies.get(moduleName);
                 if (!assembly) {
                     throw new Error(`Module '${moduleName}' not found`);
                 }
-                const types = assembly.metadata.types ?? {};
+                const types = (_a = assembly.metadata.types) !== null && _a !== void 0 ? _a : {};
                 const fqnInfo = types[fqn];
                 if (!fqnInfo) {
                     throw new Error(`Type '${fqn}' not found`);
@@ -8434,18 +8500,19 @@ var __webpack_modules__ = {
                 return ti;
             }
             _tryTypeInfoForMethod(methodName, classFqn, interfaces = []) {
+                var _a, _b;
                 for (const fqn of [ classFqn, ...interfaces ]) {
                     if (fqn === wire.EMPTY_OBJECT_FQN) {
                         continue;
                     }
                     const typeinfo = this._typeInfoForFqn(fqn);
-                    const methods = typeinfo.methods ?? [];
+                    const methods = (_a = typeinfo.methods) !== null && _a !== void 0 ? _a : [];
                     for (const m of methods) {
                         if (m.name === methodName) {
                             return m;
                         }
                     }
-                    const bases = [ typeinfo.base, ...typeinfo.interfaces ?? [] ];
+                    const bases = [ typeinfo.base, ...(_b = typeinfo.interfaces) !== null && _b !== void 0 ? _b : [] ];
                     for (const base of bases) {
                         if (!base) {
                             continue;
@@ -8459,6 +8526,7 @@ var __webpack_modules__ = {
                 return undefined;
             }
             _tryTypeInfoForProperty(property, classFqn, interfaces = []) {
+                var _a;
                 for (const fqn of [ classFqn, ...interfaces ]) {
                     if (fqn === wire.EMPTY_OBJECT_FQN) {
                         continue;
@@ -8473,11 +8541,11 @@ var __webpack_modules__ = {
                     } else if (spec.isInterfaceType(typeInfo)) {
                         const interfaceTypeInfo = typeInfo;
                         properties = interfaceTypeInfo.properties;
-                        bases = interfaceTypeInfo.interfaces ?? [];
+                        bases = (_a = interfaceTypeInfo.interfaces) !== null && _a !== void 0 ? _a : [];
                     } else {
                         throw new Error(`Type of kind ${typeInfo.kind} does not have properties`);
                     }
-                    for (const p of properties ?? []) {
+                    for (const p of properties !== null && properties !== void 0 ? properties : []) {
                         if (p.name === property) {
                             return p;
                         }
@@ -8499,68 +8567,38 @@ var __webpack_modules__ = {
                 }
                 return typeInfo;
             }
-            _toSandbox(v, expectedType) {
-                const serTypes = wire.serializationType(expectedType, this._typeInfoForFqn.bind(this));
-                this._debug("toSandbox", v, JSON.stringify(serTypes));
-                const host = {
+            _toSandbox(v, expectedType, context) {
+                return wire.process({
                     objects: this.objects,
                     debug: this._debug.bind(this),
                     findSymbol: this._findSymbol.bind(this),
-                    lookupType: this._typeInfoForFqn.bind(this),
-                    recurse: this._toSandbox.bind(this)
-                };
-                const errors = new Array;
-                for (const {serializationClass, typeRef} of serTypes) {
-                    try {
-                        return wire.SERIALIZERS[serializationClass].deserialize(v, typeRef, host);
-                    } catch (e) {
-                        if (serTypes.length === 1) {
-                            throw e;
-                        }
-                        errors.push(e.message);
-                    }
-                }
-                throw new Error(`Value did not match any type in union: ${errors.join(", ")}`);
+                    lookupType: this._typeInfoForFqn.bind(this)
+                }, "deserialize", v, expectedType, context);
             }
-            _fromSandbox(v, targetType) {
-                const serTypes = wire.serializationType(targetType, this._typeInfoForFqn.bind(this));
-                this._debug("fromSandbox", v, JSON.stringify(serTypes));
-                const host = {
+            _fromSandbox(v, targetType, context) {
+                return wire.process({
                     objects: this.objects,
                     debug: this._debug.bind(this),
                     findSymbol: this._findSymbol.bind(this),
-                    lookupType: this._typeInfoForFqn.bind(this),
-                    recurse: this._fromSandbox.bind(this)
-                };
-                const errors = new Array;
-                for (const {serializationClass, typeRef} of serTypes) {
-                    try {
-                        return wire.SERIALIZERS[serializationClass].serialize(v, typeRef, host);
-                    } catch (e) {
-                        if (serTypes.length === 1) {
-                            throw e;
-                        }
-                        errors.push(e.message);
-                    }
-                }
-                throw new Error(`Value did not match any type in union: ${errors.join(", ")}`);
+                    lookupType: this._typeInfoForFqn.bind(this)
+                }, "serialize", v, targetType, context);
             }
-            _toSandboxValues(xs, parameters) {
-                return this._boxUnboxParameters(xs, parameters, this._toSandbox.bind(this));
+            _toSandboxValues(xs, methodContext, parameters) {
+                return this._boxUnboxParameters(xs, methodContext, parameters, this._toSandbox.bind(this));
             }
-            _fromSandboxValues(xs, parameters) {
-                return this._boxUnboxParameters(xs, parameters, this._fromSandbox.bind(this));
+            _fromSandboxValues(xs, methodContext, parameters) {
+                return this._boxUnboxParameters(xs, methodContext, parameters, this._fromSandbox.bind(this));
             }
-            _boxUnboxParameters(xs, parameters, boxUnbox) {
-                parameters = [ ...parameters ?? [] ];
-                const variadic = parameters.length > 0 && !!parameters[parameters.length - 1].variadic;
-                while (variadic && parameters.length < xs.length) {
-                    parameters.push(parameters[parameters.length - 1]);
+            _boxUnboxParameters(xs, methodContext, parameters = [], boxUnbox) {
+                const parametersCopy = [ ...parameters ];
+                const variadic = parametersCopy.length > 0 && !!parametersCopy[parametersCopy.length - 1].variadic;
+                while (variadic && parametersCopy.length < xs.length) {
+                    parametersCopy.push(parametersCopy[parametersCopy.length - 1]);
                 }
-                if (xs.length > parameters.length) {
-                    throw new Error(`Argument list (${JSON.stringify(xs)}) not same size as expected argument list (length ${parameters.length})`);
+                if (xs.length > parametersCopy.length) {
+                    throw new Error(`Argument list (${JSON.stringify(xs)}) not same size as expected argument list (length ${parametersCopy.length})`);
                 }
-                return xs.map(((x, i) => boxUnbox(x, parameters[i])));
+                return xs.map(((x, i) => boxUnbox(x, parametersCopy[i], `passed to parameter ${parametersCopy[i].name} of ${methodContext}`)));
             }
             _debug(...args) {
                 if (this.traceEnabled) {
@@ -8621,7 +8659,8 @@ var __webpack_modules__ = {
         const IFACES_SYMBOL = Symbol.for("$__jsii__interfaces__$");
         const JSII_SYMBOL = Symbol.for("__jsii__");
         function jsiiTypeFqn(obj) {
-            return obj.constructor[JSII_SYMBOL]?.fqn;
+            var _a;
+            return (_a = obj.constructor[JSII_SYMBOL]) === null || _a === void 0 ? void 0 : _a.fqn;
         }
         exports.jsiiTypeFqn = jsiiTypeFqn;
         function objectReference(obj) {
@@ -8666,10 +8705,11 @@ var __webpack_modules__ = {
         class ObjectTable {
             constructor(resolveType) {
                 this.resolveType = resolveType;
-                this.objects = {};
+                this.objects = new Map;
                 this.nextid = 1e4;
             }
             registerObject(obj, fqn, interfaces) {
+                var _a;
                 if (fqn === undefined) {
                     throw new Error("FQN cannot be undefined");
                 }
@@ -8677,23 +8717,23 @@ var __webpack_modules__ = {
                 if (existingRef) {
                     if (interfaces) {
                         const allIfaces = new Set(interfaces);
-                        for (const iface of existingRef[api.TOKEN_INTERFACES] ?? []) {
+                        for (const iface of (_a = existingRef[api.TOKEN_INTERFACES]) !== null && _a !== void 0 ? _a : []) {
                             allIfaces.add(iface);
                         }
                         if (!Object.prototype.hasOwnProperty.call(obj, IFACES_SYMBOL)) {
                             console.error(`[jsii/kernel] WARNING: referenced object ${existingRef[api.TOKEN_REF]} does not have the ${String(IFACES_SYMBOL)} property!`);
                         }
-                        this.objects[existingRef[api.TOKEN_REF]].interfaces = obj[IFACES_SYMBOL] = existingRef[api.TOKEN_INTERFACES] = interfaces = this.removeRedundant(Array.from(allIfaces), fqn);
+                        this.objects.get(existingRef[api.TOKEN_REF]).interfaces = obj[IFACES_SYMBOL] = existingRef[api.TOKEN_INTERFACES] = interfaces = this.removeRedundant(Array.from(allIfaces), fqn);
                     }
                     return existingRef;
                 }
                 interfaces = this.removeRedundant(interfaces, fqn);
                 const objid = this.makeId(fqn);
-                this.objects[objid] = {
+                this.objects.set(objid, {
                     instance: obj,
                     fqn,
                     interfaces
-                };
+                });
                 tagObject(obj, objid, interfaces);
                 return {
                     [api.TOKEN_REF]: objid,
@@ -8701,11 +8741,12 @@ var __webpack_modules__ = {
                 };
             }
             findObject(objref) {
+                var _a;
                 if (typeof objref !== "object" || !(api.TOKEN_REF in objref)) {
                     throw new Error(`Malformed object reference: ${JSON.stringify(objref)}`);
                 }
                 const objid = objref[api.TOKEN_REF];
-                const obj = this.objects[objid];
+                const obj = this.objects.get(objid);
                 if (!obj) {
                     throw new Error(`Object ${objid} not found`);
                 }
@@ -8713,17 +8754,18 @@ var __webpack_modules__ = {
                 if (additionalInterfaces != null && additionalInterfaces.length > 0) {
                     return {
                         ...obj,
-                        interfaces: [ ...obj.interfaces ?? [], ...additionalInterfaces ]
+                        interfaces: [ ...(_a = obj.interfaces) !== null && _a !== void 0 ? _a : [], ...additionalInterfaces ]
                     };
                 }
                 return obj;
             }
-            deleteObject(objref) {
-                this.findObject(objref);
-                delete this.objects[objref[api.TOKEN_REF]];
+            deleteObject({[api.TOKEN_REF]: objid}) {
+                if (!this.objects.delete(objid)) {
+                    throw new Error(`Object ${objid} not found`);
+                }
             }
             get count() {
-                return Object.keys(this.objects).length;
+                return this.objects.size;
             }
             makeId(fqn) {
                 return `${fqn}@${this.nextid++}`;
@@ -8824,11 +8866,14 @@ var __webpack_modules__ = {
         Object.defineProperty(exports, "__esModule", {
             value: true
         });
-        exports.serializationType = exports.SERIALIZERS = exports.SYMBOL_WIRE_TYPE = exports.EMPTY_OBJECT_FQN = void 0;
+        exports.SerializationError = exports.process = exports.serializationType = exports.SERIALIZERS = exports.SYMBOL_WIRE_TYPE = exports.EMPTY_OBJECT_FQN = void 0;
         const spec = __webpack_require__(1804);
+        const assert = __webpack_require__(9491);
+        const util_1 = __webpack_require__(3837);
         const api_1 = __webpack_require__(2816);
         const objects_1 = __webpack_require__(2309);
         const _1 = __webpack_require__(8944);
+        const VOID = "void";
         exports.EMPTY_OBJECT_FQN = "Object";
         exports.SYMBOL_WIRE_TYPE = Symbol.for("$jsii$wireType$");
         exports.SERIALIZERS = {
@@ -8851,11 +8896,9 @@ var __webpack_modules__ = {
                     if (nullAndOk(value, optionalValue)) {
                         return undefined;
                     }
-                    if (optionalValue === "void") {
-                        throw new Error("Encountered unexpected `void` type");
-                    }
+                    assert(optionalValue !== VOID, "Encountered unexpected void type!");
                     if (!isDate(value)) {
-                        throw new Error(`Expected Date, got ${JSON.stringify(value)}`);
+                        throw new SerializationError(`Value is not an instance of Date`, value);
                     }
                     return serializeDate(value);
                 },
@@ -8864,7 +8907,7 @@ var __webpack_modules__ = {
                         return undefined;
                     }
                     if (!(0, api_1.isWireDate)(value)) {
-                        throw new Error(`Expected Date, got ${JSON.stringify(value)}`);
+                        throw new SerializationError(`Value does not have the "${api_1.TOKEN_DATE}" key`, value);
                     }
                     return deserializeDate(value);
                 }
@@ -8874,15 +8917,13 @@ var __webpack_modules__ = {
                     if (nullAndOk(value, optionalValue)) {
                         return undefined;
                     }
-                    if (optionalValue === "void") {
-                        throw new Error("Encountered unexpected `void` type");
-                    }
+                    assert(optionalValue !== VOID, "Encountered unexpected void type!");
                     const primitiveType = optionalValue.type;
                     if (!isScalar(value)) {
-                        throw new Error(`Expected ${spec.describeTypeReference(optionalValue.type)}, got ${JSON.stringify(value)}`);
+                        throw new SerializationError(`Value is not a ${spec.describeTypeReference(optionalValue.type)}`, value);
                     }
                     if (typeof value !== primitiveType.primitive) {
-                        throw new Error(`Expected a ${spec.describeTypeReference(optionalValue.type)}, got ${JSON.stringify(value)} (${typeof value})`);
+                        throw new SerializationError(`Value is not a ${spec.describeTypeReference(optionalValue.type)}`, value);
                     }
                     return value;
                 },
@@ -8890,21 +8931,22 @@ var __webpack_modules__ = {
                     if (nullAndOk(value, optionalValue)) {
                         return undefined;
                     }
-                    if (optionalValue === "void") {
-                        throw new Error("Encountered unexpected `void` type");
-                    }
+                    assert(optionalValue !== VOID, "Encountered unexpected void type!");
                     const primitiveType = optionalValue.type;
                     if (!isScalar(value)) {
-                        throw new Error(`Expected a ${spec.describeTypeReference(optionalValue.type)}, got ${JSON.stringify(value)}`);
+                        throw new SerializationError(`Value is not a ${spec.describeTypeReference(optionalValue.type)}`, value);
                     }
                     if (typeof value !== primitiveType.primitive) {
-                        throw new Error(`Expected a ${spec.describeTypeReference(optionalValue.type)}, got ${JSON.stringify(value)} (${typeof value})`);
+                        throw new SerializationError(`Value is not a ${spec.describeTypeReference(optionalValue.type)}`, value);
                     }
                     return value;
                 }
             },
             ["Json"]: {
-                serialize(value) {
+                serialize(value, optionalValue) {
+                    if (nullAndOk(value, optionalValue)) {
+                        return undefined;
+                    }
                     return value;
                 },
                 deserialize(value, optionalValue, host) {
@@ -8931,15 +8973,15 @@ var __webpack_modules__ = {
                         return value.map(mapJsonValue);
                     }
                     return mapValues(value, mapJsonValue);
-                    function mapJsonValue(toMap) {
+                    function mapJsonValue(toMap, key) {
                         if (toMap == null) {
                             return toMap;
                         }
-                        return host.recurse(toMap, {
+                        return process(host, "deserialize", toMap, {
                             type: {
                                 primitive: spec.PrimitiveType.Json
                             }
-                        });
+                        }, typeof key === "string" ? `key ${(0, util_1.inspect)(key)}` : `index ${key}`);
                     }
                 }
             },
@@ -8948,18 +8990,16 @@ var __webpack_modules__ = {
                     if (nullAndOk(value, optionalValue)) {
                         return undefined;
                     }
-                    if (optionalValue === "void") {
-                        throw new Error("Encountered unexpected `void` type");
-                    }
+                    assert(optionalValue !== VOID, "Encountered unexpected void type!");
                     if (typeof value !== "string" && typeof value !== "number") {
-                        throw new Error(`Expected enum value, got ${JSON.stringify(value)}`);
+                        throw new SerializationError(`Value is not a string or number`, value);
                     }
                     host.debug("Serializing enum");
                     const enumType = optionalValue.type;
                     const enumMap = host.findSymbol(enumType.fqn);
                     const enumEntry = Object.entries(enumMap).find((([, v]) => v === value));
                     if (!enumEntry) {
-                        throw new Error(`No entry in ${enumType.fqn} has value ${value}`);
+                        throw new SerializationError(`Value is not present in enum ${spec.describeTypeReference(enumType)}`, value);
                     }
                     return {
                         [api_1.TOKEN_ENUM]: `${enumType.fqn}/${enumEntry[0]}`
@@ -8970,7 +9010,7 @@ var __webpack_modules__ = {
                         return undefined;
                     }
                     if (!(0, api_1.isWireEnum)(value)) {
-                        throw new Error(`Expected enum value, got ${JSON.stringify(value)}`);
+                        throw new SerializationError(`Value does not have the "${api_1.TOKEN_ENUM}" key`, value);
                     }
                     return deserializeEnum(value, host.findSymbol);
                 }
@@ -8980,31 +9020,27 @@ var __webpack_modules__ = {
                     if (nullAndOk(value, optionalValue)) {
                         return undefined;
                     }
-                    if (optionalValue === "void") {
-                        throw new Error("Encountered unexpected `void` type");
-                    }
+                    assert(optionalValue !== VOID, "Encountered unexpected void type!");
                     if (!Array.isArray(value)) {
-                        throw new Error(`Expected array type, got ${JSON.stringify(value)}`);
+                        throw new SerializationError(`Value is not an array`, value);
                     }
                     const arrayType = optionalValue.type;
-                    return value.map((x => host.recurse(x, {
+                    return value.map(((x, idx) => process(host, "serialize", x, {
                         type: arrayType.collection.elementtype
-                    })));
+                    }, `index ${(0, util_1.inspect)(idx)}`)));
                 },
                 deserialize(value, optionalValue, host) {
                     if (nullAndOk(value, optionalValue)) {
                         return undefined;
                     }
-                    if (optionalValue === "void") {
-                        throw new Error("Encountered unexpected `void` type");
-                    }
+                    assert(optionalValue !== VOID, "Encountered unexpected void type!");
                     if (!Array.isArray(value)) {
-                        throw new Error(`Expected array type, got ${JSON.stringify(value)}`);
+                        throw new SerializationError(`Value is not an array`, value);
                     }
                     const arrayType = optionalValue.type;
-                    return value.map((x => host.recurse(x, {
+                    return value.map(((x, idx) => process(host, "deserialize", x, {
                         type: arrayType.collection.elementtype
-                    })));
+                    }, `index ${(0, util_1.inspect)(idx)}`)));
                 }
             },
             ["Map"]: {
@@ -9012,32 +9048,28 @@ var __webpack_modules__ = {
                     if (nullAndOk(value, optionalValue)) {
                         return undefined;
                     }
-                    if (optionalValue === "void") {
-                        throw new Error("Encountered unexpected `void` type");
-                    }
+                    assert(optionalValue !== VOID, "Encountered unexpected void type!");
                     const mapType = optionalValue.type;
                     return {
-                        [api_1.TOKEN_MAP]: mapValues(value, (v => host.recurse(v, {
+                        [api_1.TOKEN_MAP]: mapValues(value, ((v, key) => process(host, "serialize", v, {
                             type: mapType.collection.elementtype
-                        })))
+                        }, `key ${(0, util_1.inspect)(key)}`)))
                     };
                 },
                 deserialize(value, optionalValue, host) {
                     if (nullAndOk(value, optionalValue)) {
                         return undefined;
                     }
-                    if (optionalValue === "void") {
-                        throw new Error("Encountered unexpected `void` type");
-                    }
+                    assert(optionalValue !== VOID, "Encountered unexpected void type!");
                     const mapType = optionalValue.type;
                     if (!(0, api_1.isWireMap)(value)) {
-                        return mapValues(value, (v => host.recurse(v, {
+                        return mapValues(value, ((v, key) => process(host, "deserialize", v, {
                             type: mapType.collection.elementtype
-                        })));
+                        }, `key ${(0, util_1.inspect)(key)}`)));
                     }
-                    const result = mapValues(value[api_1.TOKEN_MAP], (v => host.recurse(v, {
+                    const result = mapValues(value[api_1.TOKEN_MAP], ((v, key) => process(host, "deserialize", v, {
                         type: mapType.collection.elementtype
-                    })));
+                    }, `key ${(0, util_1.inspect)(key)}`)));
                     Object.defineProperty(result, exports.SYMBOL_WIRE_TYPE, {
                         configurable: false,
                         enumerable: false,
@@ -9052,32 +9084,31 @@ var __webpack_modules__ = {
                     if (nullAndOk(value, optionalValue)) {
                         return undefined;
                     }
-                    if (optionalValue === "void") {
-                        throw new Error("Encountered unexpected `void` type");
+                    assert(optionalValue !== VOID, "Encountered unexpected void type!");
+                    if (typeof value !== "object" || value == null || value instanceof Date) {
+                        throw new SerializationError(`Value is not an object`, value);
                     }
-                    if (typeof value !== "object" || value == null) {
-                        throw new Error(`Expected object, got ${JSON.stringify(value)}`);
+                    if (Array.isArray(value)) {
+                        throw new SerializationError(`Value is an array`, value);
                     }
                     host.debug("Returning value type by reference");
                     return host.objects.registerObject(value, exports.EMPTY_OBJECT_FQN, [ optionalValue.type.fqn ]);
                 },
                 deserialize(value, optionalValue, host) {
-                    if (typeof value === "object" && Object.keys(value ?? {}).length === 0) {
+                    if (typeof value === "object" && Object.keys(value !== null && value !== void 0 ? value : {}).length === 0) {
                         value = undefined;
                     }
                     if (nullAndOk(value, optionalValue)) {
                         return undefined;
                     }
-                    if (optionalValue === "void") {
-                        throw new Error("Encountered unexpected `void` type");
-                    }
+                    assert(optionalValue !== VOID, "Encountered unexpected void type!");
                     if (typeof value !== "object" || value == null) {
-                        throw new Error(`Expected object reference, got ${JSON.stringify(value)}`);
+                        throw new SerializationError(`Value is not an object`, value);
                     }
                     const namedType = host.lookupType(optionalValue.type.fqn);
                     const props = propertiesOf(namedType, host.lookupType);
                     if (Array.isArray(value)) {
-                        throw new Error(`Got an array where a ${namedType.fqn} was expected. Did you mean to pass a variable number of arguments?`);
+                        throw new SerializationError("Value is an array (varargs may have been incorrectly supplied)", value);
                     }
                     if ((0, api_1.isObjRef)(value)) {
                         host.debug("Expected value type but got reference type, accepting for now (awslabs/jsii#400)");
@@ -9086,7 +9117,7 @@ var __webpack_modules__ = {
                     if (_1.api.isWireStruct(value)) {
                         const {fqn, data} = value[_1.api.TOKEN_STRUCT];
                         if (!isAssignable(fqn, namedType, host.lookupType)) {
-                            throw new Error(`Wire struct type '${fqn}' does not match expected '${namedType.fqn}'`);
+                            throw new SerializationError(`Wired struct has type '${fqn}', which does not match expected type`, value);
                         }
                         value = data;
                     }
@@ -9098,35 +9129,35 @@ var __webpack_modules__ = {
                         if (!props[key]) {
                             return undefined;
                         }
-                        return host.recurse(v, props[key]);
+                        return process(host, "deserialize", v, props[key], `key ${(0, util_1.inspect)(key)}`);
                     }));
                 }
             },
             ["RefType"]: {
                 serialize(value, optionalValue, host) {
+                    var _a;
                     if (nullAndOk(value, optionalValue)) {
                         return undefined;
                     }
-                    if (optionalValue === "void") {
-                        throw new Error("Encountered unexpected `void` type");
+                    assert(optionalValue !== VOID, "Encountered unexpected void type!");
+                    if (typeof value !== "object" || value == null || Array.isArray(value)) {
+                        throw new SerializationError(`Value is not an object`, value);
                     }
-                    if (typeof value !== "object" || value == null) {
-                        throw new Error(`Expected object reference, got ${JSON.stringify(value)}`);
+                    if (value instanceof Date) {
+                        throw new SerializationError(`Value is a Date`, value);
                     }
                     const expectedType = host.lookupType(optionalValue.type.fqn);
                     const interfaces = spec.isInterfaceType(expectedType) ? [ expectedType.fqn ] : undefined;
-                    const jsiiType = (0, objects_1.jsiiTypeFqn)(value) ?? (spec.isClassType(expectedType) ? expectedType.fqn : exports.EMPTY_OBJECT_FQN);
+                    const jsiiType = (_a = (0, objects_1.jsiiTypeFqn)(value)) !== null && _a !== void 0 ? _a : spec.isClassType(expectedType) ? expectedType.fqn : exports.EMPTY_OBJECT_FQN;
                     return host.objects.registerObject(value, jsiiType, interfaces);
                 },
                 deserialize(value, optionalValue, host) {
                     if (nullAndOk(value, optionalValue)) {
                         return undefined;
                     }
-                    if (optionalValue === "void") {
-                        throw new Error("Encountered unexpected `void` type");
-                    }
+                    assert(optionalValue !== VOID, "Encountered unexpected void type!");
                     if (!(0, api_1.isObjRef)(value)) {
-                        throw new Error(`Expected object reference, got ${JSON.stringify(value)}`);
+                        throw new SerializationError(`Value does not have the "${api_1.TOKEN_REF}" key`, value);
                     }
                     const {instance, fqn} = host.objects.findObject(value);
                     const namedTypeRef = optionalValue.type;
@@ -9134,7 +9165,7 @@ var __webpack_modules__ = {
                         const namedType = host.lookupType(namedTypeRef.fqn);
                         const declaredType = optionalValue.type;
                         if (spec.isClassType(namedType) && !isAssignable(fqn, declaredType, host.lookupType)) {
-                            throw new Error(`Object of type ${fqn} is not convertible to ${declaredType.fqn}`);
+                            throw new SerializationError(`Object of type '${fqn}' is not convertible to ${spec.describeTypeReference(declaredType)}`, value);
                         }
                     }
                     return instance;
@@ -9142,6 +9173,7 @@ var __webpack_modules__ = {
             },
             ["Any"]: {
                 serialize(value, _type, host) {
+                    var _a;
                     if (value == null) {
                         return undefined;
                     }
@@ -9152,15 +9184,15 @@ var __webpack_modules__ = {
                         return value;
                     }
                     if (Array.isArray(value)) {
-                        return value.map((e => host.recurse(e, {
+                        return value.map(((e, idx) => process(host, "serialize", e, {
                             type: spec.CANONICAL_ANY
-                        })));
+                        }, `index ${(0, util_1.inspect)(idx)}`)));
                     }
                     if (typeof value === "function") {
-                        throw new Error("JSII Kernel is unable to serialize `function`. An instance with methods might have been returned by an `any` method?");
+                        throw new SerializationError("Functions cannot be passed across language boundaries", value);
                     }
                     if (typeof value !== "object" || value == null) {
-                        throw new Error(`JSII kernel assumption violated, ${JSON.stringify(value)} is not an object`);
+                        throw new SerializationError(`A jsii kernel assumption was violated: value is not an object`, value);
                     }
                     if (exports.SYMBOL_WIRE_TYPE in value && value[exports.SYMBOL_WIRE_TYPE] === api_1.TOKEN_MAP) {
                         return exports.SERIALIZERS["Map"].serialize(value, {
@@ -9173,19 +9205,19 @@ var __webpack_modules__ = {
                         }, host);
                     }
                     if (value instanceof Set || value instanceof Map) {
-                        throw new Error("Can't return objects of type Set or Map");
+                        throw new SerializationError("Set and Map instances cannot be sent across the language boundary", value);
                     }
                     const prevRef = (0, objects_1.objectReference)(value);
                     if (prevRef) {
                         return prevRef;
                     }
-                    const jsiiType = (0, objects_1.jsiiTypeFqn)(value) ?? (isByReferenceOnly(value) ? exports.EMPTY_OBJECT_FQN : undefined);
+                    const jsiiType = (_a = (0, objects_1.jsiiTypeFqn)(value)) !== null && _a !== void 0 ? _a : isByReferenceOnly(value) ? exports.EMPTY_OBJECT_FQN : undefined;
                     if (jsiiType) {
                         return host.objects.registerObject(value, jsiiType);
                     }
-                    return mapValues(value, (v => host.recurse(v, {
+                    return mapValues(value, ((v, key) => process(host, "serialize", v, {
                         type: spec.CANONICAL_ANY
-                    })));
+                    }, `key ${(0, util_1.inspect)(key)}`)));
                 },
                 deserialize(value, _type, host) {
                     if (value == null) {
@@ -9201,9 +9233,9 @@ var __webpack_modules__ = {
                     }
                     if (Array.isArray(value)) {
                         host.debug("ANY is an Array");
-                        return value.map((e => host.recurse(e, {
+                        return value.map(((e, idx) => process(host, "deserialize", e, {
                             type: spec.CANONICAL_ANY
-                        })));
+                        }, `index ${(0, util_1.inspect)(idx)}`)));
                     }
                     if ((0, api_1.isWireEnum)(value)) {
                         host.debug("ANY is an Enum");
@@ -9235,9 +9267,9 @@ var __webpack_modules__ = {
                         }, host);
                     }
                     host.debug("ANY is a Map");
-                    return mapValues(value, (v => host.recurse(v, {
+                    return mapValues(value, ((v, key) => process(host, "deserialize", v, {
                         type: spec.CANONICAL_ANY
-                    })));
+                    }, `key ${(0, util_1.inspect)(key)}`)));
                 }
             }
         };
@@ -9253,20 +9285,18 @@ var __webpack_modules__ = {
             const enumLocator = value[api_1.TOKEN_ENUM];
             const sep = enumLocator.lastIndexOf("/");
             if (sep === -1) {
-                throw new Error(`Malformed enum value: ${JSON.stringify(value)}`);
+                throw new SerializationError(`Invalid enum token value ${(0, util_1.inspect)(enumLocator)}`, value);
             }
             const typeName = enumLocator.slice(0, sep);
             const valueName = enumLocator.slice(sep + 1);
             const enumValue = lookup(typeName)[valueName];
             if (enumValue === undefined) {
-                throw new Error(`No enum member named ${valueName} in ${typeName}`);
+                throw new SerializationError(`No such enum member: ${(0, util_1.inspect)(valueName)}`, value);
             }
             return enumValue;
         }
         function serializationType(typeRef, lookup) {
-            if (typeRef == null) {
-                throw new Error("Kernel error: expected type information, got 'undefined'");
-            }
+            assert(typeRef != null, `Kernel error: expected type information, got ${(0, util_1.inspect)(typeRef)}`);
             if (typeRef === "void") {
                 return [ {
                     serializationClass: "Void",
@@ -9301,7 +9331,7 @@ var __webpack_modules__ = {
                         typeRef
                     } ];
                 }
-                throw new Error("Unknown primitive type");
+                assert(false, `Unknown primitive type: ${(0, util_1.inspect)(typeRef.type)}`);
             }
             if (spec.isCollectionTypeReference(typeRef.type)) {
                 return [ {
@@ -9344,7 +9374,7 @@ var __webpack_modules__ = {
                 return false;
             }
             if (type !== "void" && !type.optional) {
-                throw new Error(`Got 'undefined' for non-optional instance of ${JSON.stringify(type)}`);
+                throw new SerializationError(`A value is required (type is non-optional)`, x);
             }
             return true;
         }
@@ -9363,7 +9393,10 @@ var __webpack_modules__ = {
         }
         function mapValues(value, fn) {
             if (typeof value !== "object" || value == null) {
-                throw new Error(`Expected object type, got ${JSON.stringify(value)}`);
+                throw new SerializationError(`Value is not an object`, value);
+            }
+            if (Array.isArray(value)) {
+                throw new SerializationError(`Value is an array`, value);
             }
             const out = {};
             for (const [k, v] of Object.entries(value)) {
@@ -9376,6 +9409,7 @@ var __webpack_modules__ = {
             return out;
         }
         function propertiesOf(t, lookup) {
+            var _a;
             if (!spec.isClassOrInterfaceType(t)) {
                 return {};
             }
@@ -9394,7 +9428,7 @@ var __webpack_modules__ = {
                     ...propertiesOf(lookup(t.base), lookup)
                 };
             }
-            for (const prop of t.properties ?? []) {
+            for (const prop of (_a = t.properties) !== null && _a !== void 0 ? _a : []) {
                 ret[prop.name] = prop;
             }
             return ret;
@@ -9420,7 +9454,8 @@ var __webpack_modules__ = {
         function validateRequiredProps(actualProps, typeName, specProps) {
             const missingRequiredProps = Object.keys(specProps).filter((name => !specProps[name].optional)).filter((name => !(name in actualProps)));
             if (missingRequiredProps.length > 0) {
-                throw new Error(`Missing required properties for ${typeName}: ${missingRequiredProps.join(", ")}`);
+                throw new SerializationError(`Missing required properties for ${typeName}: ${missingRequiredProps.map((p => (0, 
+                util_1.inspect)(p))).join(", ")}`, actualProps);
             }
             return actualProps;
         }
@@ -9436,12 +9471,84 @@ var __webpack_modules__ = {
             do {
                 for (const prop of Object.getOwnPropertyNames(curr)) {
                     const descr = Object.getOwnPropertyDescriptor(curr, prop);
-                    if (descr?.get != null || descr?.set != null || typeof descr?.value === "function") {
+                    if ((descr === null || descr === void 0 ? void 0 : descr.get) != null || (descr === null || descr === void 0 ? void 0 : descr.set) != null || typeof (descr === null || descr === void 0 ? void 0 : descr.value) === "function") {
                         return true;
                     }
                 }
             } while (Object.getPrototypeOf(curr = Object.getPrototypeOf(curr)) != null);
             return false;
+        }
+        function process(host, serde, value, type, context) {
+            const wireTypes = serializationType(type, host.lookupType);
+            host.debug(serde, value, wireTypes);
+            const errors = new Array;
+            for (const {serializationClass, typeRef} of wireTypes) {
+                try {
+                    return exports.SERIALIZERS[serializationClass][serde](value, typeRef, host);
+                } catch (error) {
+                    error.context = `as ${typeRef === VOID ? VOID : spec.describeTypeReference(typeRef.type)}`;
+                    errors.push(error);
+                }
+            }
+            const typeDescr = type === VOID ? type : spec.describeTypeReference(type.type);
+            const optionalTypeDescr = type !== VOID && type.optional ? `${typeDescr} | undefined` : typeDescr;
+            throw new SerializationError(`${titleize(context)}: Unable to ${serde} value as ${optionalTypeDescr}`, value, errors, {
+                renderValue: true
+            });
+            function titleize(text) {
+                text = text.trim();
+                if (text === "") {
+                    return text;
+                }
+                const [first, ...rest] = text;
+                return [ first.toUpperCase(), ...rest ].join("");
+            }
+        }
+        exports.process = process;
+        class SerializationError extends Error {
+            constructor(message, value, causes = [], {renderValue = false} = {}) {
+                super([ message, ...renderValue ? [ `${causes.length > 0 ? "├" : "╰"}── 🛑 Failing value is ${describeTypeOf(value)}`, ...value == null ? [] : (0, 
+                util_1.inspect)(value, false, 0).split("\n").map((l => `${causes.length > 0 ? "│" : " "}      ${l}`)) ] : [], ...causes.length > 0 ? [ "╰── 🔍 Failure reason(s):", ...causes.map(((cause, idx) => {
+                    var _a;
+                    return `    ${idx < causes.length - 1 ? "├" : "╰"}─${causes.length > 1 ? ` [${(_a = cause.context) !== null && _a !== void 0 ? _a : (0, 
+                    util_1.inspect)(idx)}]` : ""} ${cause.message.split("\n").join("\n        ")}`;
+                })) ] : [] ].join("\n"));
+                this.value = value;
+                this.causes = causes;
+                this.name = "@jsii/kernel.SerializationError";
+            }
+        }
+        exports.SerializationError = SerializationError;
+        function describeTypeOf(value) {
+            const type = typeof value;
+            switch (type) {
+              case "object":
+                if (value == null) {
+                    return JSON.stringify(value);
+                }
+                if (Array.isArray(value)) {
+                    return "an array";
+                }
+                const fqn = (0, objects_1.jsiiTypeFqn)(value);
+                if (fqn != null && fqn !== exports.EMPTY_OBJECT_FQN) {
+                    return `an instance of ${fqn}`;
+                }
+                const ctorName = value.constructor.name;
+                if (ctorName != null && ctorName !== Object.name) {
+                    return `an instance of ${ctorName}`;
+                }
+                return `an object`;
+
+              case "undefined":
+                return type;
+
+              case "boolean":
+              case "function":
+              case "number":
+              case "string":
+              default:
+                return `a ${type}`;
+            }
         }
     },
     7905: (__unused_webpack_module, exports, __webpack_require__) => {
@@ -9461,9 +9568,10 @@ var __webpack_modules__ = {
                 this.kernel.traceEnabled = opts.debug ? true : false;
             }
             run() {
+                var _a;
                 const req = this.inout.read();
                 if (!req || "exit" in req) {
-                    this.eventEmitter.emit("exit", req?.exit ?? 0);
+                    this.eventEmitter.emit("exit", (_a = req === null || req === void 0 ? void 0 : req.exit) !== null && _a !== void 0 ? _a : 0);
                     return;
                 }
                 this.processRequest(req, (() => {
@@ -9556,7 +9664,7 @@ var __webpack_modules__ = {
                 this.inout.write(res);
             }
             isPromise(v) {
-                return typeof v?.then === "function";
+                return typeof (v === null || v === void 0 ? void 0 : v.then) === "function";
             }
             findApi(apiName) {
                 const fn = this.kernel[apiName];
@@ -9663,13 +9771,87 @@ var __webpack_modules__ = {
         }
         exports.SyncStdio = SyncStdio;
     },
+    1228: (__unused_webpack_module, exports, __webpack_require__) => {
+        "use strict";
+        Object.defineProperty(exports, "__esModule", {
+            value: true
+        });
+        exports.loadAssemblyFromFile = exports.loadAssemblyFromPath = exports.loadAssemblyFromBuffer = exports.writeAssembly = exports.findAssemblyFile = void 0;
+        const fs = __webpack_require__(7147);
+        const path = __webpack_require__(4822);
+        const zlib = __webpack_require__(9796);
+        const assembly_1 = __webpack_require__(2752);
+        const redirect_1 = __webpack_require__(9639);
+        const validate_assembly_1 = __webpack_require__(5907);
+        function findAssemblyFile(directory) {
+            const dotJsiiFile = path.join(directory, assembly_1.SPEC_FILE_NAME);
+            if (!fs.existsSync(dotJsiiFile)) {
+                throw new Error(`Expected to find ${assembly_1.SPEC_FILE_NAME} file in ${directory}, but no such file found`);
+            }
+            return dotJsiiFile;
+        }
+        exports.findAssemblyFile = findAssemblyFile;
+        function writeAssembly(directory, assembly, {compress = false} = {}) {
+            if (compress) {
+                fs.writeFileSync(path.join(directory, assembly_1.SPEC_FILE_NAME), JSON.stringify({
+                    schema: "jsii/file-redirect",
+                    compression: "gzip",
+                    filename: assembly_1.SPEC_FILE_NAME_COMPRESSED
+                }), "utf-8");
+                fs.writeFileSync(path.join(directory, assembly_1.SPEC_FILE_NAME_COMPRESSED), zlib.gzipSync(JSON.stringify(assembly)));
+            } else {
+                fs.writeFileSync(path.join(directory, assembly_1.SPEC_FILE_NAME), JSON.stringify(assembly, null, 2), "utf-8");
+            }
+            return compress;
+        }
+        exports.writeAssembly = writeAssembly;
+        const failNoReadfileProvided = filename => {
+            throw new Error(`Unable to load assembly support file ${JSON.stringify(filename)}: no readFile callback provided!`);
+        };
+        function loadAssemblyFromBuffer(assemblyBuffer, readFile = failNoReadfileProvided, validate = true) {
+            let contents = JSON.parse(assemblyBuffer.toString("utf-8"));
+            while ((0, redirect_1.isAssemblyRedirect)(contents)) {
+                contents = followRedirect(contents, readFile);
+            }
+            return validate ? (0, validate_assembly_1.validateAssembly)(contents) : contents;
+        }
+        exports.loadAssemblyFromBuffer = loadAssemblyFromBuffer;
+        function loadAssemblyFromPath(directory, validate = true) {
+            const assemblyFile = findAssemblyFile(directory);
+            return loadAssemblyFromFile(assemblyFile, validate);
+        }
+        exports.loadAssemblyFromPath = loadAssemblyFromPath;
+        function loadAssemblyFromFile(pathToFile, validate = true) {
+            const data = fs.readFileSync(pathToFile);
+            return loadAssemblyFromBuffer(data, (filename => fs.readFileSync(path.resolve(pathToFile, "..", filename))), validate);
+        }
+        exports.loadAssemblyFromFile = loadAssemblyFromFile;
+        function followRedirect(assemblyRedirect, readFile) {
+            (0, redirect_1.validateAssemblyRedirect)(assemblyRedirect);
+            let data = readFile(assemblyRedirect.filename);
+            switch (assemblyRedirect.compression) {
+              case "gzip":
+                data = zlib.gunzipSync(data);
+                break;
+
+              case undefined:
+                break;
+
+              default:
+                throw new Error(`Unsupported compression algorithm: ${JSON.stringify(assemblyRedirect.compression)}`);
+            }
+            const json = data.toString("utf-8");
+            return JSON.parse(json);
+        }
+    },
     2752: (__unused_webpack_module, exports) => {
         "use strict";
         Object.defineProperty(exports, "__esModule", {
             value: true
         });
-        exports.isDeprecated = exports.describeTypeReference = exports.isClassOrInterfaceType = exports.isEnumType = exports.isInterfaceType = exports.isClassType = exports.TypeKind = exports.isMethod = exports.isUnionTypeReference = exports.isCollectionTypeReference = exports.isPrimitiveTypeReference = exports.isNamedTypeReference = exports.CANONICAL_ANY = exports.PrimitiveType = exports.CollectionKind = exports.Stability = exports.SchemaVersion = exports.SPEC_FILE_NAME = void 0;
+        exports.isDeprecated = exports.describeTypeReference = exports.isClassOrInterfaceType = exports.isEnumType = exports.isInterfaceType = exports.isClassType = exports.TypeKind = exports.isMethod = exports.isUnionTypeReference = exports.isCollectionTypeReference = exports.isPrimitiveTypeReference = exports.isNamedTypeReference = exports.CANONICAL_ANY = exports.PrimitiveType = exports.CollectionKind = exports.Stability = exports.SchemaVersion = exports.SPEC_FILE_NAME_COMPRESSED = exports.SPEC_FILE_NAME = void 0;
         exports.SPEC_FILE_NAME = ".jsii";
+        exports.SPEC_FILE_NAME_COMPRESSED = `${exports.SPEC_FILE_NAME}.gz`;
         var SchemaVersion;
         (function(SchemaVersion) {
             SchemaVersion["LATEST"] = "jsii/0.10.0";
@@ -9796,8 +9978,10 @@ var __webpack_modules__ = {
             value: true
         });
         __exportStar(__webpack_require__(2752), exports);
+        __exportStar(__webpack_require__(1228), exports);
         __exportStar(__webpack_require__(5585), exports);
         __exportStar(__webpack_require__(1485), exports);
+        __exportStar(__webpack_require__(9639), exports);
         __exportStar(__webpack_require__(5907), exports);
     },
     1485: (__unused_webpack_module, exports) => {
@@ -9837,6 +10021,33 @@ var __webpack_modules__ = {
             }
         }
         exports.NameTree = NameTree;
+    },
+    9639: (__unused_webpack_module, exports, __webpack_require__) => {
+        "use strict";
+        Object.defineProperty(exports, "__esModule", {
+            value: true
+        });
+        exports.validateAssemblyRedirect = exports.isAssemblyRedirect = exports.assemblyRedirectSchema = void 0;
+        const ajv_1 = __webpack_require__(2785);
+        exports.assemblyRedirectSchema = __webpack_require__(6715);
+        const SCHEMA = "jsii/file-redirect";
+        function isAssemblyRedirect(obj) {
+            if (typeof obj !== "object" || obj == null) {
+                return false;
+            }
+            return obj.schema === SCHEMA;
+        }
+        exports.isAssemblyRedirect = isAssemblyRedirect;
+        function validateAssemblyRedirect(obj) {
+            const ajv = new ajv_1.default;
+            const validate = ajv.compile(exports.assemblyRedirectSchema);
+            validate(obj);
+            if (validate.errors) {
+                throw new Error(`Invalid assembly redirect:\n${validate.errors.map((e => ` * ${e.message}`)).join("\n").toString()}`);
+            }
+            return obj;
+        }
+        exports.validateAssemblyRedirect = validateAssemblyRedirect;
     },
     5907: (__unused_webpack_module, exports, __webpack_require__) => {
         "use strict";
@@ -15124,7 +15335,7 @@ var __webpack_modules__ = {
     },
     4147: module => {
         "use strict";
-        module.exports = JSON.parse('{"name":"@jsii/runtime","version":"1.61.0","description":"jsii runtime kernel process","license":"Apache-2.0","author":{"name":"Amazon Web Services","url":"https://aws.amazon.com"},"homepage":"https://github.com/aws/jsii","bugs":{"url":"https://github.com/aws/jsii/issues"},"repository":{"type":"git","url":"https://github.com/aws/jsii.git","directory":"packages/@jsii/runtime"},"engines":{"node":">= 14.6.0"},"main":"lib/index.js","types":"lib/index.d.ts","bin":{"jsii-runtime":"bin/jsii-runtime"},"scripts":{"build":"tsc --build && chmod +x bin/jsii-runtime && npx webpack-cli && npm run lint","watch":"tsc --build -w","lint":"eslint . --ext .js,.ts --ignore-path=.gitignore --ignore-pattern=webpack.config.js","lint:fix":"yarn lint --fix","test":"jest","test:update":"jest -u","package":"package-js"},"dependencies":{"@jsii/kernel":"^1.61.0","@jsii/check-node":"1.61.0","@jsii/spec":"^1.61.0"},"devDependencies":{"@scope/jsii-calc-base":"^1.61.0","@scope/jsii-calc-lib":"^1.61.0","jsii-build-tools":"^1.61.0","jsii-calc":"^3.20.120","source-map-loader":"^4.0.0","webpack":"^5.73.0","webpack-cli":"^4.10.0"}}');
+        module.exports = JSON.parse('{"name":"@jsii/runtime","version":"1.62.0","description":"jsii runtime kernel process","license":"Apache-2.0","author":{"name":"Amazon Web Services","url":"https://aws.amazon.com"},"homepage":"https://github.com/aws/jsii","bugs":{"url":"https://github.com/aws/jsii/issues"},"repository":{"type":"git","url":"https://github.com/aws/jsii.git","directory":"packages/@jsii/runtime"},"engines":{"node":">= 14.6.0"},"main":"lib/index.js","types":"lib/index.d.ts","bin":{"jsii-runtime":"bin/jsii-runtime"},"scripts":{"build":"tsc --build && chmod +x bin/jsii-runtime && npx webpack-cli && npm run lint","watch":"tsc --build -w","lint":"eslint . --ext .js,.ts --ignore-path=.gitignore --ignore-pattern=webpack.config.js","lint:fix":"yarn lint --fix","test":"jest","test:update":"jest -u","package":"package-js"},"dependencies":{"@jsii/kernel":"^1.62.0","@jsii/check-node":"1.62.0","@jsii/spec":"^1.62.0"},"devDependencies":{"@scope/jsii-calc-base":"^1.62.0","@scope/jsii-calc-lib":"^1.62.0","jsii-build-tools":"^1.62.0","jsii-calc":"^3.20.120","source-map-loader":"^4.0.0","webpack":"^5.73.0","webpack-cli":"^4.10.0"}}');
     },
     5277: module => {
         "use strict";
@@ -15133,6 +15344,10 @@ var __webpack_modules__ = {
     7538: module => {
         "use strict";
         module.exports = JSON.parse('{"$schema":"http://json-schema.org/draft-07/schema#","$id":"http://json-schema.org/draft-07/schema#","title":"Core schema meta-schema","definitions":{"schemaArray":{"type":"array","minItems":1,"items":{"$ref":"#"}},"nonNegativeInteger":{"type":"integer","minimum":0},"nonNegativeIntegerDefault0":{"allOf":[{"$ref":"#/definitions/nonNegativeInteger"},{"default":0}]},"simpleTypes":{"enum":["array","boolean","integer","null","number","object","string"]},"stringArray":{"type":"array","items":{"type":"string"},"uniqueItems":true,"default":[]}},"type":["object","boolean"],"properties":{"$id":{"type":"string","format":"uri-reference"},"$schema":{"type":"string","format":"uri"},"$ref":{"type":"string","format":"uri-reference"},"$comment":{"type":"string"},"title":{"type":"string"},"description":{"type":"string"},"default":true,"readOnly":{"type":"boolean","default":false},"examples":{"type":"array","items":true},"multipleOf":{"type":"number","exclusiveMinimum":0},"maximum":{"type":"number"},"exclusiveMaximum":{"type":"number"},"minimum":{"type":"number"},"exclusiveMinimum":{"type":"number"},"maxLength":{"$ref":"#/definitions/nonNegativeInteger"},"minLength":{"$ref":"#/definitions/nonNegativeIntegerDefault0"},"pattern":{"type":"string","format":"regex"},"additionalItems":{"$ref":"#"},"items":{"anyOf":[{"$ref":"#"},{"$ref":"#/definitions/schemaArray"}],"default":true},"maxItems":{"$ref":"#/definitions/nonNegativeInteger"},"minItems":{"$ref":"#/definitions/nonNegativeIntegerDefault0"},"uniqueItems":{"type":"boolean","default":false},"contains":{"$ref":"#"},"maxProperties":{"$ref":"#/definitions/nonNegativeInteger"},"minProperties":{"$ref":"#/definitions/nonNegativeIntegerDefault0"},"required":{"$ref":"#/definitions/stringArray"},"additionalProperties":{"$ref":"#"},"definitions":{"type":"object","additionalProperties":{"$ref":"#"},"default":{}},"properties":{"type":"object","additionalProperties":{"$ref":"#"},"default":{}},"patternProperties":{"type":"object","additionalProperties":{"$ref":"#"},"propertyNames":{"format":"regex"},"default":{}},"dependencies":{"type":"object","additionalProperties":{"anyOf":[{"$ref":"#"},{"$ref":"#/definitions/stringArray"}]}},"propertyNames":{"$ref":"#"},"const":true,"enum":{"type":"array","items":true,"minItems":1,"uniqueItems":true},"type":{"anyOf":[{"$ref":"#/definitions/simpleTypes"},{"type":"array","items":{"$ref":"#/definitions/simpleTypes"},"minItems":1,"uniqueItems":true}]},"format":{"type":"string"},"contentMediaType":{"type":"string"},"contentEncoding":{"type":"string"},"if":{"$ref":"#"},"then":{"$ref":"#"},"else":{"$ref":"#"},"allOf":{"$ref":"#/definitions/schemaArray"},"anyOf":{"$ref":"#/definitions/schemaArray"},"oneOf":{"$ref":"#/definitions/schemaArray"},"not":{"$ref":"#"}},"default":true}');
+    },
+    6715: module => {
+        "use strict";
+        module.exports = JSON.parse('{"$ref":"#/definitions/AssemblyRedirect","$schema":"http://json-schema.org/draft-07/schema#","definitions":{"AssemblyRedirect":{"properties":{"compression":{"description":"The compression applied to the target file, if any.","enum":["gzip"],"type":"string"},"filename":{"description":"The name of the file the assembly is redirected to.","type":"string"},"schema":{"enum":["jsii/file-redirect"],"type":"string"}},"required":["filename","schema"],"type":"object"}}}');
     },
     9402: module => {
         "use strict";
@@ -15171,6 +15386,7 @@ var __webpack_exports__ = {};
     "use strict";
     var exports = __webpack_exports__;
     var __webpack_unused_export__;
+    var _a;
     __webpack_unused_export__ = {
         value: true
     };
@@ -15183,7 +15399,7 @@ var __webpack_exports__ = {};
     const noStack = !!process.env.JSII_NOSTACK;
     const debug = !!process.env.JSII_DEBUG;
     const stdio = new sync_stdio_1.SyncStdio({
-        errorFD: process.stderr.fd ?? 2,
+        errorFD: (_a = process.stderr.fd) !== null && _a !== void 0 ? _a : 2,
         readFD: 3,
         writeFD: 3
     });

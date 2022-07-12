@@ -3706,7 +3706,7 @@ var __webpack_modules__ = {
             endOfLife: new Date("2023-04-30"),
             supportedRange: "^14.6.0"
         }), new NodeRelease(16, {
-            endOfLife: new Date("2024-04-30"),
+            endOfLife: new Date("2023-09-11"),
             supportedRange: "^16.3.0"
         }), new NodeRelease(17, {
             endOfLife: new Date("2022-06-01"),
@@ -3839,8 +3839,9 @@ var __webpack_exports__ = {};
         stdio: [ "ignore", "pipe", "pipe", "pipe" ]
     });
     child.once("end", ((code, signal) => {
+        var _a;
         if (signal != null) {
-            process.exit(128 + (os_1.constants.signals[signal] ?? 0));
+            process.exit(128 + ((_a = os_1.constants.signals[signal]) !== null && _a !== void 0 ? _a : 0));
         }
         process.exit(code);
     }));
