@@ -7848,9 +7848,8 @@ var __webpack_modules__ = {
         const api = __webpack_require__(2816);
         exports.api = api;
     },
-    2742: (module, exports, __webpack_require__) => {
+    2742: (__unused_webpack_module, exports, __webpack_require__) => {
         "use strict";
-        module = __webpack_require__.nmd(module);
         Object.defineProperty(exports, "__esModule", {
             value: true
         });
@@ -7859,10 +7858,10 @@ var __webpack_modules__ = {
         const spec_1 = __webpack_require__(1804);
         const cp = __webpack_require__(2081);
         const fs = __webpack_require__(9728);
+        const module_1 = __webpack_require__(8188);
         const os = __webpack_require__(2037);
         const path = __webpack_require__(4822);
         const tar = __webpack_require__(1189);
-        const vm = __webpack_require__(6144);
         const api = __webpack_require__(2816);
         const api_1 = __webpack_require__(2816);
         const objects_1 = __webpack_require__(2309);
@@ -7878,13 +7877,6 @@ var __webpack_modules__ = {
                 this.waiting = new Map;
                 this.promises = new Map;
                 this.nextid = 2e4;
-                const moduleLoad = __webpack_require__(8188).Module._load;
-                const nodeRequire = p => moduleLoad(p, module, false);
-                this.sandbox = vm.createContext({
-                    Buffer,
-                    setImmediate,
-                    require: nodeRequire
-                });
             }
             load(req) {
                 var _a, _b;
@@ -7927,7 +7919,7 @@ var __webpack_modules__ = {
                 } catch (e) {
                     throw new Error(`Error for package tarball ${req.tarball}: ${e.message}`);
                 }
-                const closure = this._execute(`require(String.raw\`${packageDir}\`)`, packageDir);
+                const closure = this.require(packageDir);
                 const assm = new Assembly(assmSpec, closure);
                 this._addAssembly(assm);
                 return {
@@ -7983,7 +7975,7 @@ var __webpack_modules__ = {
                     throw new Error(`property ${symbol} is not static`);
                 }
                 const prototype = this._findSymbol(fqn);
-                const value = this._ensureSync(`property ${property}`, (() => this._wrapSandboxCode((() => prototype[property]))));
+                const value = this._ensureSync(`property ${property}`, (() => prototype[property]));
                 this._debug("value:", value);
                 const ret = this._fromSandbox(value, ti, `of static property ${symbol}`);
                 this._debug("ret", ret);
@@ -8003,7 +7995,7 @@ var __webpack_modules__ = {
                     throw new Error(`static property ${symbol} is readonly`);
                 }
                 const prototype = this._findSymbol(fqn);
-                this._ensureSync(`property ${property}`, (() => this._wrapSandboxCode((() => prototype[property] = this._toSandbox(value, ti, `assigned to static property ${symbol}`)))));
+                this._ensureSync(`property ${property}`, (() => prototype[property] = this._toSandbox(value, ti, `assigned to static property ${symbol}`)));
                 return {};
             }
             get(req) {
@@ -8012,7 +8004,7 @@ var __webpack_modules__ = {
                 const {instance, fqn, interfaces} = this.objects.findObject(objref);
                 const ti = this._typeInfoForProperty(property, fqn, interfaces);
                 const propertyToGet = this._findPropertyTarget(instance, property);
-                const value = this._ensureSync(`property '${objref[api_1.TOKEN_REF]}.${propertyToGet}'`, (() => this._wrapSandboxCode((() => instance[propertyToGet]))));
+                const value = this._ensureSync(`property '${objref[api_1.TOKEN_REF]}.${propertyToGet}'`, (() => instance[propertyToGet]));
                 this._debug("value:", value);
                 const ret = this._fromSandbox(value, ti, `of property ${fqn}.${property}`);
                 this._debug("ret:", ret);
@@ -8029,7 +8021,7 @@ var __webpack_modules__ = {
                     throw new Error(`Cannot set value of immutable property ${req.property} to ${req.value}`);
                 }
                 const propertyToSet = this._findPropertyTarget(instance, property);
-                this._ensureSync(`property '${objref[api_1.TOKEN_REF]}.${propertyToSet}'`, (() => this._wrapSandboxCode((() => instance[propertyToSet] = this._toSandbox(value, propInfo, `assigned to property ${fqn}.${property}`)))));
+                this._ensureSync(`property '${objref[api_1.TOKEN_REF]}.${propertyToSet}'`, (() => instance[propertyToSet] = this._toSandbox(value, propInfo, `assigned to property ${fqn}.${property}`)));
                 return {};
             }
             invoke(req) {
@@ -8042,7 +8034,7 @@ var __webpack_modules__ = {
                     throw new Error(`${method} is an async method, use "begin" instead`);
                 }
                 const fqn = (0, objects_1.jsiiTypeFqn)(obj);
-                const ret = this._ensureSync(`method '${objref[api_1.TOKEN_REF]}.${method}'`, (() => this._wrapSandboxCode((() => fn.apply(obj, this._toSandboxValues(args, `method ${fqn ? `${fqn}#` : ""}${method}`, ti.parameters))))));
+                const ret = this._ensureSync(`method '${objref[api_1.TOKEN_REF]}.${method}'`, (() => fn.apply(obj, this._toSandboxValues(args, `method ${fqn ? `${fqn}#` : ""}${method}`, ti.parameters))));
                 const result = this._fromSandbox(ret, (_b = ti.returns) !== null && _b !== void 0 ? _b : "void", `returned by method ${fqn ? `${fqn}#` : ""}${method}`);
                 this._debug("invoke result", result);
                 return {
@@ -8063,7 +8055,7 @@ var __webpack_modules__ = {
                 }
                 const prototype = this._findSymbol(fqn);
                 const fn = prototype[method];
-                const ret = this._ensureSync(`method '${fqn}.${method}'`, (() => this._wrapSandboxCode((() => fn.apply(prototype, this._toSandboxValues(args, `static method ${fqn}.${method}`, ti.parameters))))));
+                const ret = this._ensureSync(`method '${fqn}.${method}'`, (() => fn.apply(prototype, this._toSandboxValues(args, `static method ${fqn}.${method}`, ti.parameters))));
                 this._debug("method returned:", ret);
                 return {
                     result: this._fromSandbox(ret, (_b = ti.returns) !== null && _b !== void 0 ? _b : "void", `returned by static method ${fqn}.${method}`)
@@ -8082,7 +8074,7 @@ var __webpack_modules__ = {
                     throw new Error(`Method ${method} is expected to be an async method`);
                 }
                 const fqn = (0, objects_1.jsiiTypeFqn)(obj);
-                const promise = this._wrapSandboxCode((() => fn.apply(obj, this._toSandboxValues(args, `async method ${fqn ? `${fqn}#` : ""}${method}`, ti.parameters))));
+                const promise = fn.apply(obj, this._toSandboxValues(args, `async method ${fqn ? `${fqn}#` : ""}${method}`, ti.parameters));
                 promise.catch((_ => undefined));
                 const prid = this._makeprid();
                 this.promises.set(prid, {
@@ -8214,6 +8206,7 @@ var __webpack_modules__ = {
             _getPackageDir(pkgname) {
                 if (!this.installDir) {
                     this.installDir = fs.mkdtempSync(path.join(os.tmpdir(), "jsii-kernel-"));
+                    this.require = (0, module_1.createRequire)(this.installDir);
                     fs.mkdirpSync(path.join(this.installDir, "node_modules"));
                     this._debug("creating jsii-kernel modules workdir:", this.installDir);
                     onExit.removeSync(this.installDir);
@@ -8227,7 +8220,7 @@ var __webpack_modules__ = {
                 const requestArgs = (_a = req.args) !== null && _a !== void 0 ? _a : [];
                 const ctorResult = this._findCtor(fqn, requestArgs);
                 const ctor = ctorResult.ctor;
-                const obj = this._wrapSandboxCode((() => new ctor(...this._toSandboxValues(requestArgs, `new ${fqn}`, ctorResult.parameters))));
+                const obj = new ctor(...this._toSandboxValues(requestArgs, `new ${fqn}`, ctorResult.parameters));
                 const objref = this.objects.registerObject(obj, fqn, (_b = req.interfaces) !== null && _b !== void 0 ? _b : []);
                 if (overrides) {
                     this._debug("overrides", overrides);
@@ -8625,17 +8618,6 @@ var __webpack_modules__ = {
             }
             _makeprid() {
                 return `jsii::promise::${this.nextid++}`;
-            }
-            _wrapSandboxCode(fn) {
-                return fn();
-            }
-            _execute(code, filename) {
-                const script = new vm.Script(code, {
-                    filename
-                });
-                return script.runInContext(this.sandbox, {
-                    displayErrors: true
-                });
             }
         }
         exports.Kernel = Kernel;
@@ -9776,13 +9758,17 @@ var __webpack_modules__ = {
         Object.defineProperty(exports, "__esModule", {
             value: true
         });
-        exports.loadAssemblyFromFile = exports.loadAssemblyFromPath = exports.loadAssemblyFromBuffer = exports.writeAssembly = exports.findAssemblyFile = void 0;
+        exports.loadAssemblyFromFile = exports.loadAssemblyFromPath = exports.loadAssemblyFromBuffer = exports.writeAssembly = exports.findAssemblyFile = exports.compressedAssemblyExists = void 0;
         const fs = __webpack_require__(7147);
         const path = __webpack_require__(4822);
         const zlib = __webpack_require__(9796);
         const assembly_1 = __webpack_require__(2752);
         const redirect_1 = __webpack_require__(9639);
         const validate_assembly_1 = __webpack_require__(5907);
+        function compressedAssemblyExists(directory) {
+            return fs.existsSync(path.join(directory, assembly_1.SPEC_FILE_NAME_COMPRESSED));
+        }
+        exports.compressedAssemblyExists = compressedAssemblyExists;
         function findAssemblyFile(directory) {
             const dotJsiiFile = path.join(directory, assembly_1.SPEC_FILE_NAME);
             if (!fs.existsSync(dotJsiiFile)) {
@@ -15325,17 +15311,13 @@ var __webpack_modules__ = {
         "use strict";
         module.exports = require("util");
     },
-    6144: module => {
-        "use strict";
-        module.exports = require("vm");
-    },
     9796: module => {
         "use strict";
         module.exports = require("zlib");
     },
     4147: module => {
         "use strict";
-        module.exports = JSON.parse('{"name":"@jsii/runtime","version":"1.62.0","description":"jsii runtime kernel process","license":"Apache-2.0","author":{"name":"Amazon Web Services","url":"https://aws.amazon.com"},"homepage":"https://github.com/aws/jsii","bugs":{"url":"https://github.com/aws/jsii/issues"},"repository":{"type":"git","url":"https://github.com/aws/jsii.git","directory":"packages/@jsii/runtime"},"engines":{"node":">= 14.6.0"},"main":"lib/index.js","types":"lib/index.d.ts","bin":{"jsii-runtime":"bin/jsii-runtime"},"scripts":{"build":"tsc --build && chmod +x bin/jsii-runtime && npx webpack-cli && npm run lint","watch":"tsc --build -w","lint":"eslint . --ext .js,.ts --ignore-path=.gitignore --ignore-pattern=webpack.config.js","lint:fix":"yarn lint --fix","test":"jest","test:update":"jest -u","package":"package-js"},"dependencies":{"@jsii/kernel":"^1.62.0","@jsii/check-node":"1.62.0","@jsii/spec":"^1.62.0"},"devDependencies":{"@scope/jsii-calc-base":"^1.62.0","@scope/jsii-calc-lib":"^1.62.0","jsii-build-tools":"^1.62.0","jsii-calc":"^3.20.120","source-map-loader":"^4.0.0","webpack":"^5.73.0","webpack-cli":"^4.10.0"}}');
+        module.exports = JSON.parse('{"name":"@jsii/runtime","version":"1.63.0","description":"jsii runtime kernel process","license":"Apache-2.0","author":{"name":"Amazon Web Services","url":"https://aws.amazon.com"},"homepage":"https://github.com/aws/jsii","bugs":{"url":"https://github.com/aws/jsii/issues"},"repository":{"type":"git","url":"https://github.com/aws/jsii.git","directory":"packages/@jsii/runtime"},"engines":{"node":">= 14.6.0"},"main":"lib/index.js","types":"lib/index.d.ts","bin":{"jsii-runtime":"bin/jsii-runtime"},"scripts":{"build":"tsc --build && chmod +x bin/jsii-runtime && npx webpack-cli && npm run lint","watch":"tsc --build -w","lint":"eslint . --ext .js,.ts --ignore-path=.gitignore --ignore-pattern=webpack.config.js","lint:fix":"yarn lint --fix","test":"jest","test:update":"jest -u","package":"package-js"},"dependencies":{"@jsii/kernel":"^1.63.0","@jsii/check-node":"1.63.0","@jsii/spec":"^1.63.0"},"devDependencies":{"@scope/jsii-calc-base":"^1.63.0","@scope/jsii-calc-lib":"^1.63.0","jsii-build-tools":"^1.63.0","jsii-calc":"^3.20.120","source-map-loader":"^4.0.0","webpack":"^5.73.0","webpack-cli":"^4.10.0"}}');
     },
     5277: module => {
         "use strict";
@@ -15363,22 +15345,11 @@ function __webpack_require__(moduleId) {
         return cachedModule.exports;
     }
     var module = __webpack_module_cache__[moduleId] = {
-        id: moduleId,
-        loaded: false,
         exports: {}
     };
     __webpack_modules__[moduleId].call(module.exports, module, module.exports, __webpack_require__);
-    module.loaded = true;
     return module.exports;
 }
-
-(() => {
-    __webpack_require__.nmd = module => {
-        module.paths = [];
-        if (!module.children) module.children = [];
-        return module;
-    };
-})();
 
 var __webpack_exports__ = {};
 
