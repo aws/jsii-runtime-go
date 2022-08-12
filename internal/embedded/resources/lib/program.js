@@ -2707,14 +2707,30 @@ var __webpack_modules__ = {
         const isArrayBufferView = b => !Buffer.isBuffer(b) && ArrayBuffer.isView(b);
         class Pipe {
             constructor(src, dest, opts) {
+                this.src = src;
                 this.dest = dest;
                 this.opts = opts;
                 this.ondrain = () => src[RESUME]();
                 dest.on("drain", this.ondrain);
             }
-            end() {
-                if (this.opts.end) this.dest.end();
+            unpipe() {
                 this.dest.removeListener("drain", this.ondrain);
+            }
+            proxyErrors() {}
+            end() {
+                this.unpipe();
+                if (this.opts.end) this.dest.end();
+            }
+        }
+        class PipeProxyErrors extends Pipe {
+            unpipe() {
+                this.src.removeListener("error", this.proxyErrors);
+                super.unpipe();
+            }
+            constructor(src, dest, opts) {
+                super(src, dest, opts);
+                this.proxyErrors = er => dest.emit("error", er);
+                src.on("error", this.proxyErrors);
             }
         }
         module.exports = class Minipass extends Stream {
@@ -2884,13 +2900,21 @@ var __webpack_modules__ = {
                 const ended = this[EMITTED_END];
                 opts = opts || {};
                 if (dest === proc.stdout || dest === proc.stderr) opts.end = false; else opts.end = opts.end !== false;
+                opts.proxyErrors = !!opts.proxyErrors;
                 if (ended) {
                     if (opts.end) dest.end();
                 } else {
-                    this.pipes.push(new Pipe(this, dest, opts));
+                    this.pipes.push(!opts.proxyErrors ? new Pipe(this, dest, opts) : new PipeProxyErrors(this, dest, opts));
                     if (this[ASYNC]) defer((() => this[RESUME]())); else this[RESUME]();
                 }
                 return dest;
+            }
+            unpipe(dest) {
+                const p = this.pipes.find((p => p.dest === dest));
+                if (p) {
+                    this.pipes.splice(this.pipes.indexOf(p), 1);
+                    p.unpipe();
+                }
             }
             addListener(ev, fn) {
                 return this.on(ev, fn);
@@ -9758,7 +9782,7 @@ var __webpack_modules__ = {
         Object.defineProperty(exports, "__esModule", {
             value: true
         });
-        exports.loadAssemblyFromFile = exports.loadAssemblyFromPath = exports.loadAssemblyFromBuffer = exports.writeAssembly = exports.findAssemblyFile = exports.compressedAssemblyExists = void 0;
+        exports.loadAssemblyFromFile = exports.loadAssemblyFromPath = exports.loadAssemblyFromBuffer = exports.writeAssembly = exports.replaceAssembly = exports.findAssemblyFile = exports.compressedAssemblyExists = void 0;
         const fs = __webpack_require__(7147);
         const path = __webpack_require__(4822);
         const zlib = __webpack_require__(9796);
@@ -9777,6 +9801,16 @@ var __webpack_modules__ = {
             return dotJsiiFile;
         }
         exports.findAssemblyFile = findAssemblyFile;
+        function replaceAssembly(assembly, directory) {
+            writeAssembly(directory, _fingerprint(assembly), {
+                compress: compressedAssemblyExists(directory)
+            });
+        }
+        exports.replaceAssembly = replaceAssembly;
+        function _fingerprint(assembly) {
+            assembly.fingerprint = "*".repeat(10);
+            return assembly;
+        }
         function writeAssembly(directory, assembly, {compress = false} = {}) {
             if (compress) {
                 fs.writeFileSync(path.join(directory, assembly_1.SPEC_FILE_NAME), JSON.stringify({
@@ -15317,7 +15351,7 @@ var __webpack_modules__ = {
     },
     4147: module => {
         "use strict";
-        module.exports = JSON.parse('{"name":"@jsii/runtime","version":"1.63.2","description":"jsii runtime kernel process","license":"Apache-2.0","author":{"name":"Amazon Web Services","url":"https://aws.amazon.com"},"homepage":"https://github.com/aws/jsii","bugs":{"url":"https://github.com/aws/jsii/issues"},"repository":{"type":"git","url":"https://github.com/aws/jsii.git","directory":"packages/@jsii/runtime"},"engines":{"node":">= 14.6.0"},"main":"lib/index.js","types":"lib/index.d.ts","bin":{"jsii-runtime":"bin/jsii-runtime"},"scripts":{"build":"tsc --build && chmod +x bin/jsii-runtime && npx webpack-cli && npm run lint","watch":"tsc --build -w","lint":"eslint . --ext .js,.ts --ignore-path=.gitignore --ignore-pattern=webpack.config.js","lint:fix":"yarn lint --fix","test":"jest","test:update":"jest -u","package":"package-js"},"dependencies":{"@jsii/kernel":"^1.63.2","@jsii/check-node":"1.63.2","@jsii/spec":"^1.63.2"},"devDependencies":{"@scope/jsii-calc-base":"^1.63.2","@scope/jsii-calc-lib":"^1.63.2","jsii-build-tools":"^1.63.2","jsii-calc":"^3.20.120","source-map-loader":"^4.0.0","webpack":"^5.74.0","webpack-cli":"^4.10.0"}}');
+        module.exports = JSON.parse('{"name":"@jsii/runtime","version":"1.64.0","description":"jsii runtime kernel process","license":"Apache-2.0","author":{"name":"Amazon Web Services","url":"https://aws.amazon.com"},"homepage":"https://github.com/aws/jsii","bugs":{"url":"https://github.com/aws/jsii/issues"},"repository":{"type":"git","url":"https://github.com/aws/jsii.git","directory":"packages/@jsii/runtime"},"engines":{"node":">= 14.6.0"},"main":"lib/index.js","types":"lib/index.d.ts","bin":{"jsii-runtime":"bin/jsii-runtime"},"scripts":{"build":"tsc --build && chmod +x bin/jsii-runtime && npx webpack-cli && npm run lint","watch":"tsc --build -w","lint":"eslint . --ext .js,.ts --ignore-path=.gitignore --ignore-pattern=webpack.config.js","lint:fix":"yarn lint --fix","test":"jest","test:update":"jest -u","package":"package-js"},"dependencies":{"@jsii/kernel":"^1.64.0","@jsii/check-node":"1.64.0","@jsii/spec":"^1.64.0"},"devDependencies":{"@scope/jsii-calc-base":"^1.64.0","@scope/jsii-calc-lib":"^1.64.0","jsii-build-tools":"^1.64.0","jsii-calc":"^3.20.120","source-map-loader":"^4.0.0","webpack":"^5.74.0","webpack-cli":"^4.10.0"}}');
     },
     5277: module => {
         "use strict";
