@@ -1700,6 +1700,160 @@ var __webpack_modules__ = {
             }
         };
     },
+    2945: (__unused_webpack_module, exports, __webpack_require__) => {
+        var fs = __webpack_require__(7147), wx = "wx";
+        if (process.version.match(/^v0\.[0-6]/)) {
+            var c = __webpack_require__(2057);
+            wx = c.O_TRUNC | c.O_CREAT | c.O_WRONLY | c.O_EXCL;
+        }
+        var debug, os = __webpack_require__(2037);
+        exports.filetime = "ctime", "win32" == os.platform() && (exports.filetime = "mtime");
+        var util = __webpack_require__(3837);
+        debug = util.debuglog ? util.debuglog("LOCKFILE") : /\blockfile\b/i.test(process.env.NODE_DEBUG) ? function() {
+            var msg = util.format.apply(util, arguments);
+            console.error("LOCKFILE %d %s", process.pid, msg);
+        } : function() {};
+        var locks = {};
+        __webpack_require__(156)((function() {
+            debug("exit listener"), Object.keys(locks).forEach(exports.unlockSync);
+        })), /^v0\.[0-8]\./.test(process.version) && (debug("uncaughtException, version = %s", process.version), 
+        process.on("uncaughtException", (function H(er) {
+            if (debug("uncaughtException"), !process.listeners("uncaughtException").filter((function(h) {
+                return h !== H;
+            })).length) {
+                try {
+                    Object.keys(locks).forEach(exports.unlockSync);
+                } catch (e) {}
+                throw process.removeListener("uncaughtException", H), er;
+            }
+        }))), exports.unlock = function(path, cb) {
+            debug("unlock", path), delete locks[path], fs.unlink(path, (function(unlinkEr) {
+                cb && cb();
+            }));
+        }, exports.unlockSync = function(path) {
+            debug("unlockSync", path);
+            try {
+                fs.unlinkSync(path);
+            } catch (er) {}
+            delete locks[path];
+        }, exports.check = function(path, opts, cb) {
+            "function" == typeof opts && (cb = opts, opts = {}), debug("check", path, opts), 
+            fs.open(path, "r", (function(er, fd) {
+                return er ? "ENOENT" !== er.code ? cb(er) : cb(null, !1) : opts.stale ? void fs.fstat(fd, (function(er, st) {
+                    if (er) return fs.close(fd, (function(er2) {
+                        return cb(er);
+                    }));
+                    fs.close(fd, (function(er) {
+                        var age = Date.now() - st[exports.filetime].getTime();
+                        return cb(er, age <= opts.stale);
+                    }));
+                })) : fs.close(fd, (function(er) {
+                    return cb(er, !0);
+                }));
+            }));
+        }, exports.checkSync = function(path, opts) {
+            if (debug("checkSync", path, opts = opts || {}), opts.wait) throw new Error("opts.wait not supported sync for obvious reasons");
+            try {
+                var fd = fs.openSync(path, "r");
+            } catch (er) {
+                if ("ENOENT" !== er.code) throw er;
+                return !1;
+            }
+            if (!opts.stale) {
+                try {
+                    fs.closeSync(fd);
+                } catch (er) {}
+                return !0;
+            }
+            if (opts.stale) {
+                try {
+                    var st = fs.fstatSync(fd);
+                } finally {
+                    fs.closeSync(fd);
+                }
+                return Date.now() - st[exports.filetime].getTime() <= opts.stale;
+            }
+        };
+        var req = 1;
+        function maybeStale(originalEr, path, opts, hasStaleLock, cb) {
+            fs.stat(path, (function(statEr, st) {
+                return statEr ? "ENOENT" === statEr.code ? (opts.stale = !1, debug("lock stale enoent retry", path, opts), 
+                void exports.lock(path, opts, cb)) : cb(statEr) : Date.now() - st[exports.filetime].getTime() <= opts.stale ? notStale(originalEr, path, opts, cb) : (debug("lock stale", path, opts), 
+                void (hasStaleLock ? exports.unlock(path, (function(er) {
+                    if (er) return cb(er);
+                    debug("lock stale retry", path, opts), fs.link(path + ".STALE", path, (function(er) {
+                        fs.unlink(path + ".STALE", (function() {
+                            cb(er);
+                        }));
+                    }));
+                })) : (debug("acquire .STALE file lock", opts), exports.lock(path + ".STALE", opts, (function(er) {
+                    if (er) return cb(er);
+                    maybeStale(originalEr, path, opts, !0, cb);
+                })))));
+            }));
+        }
+        function notStale(er, path, opts, cb) {
+            if (debug("notStale", path, opts), "number" != typeof opts.wait || opts.wait <= 0) return debug("notStale, wait is not a number"), 
+            cb(er);
+            var now = Date.now(), start = opts.start || now, end = start + opts.wait;
+            if (end <= now) return cb(er);
+            debug("now=%d, wait until %d (delta=%d)", start, end, end - start);
+            var wait = Math.min(end - start, opts.pollPeriod || 100);
+            setTimeout((function() {
+                debug("notStale, polling", path, opts), exports.lock(path, opts, cb);
+            }), wait);
+        }
+        function retryThrow(path, opts, er) {
+            if ("number" == typeof opts.retries && opts.retries > 0) {
+                var newRT = opts.retries - 1;
+                return debug("retryThrow", path, opts, newRT), opts.retries = newRT, exports.lockSync(path, opts);
+            }
+            throw er;
+        }
+        exports.lock = function(path, opts, cb) {
+            if ("function" == typeof opts && (cb = opts, opts = {}), opts.req = opts.req || req++, 
+            debug("lock", path, opts), opts.start = opts.start || Date.now(), "number" == typeof opts.retries && opts.retries > 0) {
+                debug("has retries", opts.retries);
+                var retries = opts.retries;
+                opts.retries = 0, orig = cb, cb = function cb(er, fd) {
+                    if (debug("retry-mutated callback"), retries -= 1, !er || retries < 0) return orig(er, fd);
+                    function retry() {
+                        opts.start = Date.now(), debug("retrying", opts.start), exports.lock(path, opts, cb);
+                    }
+                    debug("lock retry", path, opts), opts.retryWait ? setTimeout(retry, opts.retryWait) : retry();
+                };
+            }
+            var orig;
+            fs.open(path, wx, (function(er, fd) {
+                return er ? (debug("failed to acquire lock", er), "EEXIST" !== er.code ? (debug("not EEXIST error", er), 
+                cb(er)) : opts.stale ? maybeStale(er, path, opts, !1, cb) : notStale(er, path, opts, cb)) : (debug("locked", path, fd), 
+                locks[path] = fd, fs.close(fd, (function() {
+                    return cb();
+                })));
+            })), debug("lock return");
+        }, exports.lockSync = function(path, opts) {
+            if ((opts = opts || {}).req = opts.req || req++, debug("lockSync", path, opts), 
+            opts.wait || opts.retryWait) throw new Error("opts.wait not supported sync for obvious reasons");
+            try {
+                var fd = fs.openSync(path, wx);
+                locks[path] = fd;
+                try {
+                    fs.closeSync(fd);
+                } catch (er) {}
+                return void debug("locked sync!", path, fd);
+            } catch (er) {
+                if ("EEXIST" !== er.code) return retryThrow(path, opts, er);
+                if (opts.stale) {
+                    var ct = fs.statSync(path)[exports.filetime].getTime();
+                    !(ct % 1e3) && opts.stale % 1e3 && (opts.stale = 1e3 * Math.ceil(opts.stale / 1e3));
+                    var age = Date.now() - ct;
+                    if (age > opts.stale) return debug("lockSync stale", path, opts, age), exports.unlockSync(path), 
+                    exports.lockSync(path, opts);
+                }
+                return debug("failed to lock", path, opts, er), retryThrow(path, opts, er);
+            }
+        };
+    },
     2253: (module, __unused_webpack_exports, __webpack_require__) => {
         "use strict";
         const proc = "object" == typeof process && process ? process : {
@@ -2381,6 +2535,76 @@ var __webpack_modules__ = {
             useNative,
             useNativeSync
         };
+    },
+    156: (module, __unused_webpack_exports, __webpack_require__) => {
+        var process = global.process;
+        const processOk = function(process) {
+            return process && "object" == typeof process && "function" == typeof process.removeListener && "function" == typeof process.emit && "function" == typeof process.reallyExit && "function" == typeof process.listeners && "function" == typeof process.kill && "number" == typeof process.pid && "function" == typeof process.on;
+        };
+        if (processOk(process)) {
+            var emitter, assert = __webpack_require__(9491), signals = __webpack_require__(6107), isWin = /^win/i.test(process.platform), EE = __webpack_require__(2361);
+            "function" != typeof EE && (EE = EE.EventEmitter), process.__signal_exit_emitter__ ? emitter = process.__signal_exit_emitter__ : ((emitter = process.__signal_exit_emitter__ = new EE).count = 0, 
+            emitter.emitted = {}), emitter.infinite || (emitter.setMaxListeners(1 / 0), emitter.infinite = !0), 
+            module.exports = function(cb, opts) {
+                if (!processOk(global.process)) return function() {};
+                assert.equal(typeof cb, "function", "a callback must be provided for exit handler"), 
+                !1 === loaded && load();
+                var ev = "exit";
+                opts && opts.alwaysLast && (ev = "afterexit");
+                return emitter.on(ev, cb), function() {
+                    emitter.removeListener(ev, cb), 0 === emitter.listeners("exit").length && 0 === emitter.listeners("afterexit").length && unload();
+                };
+            };
+            var unload = function() {
+                loaded && processOk(global.process) && (loaded = !1, signals.forEach((function(sig) {
+                    try {
+                        process.removeListener(sig, sigListeners[sig]);
+                    } catch (er) {}
+                })), process.emit = originalProcessEmit, process.reallyExit = originalProcessReallyExit, 
+                emitter.count -= 1);
+            };
+            module.exports.unload = unload;
+            var emit = function(event, code, signal) {
+                emitter.emitted[event] || (emitter.emitted[event] = !0, emitter.emit(event, code, signal));
+            }, sigListeners = {};
+            signals.forEach((function(sig) {
+                sigListeners[sig] = function() {
+                    processOk(global.process) && (process.listeners(sig).length === emitter.count && (unload(), 
+                    emit("exit", null, sig), emit("afterexit", null, sig), isWin && "SIGHUP" === sig && (sig = "SIGINT"), 
+                    process.kill(process.pid, sig)));
+                };
+            })), module.exports.signals = function() {
+                return signals;
+            };
+            var loaded = !1, load = function() {
+                !loaded && processOk(global.process) && (loaded = !0, emitter.count += 1, signals = signals.filter((function(sig) {
+                    try {
+                        return process.on(sig, sigListeners[sig]), !0;
+                    } catch (er) {
+                        return !1;
+                    }
+                })), process.emit = processEmit, process.reallyExit = processReallyExit);
+            };
+            module.exports.load = load;
+            var originalProcessReallyExit = process.reallyExit, processReallyExit = function(code) {
+                processOk(global.process) && (process.exitCode = code || 0, emit("exit", process.exitCode, null), 
+                emit("afterexit", process.exitCode, null), originalProcessReallyExit.call(process, process.exitCode));
+            }, originalProcessEmit = process.emit, processEmit = function(ev, arg) {
+                if ("exit" === ev && processOk(global.process)) {
+                    void 0 !== arg && (process.exitCode = arg);
+                    var ret = originalProcessEmit.apply(this, arguments);
+                    return emit("exit", process.exitCode, null), emit("afterexit", process.exitCode, null), 
+                    ret;
+                }
+                return originalProcessEmit.apply(this, arguments);
+            };
+        } else module.exports = function() {
+            return function() {};
+        };
+    },
+    6107: module => {
+        module.exports = [ "SIGABRT", "SIGALRM", "SIGHUP", "SIGINT", "SIGTERM" ], "win32" !== process.platform && module.exports.push("SIGVTALRM", "SIGXCPU", "SIGXFSZ", "SIGUSR2", "SIGTRAP", "SIGSYS", "SIGQUIT", "SIGIOT"), 
+        "linux" === process.platform && module.exports.push("SIGIO", "SIGPOLL", "SIGPWR", "SIGSTKFLT", "SIGUNUSED");
     },
     1189: (__unused_webpack_module, exports, __webpack_require__) => {
         "use strict";
@@ -4885,6 +5109,188 @@ var __webpack_modules__ = {
             return null != value.property;
         };
     },
+    3288: (__unused_webpack_module, exports, __webpack_require__) => {
+        "use strict";
+        Object.defineProperty(exports, "__esModule", {
+            value: !0
+        }), exports.digestFile = void 0;
+        const crypto_1 = __webpack_require__(6113), fs_1 = __webpack_require__(7147);
+        exports.digestFile = function(path, ...comments) {
+            const hash = (0, crypto_1.createHash)("sha256"), buffer = Buffer.alloc(16384), fd = (0, 
+            fs_1.openSync)(path, "r");
+            try {
+                let bytesRead = 0;
+                for (;(bytesRead = (0, fs_1.readSync)(fd, buffer)) > 0; ) hash.update(buffer.slice(0, bytesRead));
+                for (const comment of comments) hash.update("\0"), hash.update(comment);
+                return hash.digest();
+            } finally {
+                (0, fs_1.closeSync)(fd);
+            }
+        };
+    },
+    535: function(__unused_webpack_module, exports, __webpack_require__) {
+        "use strict";
+        var _DiskCache_root, __classPrivateFieldSet = this && this.__classPrivateFieldSet || function(receiver, state, value, kind, f) {
+            if ("m" === kind) throw new TypeError("Private method is not writable");
+            if ("a" === kind && !f) throw new TypeError("Private accessor was defined without a setter");
+            if ("function" == typeof state ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot write private member to an object whose class did not declare it");
+            return "a" === kind ? f.call(receiver, value) : f ? f.value = value : state.set(receiver, value), 
+            value;
+        }, __classPrivateFieldGet = this && this.__classPrivateFieldGet || function(receiver, state, kind, f) {
+            if ("a" === kind && !f) throw new TypeError("Private accessor was defined without a getter");
+            if ("function" == typeof state ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
+            return "m" === kind ? f : "a" === kind ? f.call(receiver) : f ? f.value : state.get(receiver);
+        };
+        Object.defineProperty(exports, "__esModule", {
+            value: !0
+        }), exports.Entry = exports.DiskCache = void 0;
+        const fs_1 = __webpack_require__(7147), lockfile_1 = __webpack_require__(2945), path_1 = __webpack_require__(4822), digest_file_1 = __webpack_require__(3288), PRUNE_AFTER_MILLISECONDS = process.env.JSII_RUNTIME_PACKAGE_CACHE_TTL ? 864e5 * parseInt(process.env.JSII_RUNTIME_PACKAGE_CACHE_TTL, 10) : 2592e6;
+        class DiskCache {
+            constructor(root) {
+                _DiskCache_root.set(this, void 0), __classPrivateFieldSet(this, _DiskCache_root, root, "f"), 
+                process.once("beforeExit", (() => this.pruneExpiredEntries()));
+            }
+            static inDirectory(path) {
+                return null != (0, fs_1.mkdirSync)(path, {
+                    recursive: !0
+                }) && "darwin" === process.platform && ((0, fs_1.writeFileSync)((0, path_1.join)(path, ".nobackup"), ""), 
+                (0, fs_1.writeFileSync)((0, path_1.join)(path, ".noindex"), ""), (0, fs_1.writeFileSync)((0, 
+                path_1.join)(path, ".nosync"), "")), path = (0, fs_1.realpathSync)(path), this.CACHE.has(path) || this.CACHE.set(path, new DiskCache(path)), 
+                this.CACHE.get(path);
+            }
+            entry(...key) {
+                if (0 === key.length) throw new Error("Cache entry key must contain at least 1 element!");
+                return new Entry((0, path_1.join)(__classPrivateFieldGet(this, _DiskCache_root, "f"), ...key.flatMap((s => s.replace(/[^@a-z0-9_.\\/-]+/g, "_").split(/[\\/]+/).map((ss => {
+                    if (".." === ss) throw new Error(`A cache entry key cannot contain a '..' path segment! (${s})`);
+                    return ss;
+                }))))));
+            }
+            entryFor(path, ...comments) {
+                const rawDigest = (0, digest_file_1.digestFile)(path, ...comments);
+                return this.entry(...comments, rawDigest.toString("hex"));
+            }
+            pruneExpiredEntries() {
+                const cutOff = new Date(Date.now() - PRUNE_AFTER_MILLISECONDS);
+                for (const entry of this.entries()) entry.atime < cutOff && entry.lock((lockedEntry => {
+                    entry.atime > cutOff || lockedEntry.delete();
+                }));
+                for (const dir of directoriesUnder(__classPrivateFieldGet(this, _DiskCache_root, "f"), !0)) {
+                    if ("darwin" === process.platform) try {
+                        (0, fs_1.rmSync)((0, path_1.join)(dir, ".DS_Store"), {
+                            force: !0
+                        });
+                    } catch {}
+                    if (0 === (0, fs_1.readdirSync)(dir).length) try {
+                        (0, fs_1.rmdirSync)(dir);
+                    } catch {}
+                }
+            }
+            * entries() {
+                yield* function* inDirectory(dir) {
+                    if ((0, fs_1.existsSync)((0, path_1.join)(dir, ".jsii-runtime-package-cache"))) return yield new Entry(dir);
+                    for (const file of directoriesUnder(dir)) yield* inDirectory(file);
+                }(__classPrivateFieldGet(this, _DiskCache_root, "f"));
+            }
+        }
+        exports.DiskCache = DiskCache, _DiskCache_root = new WeakMap, DiskCache.CACHE = new Map;
+        class Entry {
+            constructor(path) {
+                this.path = path;
+            }
+            get atime() {
+                try {
+                    return (0, fs_1.statSync)(this.markerFile).atime;
+                } catch (err) {
+                    if ("ENOENT" !== err.code) throw err;
+                    return new Date(0);
+                }
+            }
+            get pathExists() {
+                return (0, fs_1.existsSync)(this.path);
+            }
+            get lockFile() {
+                return `${this.path}.lock`;
+            }
+            get markerFile() {
+                return (0, path_1.join)(this.path, ".jsii-runtime-package-cache");
+            }
+            lock(cb) {
+                (0, fs_1.mkdirSync)((0, path_1.dirname)(this.path), {
+                    recursive: !0
+                }), (0, lockfile_1.lockSync)(this.lockFile, {
+                    retries: 12,
+                    stale: 5e3
+                });
+                let disposed = !1;
+                try {
+                    return cb({
+                        delete: () => {
+                            if (disposed) throw new Error(`Cannot delete ${this.path} once the lock block was returned!`);
+                            (0, fs_1.rmSync)(this.path, {
+                                force: !0,
+                                recursive: !0
+                            });
+                        },
+                        write: (name, content) => {
+                            if (disposed) throw new Error(`Cannot write ${(0, path_1.join)(this.path, name)} once the lock block was returned!`);
+                            (0, fs_1.mkdirSync)((0, path_1.dirname)((0, path_1.join)(this.path, name)), {
+                                recursive: !0
+                            }), (0, fs_1.writeFileSync)((0, path_1.join)(this.path, name), content);
+                        },
+                        touch: () => {
+                            if (disposed) throw new Error(`Cannot touch ${this.path} once the lock block was returned!`);
+                            if (this.pathExists) if ((0, fs_1.existsSync)(this.markerFile)) {
+                                const now = new Date;
+                                (0, fs_1.utimesSync)(this.markerFile, now, now);
+                            } else (0, fs_1.writeFileSync)(this.markerFile, "");
+                        }
+                    });
+                } finally {
+                    disposed = !0, (0, lockfile_1.unlockSync)(this.lockFile);
+                }
+            }
+            read(file) {
+                try {
+                    return (0, fs_1.readFileSync)((0, path_1.join)(this.path, file));
+                } catch (error) {
+                    if ("ENOENT" === error.code) return;
+                    throw error;
+                }
+            }
+        }
+        function* directoriesUnder(root, recursive = !1, ignoreErrors = !0) {
+            for (const file of (0, fs_1.readdirSync)(root)) {
+                const path = (0, path_1.join)(root, file);
+                try {
+                    (0, fs_1.statSync)(path).isDirectory() && (recursive && (yield* directoriesUnder(path, recursive, ignoreErrors)), 
+                    yield path);
+                } catch (error) {
+                    if (!ignoreErrors) throw error;
+                }
+            }
+        }
+        exports.Entry = Entry;
+    },
+    7202: function(__unused_webpack_module, exports, __webpack_require__) {
+        "use strict";
+        var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
+            void 0 === k2 && (k2 = k);
+            var desc = Object.getOwnPropertyDescriptor(m, k);
+            desc && !("get" in desc ? !m.__esModule : desc.writable || desc.configurable) || (desc = {
+                enumerable: !0,
+                get: function() {
+                    return m[k];
+                }
+            }), Object.defineProperty(o, k2, desc);
+        } : function(o, m, k, k2) {
+            void 0 === k2 && (k2 = k), o[k2] = m[k];
+        }), __exportStar = this && this.__exportStar || function(m, exports) {
+            for (var p in m) "default" === p || Object.prototype.hasOwnProperty.call(exports, p) || __createBinding(exports, m, p);
+        };
+        Object.defineProperty(exports, "__esModule", {
+            value: !0
+        }), __exportStar(__webpack_require__(535), exports);
+    },
     8944: function(__unused_webpack_module, exports, __webpack_require__) {
         "use strict";
         var __createBinding = this && this.__createBinding || (Object.create ? function(o, m, k, k2) {
@@ -4912,15 +5318,18 @@ var __webpack_modules__ = {
         Object.defineProperty(exports, "__esModule", {
             value: !0
         }), exports.Kernel = void 0;
-        const spec = __webpack_require__(1804), spec_1 = __webpack_require__(1804), cp = __webpack_require__(2081), fs = __webpack_require__(9728), module_1 = __webpack_require__(8188), os = __webpack_require__(2037), path = __webpack_require__(4822), tar = __webpack_require__(1189), api = __webpack_require__(2816), api_1 = __webpack_require__(2816), objects_1 = __webpack_require__(2309), onExit = __webpack_require__(6703), wire = __webpack_require__(8614);
+        const spec = __webpack_require__(1804), spec_1 = __webpack_require__(1804), cp = __webpack_require__(2081), fs_1 = __webpack_require__(7147), fs = __webpack_require__(9728), module_1 = __webpack_require__(8188), os = __webpack_require__(2037), path = __webpack_require__(4822), api = __webpack_require__(2816), api_1 = __webpack_require__(2816), link_1 = __webpack_require__(328), objects_1 = __webpack_require__(2309), onExit = __webpack_require__(6703), wire = __webpack_require__(8614), tar = __webpack_require__(4383);
         exports.Kernel = class {
             constructor(callbackHandler) {
-                this.callbackHandler = callbackHandler, this.traceEnabled = !1, this.assemblies = new Map, 
-                this.objects = new objects_1.ObjectTable(this._typeInfoForFqn.bind(this)), this.cbs = new Map, 
-                this.waiting = new Map, this.promises = new Map, this.nextid = 2e4;
+                this.callbackHandler = callbackHandler, this.traceEnabled = !1, this.debugTimingEnabled = !1, 
+                this.assemblies = new Map, this.objects = new objects_1.ObjectTable(this._typeInfoForFqn.bind(this)), 
+                this.cbs = new Map, this.waiting = new Map, this.promises = new Map, this.nextid = 2e4;
             }
             load(req) {
-                var _a, _b;
+                return this._debugTime((() => this._load(req)), `load(${JSON.stringify(req, null, 2)})`);
+            }
+            _load(req) {
+                var _a, _b, _c;
                 if (this._debug("load", req), "assembly" in req) throw new Error('`assembly` field is deprecated for "load", use `name`, `version` and `tarball` instead');
                 const pkgname = req.name, pkgver = req.version, packageDir = this._getPackageDir(pkgname);
                 if (fs.pathExistsSync(packageDir)) {
@@ -4933,30 +5342,32 @@ var __webpack_modules__ = {
                         types: Object.keys(null !== (_a = assm.metadata.types) && void 0 !== _a ? _a : {}).length
                     };
                 }
-                fs.mkdirpSync(packageDir);
                 const originalUmask = process.umask(18);
                 try {
-                    tar.extract({
-                        cwd: packageDir,
-                        file: req.tarball,
+                    const {path: extractedTo, cache} = this._debugTime((() => tar.extract(req.tarball, {
                         strict: !0,
                         strip: 1,
-                        sync: !0,
                         unlink: !0
-                    });
+                    }, req.name, req.version)), `tar.extract(${req.tarball}) => ${packageDir}`);
+                    fs.mkdirSync(path.dirname(packageDir), {
+                        recursive: !0
+                    }), null != cache ? (this._debug(`Package cache enabled, extraction resulted in a cache ${cache}`), 
+                    this._debugTime((() => (0, link_1.link)(extractedTo, packageDir)), `link(${extractedTo}, ${packageDir})`)) : (0, 
+                    fs_1.renameSync)(extractedTo, packageDir);
                 } finally {
                     process.umask(originalUmask);
                 }
                 let assmSpec;
                 try {
-                    assmSpec = (0, spec_1.loadAssemblyFromPath)(packageDir);
+                    assmSpec = this._debugTime((() => (0, spec_1.loadAssemblyFromPath)(packageDir)), `loadAssemblyFromPath(${packageDir})`);
                 } catch (e) {
                     throw new Error(`Error for package tarball ${req.tarball}: ${e.message}`);
                 }
-                const closure = this.require(packageDir), assm = new Assembly(assmSpec, closure);
-                return this._addAssembly(assm), {
+                const closure = this._debugTime((() => this.require(packageDir)), `require(${packageDir})`), assm = new Assembly(assmSpec, closure);
+                return this._debugTime((() => this._addAssembly(assm)), `registerAssembly({ name: ${assm.metadata.name}, types: ${Object.keys(null !== (_b = assm.metadata.types) && void 0 !== _b ? _b : {}).length} })`), 
+                {
                     assembly: assmSpec.name,
-                    types: Object.keys(null !== (_b = assmSpec.types) && void 0 !== _b ? _b : {}).length
+                    types: Object.keys(null !== (_c = assmSpec.types) && void 0 !== _c ? _c : {}).length
                 };
             }
             invokeBinScript(req) {
@@ -5145,7 +5556,7 @@ var __webpack_modules__ = {
                       case spec.TypeKind.Class:
                       case spec.TypeKind.Enum:
                         const constructor = this._findSymbol(fqn);
-                        (0, objects_1.tagJsiiConstructor)(constructor, fqn);
+                        (0, objects_1.tagJsiiConstructor)(constructor, fqn, assm.metadata.version);
                     }
                 }
             }
@@ -5445,6 +5856,15 @@ var __webpack_modules__ = {
             _debug(...args) {
                 this.traceEnabled && console.error("[@jsii/kernel]", ...args);
             }
+            _debugTime(cb, label) {
+                const fullLabel = `[@jsii/kernel:timing] ${label}`;
+                this.debugTimingEnabled && console.time(fullLabel);
+                try {
+                    return cb();
+                } finally {
+                    this.debugTimingEnabled && console.timeEnd(fullLabel);
+                }
+            }
             _ensureSync(desc, fn) {
                 this.syncInProgress = desc;
                 try {
@@ -5470,12 +5890,32 @@ var __webpack_modules__ = {
             }
         }
     },
+    328: (__unused_webpack_module, exports, __webpack_require__) => {
+        "use strict";
+        Object.defineProperty(exports, "__esModule", {
+            value: !0
+        }), exports.link = void 0;
+        const fs_1 = __webpack_require__(7147), path_1 = __webpack_require__(4822);
+        exports.link = function link(existing, destination) {
+            if ((0, fs_1.statSync)(existing).isDirectory()) {
+                (0, fs_1.mkdirSync)(destination, {
+                    recursive: !0
+                });
+                for (const file of (0, fs_1.readdirSync)(existing)) link((0, path_1.join)(existing, file), (0, 
+                path_1.join)(destination, file));
+            } else try {
+                (0, fs_1.linkSync)(existing, destination);
+            } catch {
+                (0, fs_1.copyFileSync)(existing, destination);
+            }
+        };
+    },
     2309: (__unused_webpack_module, exports, __webpack_require__) => {
         "use strict";
         Object.defineProperty(exports, "__esModule", {
             value: !0
         }), exports.ObjectTable = exports.tagJsiiConstructor = exports.objectReference = exports.jsiiTypeFqn = void 0;
-        const spec = __webpack_require__(1804), api = __webpack_require__(2816), serialization_1 = __webpack_require__(8614), OBJID_SYMBOL = Symbol.for("$__jsii__objid__$"), IFACES_SYMBOL = Symbol.for("$__jsii__interfaces__$"), JSII_SYMBOL = Symbol.for("__jsii__");
+        const spec = __webpack_require__(1804), api = __webpack_require__(2816), serialization_1 = __webpack_require__(8614), OBJID_SYMBOL = Symbol.for("$__jsii__objid__$"), IFACES_SYMBOL = Symbol.for("$__jsii__interfaces__$"), JSII_RTTI_SYMBOL = Symbol.for("jsii.rtti");
         function objectReference(obj) {
             if (obj[OBJID_SYMBOL]) return {
                 [api.TOKEN_REF]: obj[OBJID_SYMBOL],
@@ -5484,14 +5924,15 @@ var __webpack_modules__ = {
         }
         exports.jsiiTypeFqn = function(obj) {
             var _a;
-            return null === (_a = obj.constructor[JSII_SYMBOL]) || void 0 === _a ? void 0 : _a.fqn;
-        }, exports.objectReference = objectReference, exports.tagJsiiConstructor = function(constructor, fqn) {
-            Object.defineProperty(constructor, JSII_SYMBOL, {
+            return null === (_a = obj.constructor[JSII_RTTI_SYMBOL]) || void 0 === _a ? void 0 : _a.fqn;
+        }, exports.objectReference = objectReference, exports.tagJsiiConstructor = function(constructor, fqn, version) {
+            Object.prototype.hasOwnProperty.call(constructor, JSII_RTTI_SYMBOL) || Object.defineProperty(constructor, JSII_RTTI_SYMBOL, {
                 configurable: !1,
                 enumerable: !1,
                 writable: !1,
                 value: {
-                    fqn
+                    fqn,
+                    version
                 }
             });
         };
@@ -6040,6 +6481,98 @@ var __webpack_modules__ = {
         }
         exports.SerializationError = SerializationError;
     },
+    4964: (__unused_webpack_module, exports, __webpack_require__) => {
+        "use strict";
+        Object.defineProperty(exports, "__esModule", {
+            value: !0
+        }), exports.defaultCacheRoot = void 0;
+        const os_1 = __webpack_require__(2037), path_1 = __webpack_require__(4822);
+        exports.defaultCacheRoot = function() {
+            switch (process.platform) {
+              case "darwin":
+                if (process.env.HOME) return (0, path_1.join)(process.env.HOME, "Library", "Caches", "com.amazonaws.jsii", "package-cache");
+                break;
+
+              case "linux":
+                if (process.env.HOME) return (0, path_1.join)(process.env.HOME, ".cache", "aws", "jsii", "package-cache");
+                break;
+
+              case "win32":
+                if (process.env.LOCALAPPDATA) return (0, path_1.join)(process.env.LOCALAPPDATA, "AWS", "jsii", "package-cache");
+            }
+            return (0, path_1.join)((0, os_1.tmpdir)(), "aws-jsii-package-cache");
+        };
+    },
+    4383: (__unused_webpack_module, exports, __webpack_require__) => {
+        "use strict";
+        var _a;
+        Object.defineProperty(exports, "__esModule", {
+            value: !0
+        }), exports.setPackageCacheEnabled = exports.getPackageCacheEnabled = exports.extract = void 0;
+        const fs_1 = __webpack_require__(7147), os_1 = __webpack_require__(2037), path_1 = __webpack_require__(4822), tar = __webpack_require__(1189), disk_cache_1 = __webpack_require__(7202), default_cache_root_1 = __webpack_require__(4964);
+        let packageCacheEnabled = "enabled" === (null === (_a = process.env.JSII_RUNTIME_PACKAGE_CACHE) || void 0 === _a ? void 0 : _a.toLocaleUpperCase());
+        function extractToCache(file, options = {}, ...comments) {
+            var _a;
+            const cacheRoot = null !== (_a = process.env.JSII_RUNTIME_PACKAGE_CACHE_ROOT) && void 0 !== _a ? _a : (0, 
+            default_cache_root_1.defaultCacheRoot)(), entry = disk_cache_1.DiskCache.inDirectory(cacheRoot).entryFor(file, ...comments);
+            return entry.lock((lock => {
+                let cache = "hit";
+                if (!entry.pathExists) {
+                    const tmpPath = `${entry.path}.tmp`;
+                    (0, fs_1.mkdirSync)(tmpPath, {
+                        recursive: !0
+                    });
+                    try {
+                        untarInto({
+                            ...options,
+                            cwd: tmpPath,
+                            file
+                        }), (0, fs_1.renameSync)(tmpPath, entry.path);
+                    } catch (error) {
+                        throw (0, fs_1.rmSync)(entry.path, {
+                            force: !0,
+                            recursive: !0
+                        }), error;
+                    }
+                    cache = "miss";
+                }
+                return lock.touch(), {
+                    path: entry.path,
+                    cache
+                };
+            }));
+        }
+        function extractToTemporary(file, options = {}) {
+            const path = (0, fs_1.mkdtempSync)((0, path_1.join)((0, os_1.tmpdir)(), "jsii-runtime-untar-"));
+            return untarInto({
+                ...options,
+                cwd: path,
+                file
+            }), {
+                path
+            };
+        }
+        function untarInto(options) {
+            try {
+                tar.extract({
+                    ...options,
+                    sync: !0
+                });
+            } catch (error) {
+                throw (0, fs_1.rmSync)(options.cwd, {
+                    force: !0,
+                    recursive: !0
+                }), error;
+            }
+        }
+        exports.extract = function(file, options, ...comments) {
+            return (packageCacheEnabled ? extractToCache : extractToTemporary)(file, options, ...comments);
+        }, exports.getPackageCacheEnabled = function() {
+            return packageCacheEnabled;
+        }, exports.setPackageCacheEnabled = function(value) {
+            packageCacheEnabled = value;
+        };
+    },
     7905: (__unused_webpack_module, exports, __webpack_require__) => {
         "use strict";
         Object.defineProperty(exports, "__esModule", {
@@ -6048,8 +6581,10 @@ var __webpack_modules__ = {
         const kernel_1 = __webpack_require__(8944), events_1 = __webpack_require__(2361);
         exports.KernelHost = class {
             constructor(inout, opts = {}) {
+                var _a, _b;
                 this.inout = inout, this.opts = opts, this.kernel = new kernel_1.Kernel(this.callbackHandler.bind(this)), 
-                this.eventEmitter = new events_1.EventEmitter, this.kernel.traceEnabled = !!opts.debug;
+                this.eventEmitter = new events_1.EventEmitter, this.kernel.traceEnabled = null !== (_a = opts.debug) && void 0 !== _a && _a, 
+                this.kernel.debugTimingEnabled = null !== (_b = opts.debugTiming) && void 0 !== _b && _b;
             }
             run() {
                 var _a;
@@ -10266,7 +10801,7 @@ var __webpack_modules__ = {
     },
     4147: module => {
         "use strict";
-        module.exports = JSON.parse('{"name":"@jsii/runtime","version":"1.66.0","description":"jsii runtime kernel process","license":"Apache-2.0","author":{"name":"Amazon Web Services","url":"https://aws.amazon.com"},"homepage":"https://github.com/aws/jsii","bugs":{"url":"https://github.com/aws/jsii/issues"},"repository":{"type":"git","url":"https://github.com/aws/jsii.git","directory":"packages/@jsii/runtime"},"engines":{"node":">= 14.6.0"},"main":"lib/index.js","types":"lib/index.d.ts","bin":{"jsii-runtime":"bin/jsii-runtime"},"scripts":{"build":"tsc --build && chmod +x bin/jsii-runtime && npx webpack-cli && npm run lint","watch":"tsc --build -w","lint":"eslint . --ext .js,.ts --ignore-path=.gitignore --ignore-pattern=webpack.config.js","lint:fix":"yarn lint --fix","test":"jest","test:update":"jest -u","package":"package-js"},"dependencies":{"@jsii/kernel":"^1.66.0","@jsii/check-node":"1.66.0","@jsii/spec":"^1.66.0"},"devDependencies":{"@scope/jsii-calc-base":"^1.66.0","@scope/jsii-calc-lib":"^1.66.0","jsii-build-tools":"^1.66.0","jsii-calc":"^3.20.120","source-map-loader":"^4.0.0","webpack":"^5.74.0","webpack-cli":"^4.10.0"}}');
+        module.exports = JSON.parse('{"name":"@jsii/runtime","version":"1.67.0","description":"jsii runtime kernel process","license":"Apache-2.0","author":{"name":"Amazon Web Services","url":"https://aws.amazon.com"},"homepage":"https://github.com/aws/jsii","bugs":{"url":"https://github.com/aws/jsii/issues"},"repository":{"type":"git","url":"https://github.com/aws/jsii.git","directory":"packages/@jsii/runtime"},"engines":{"node":">= 14.6.0"},"main":"lib/index.js","types":"lib/index.d.ts","bin":{"jsii-runtime":"bin/jsii-runtime"},"scripts":{"build":"tsc --build && chmod +x bin/jsii-runtime && npx webpack-cli && npm run lint","watch":"tsc --build -w","lint":"eslint . --ext .js,.ts --ignore-path=.gitignore --ignore-pattern=webpack.config.js","lint:fix":"yarn lint --fix","test":"jest","test:update":"jest -u","package":"package-js"},"dependencies":{"@jsii/kernel":"^1.67.0","@jsii/check-node":"1.67.0","@jsii/spec":"^1.67.0"},"devDependencies":{"@scope/jsii-calc-base":"^1.67.0","@scope/jsii-calc-lib":"^1.67.0","jsii-build-tools":"^1.67.0","jsii-calc":"^3.20.120","source-map-loader":"^4.0.0","webpack":"^5.74.0","webpack-cli":"^4.10.0"}}');
     },
     5277: module => {
         "use strict";
@@ -10301,13 +10836,14 @@ var __webpack_exports__ = {};
 (() => {
     "use strict";
     var _a;
-    const packageInfo = __webpack_require__(4147), host_1 = __webpack_require__(7905), in_out_1 = __webpack_require__(6156), sync_stdio_1 = __webpack_require__(1416), name = packageInfo.name, version = packageInfo.version, noStack = !!process.env.JSII_NOSTACK, debug = !!process.env.JSII_DEBUG, stdio = new sync_stdio_1.SyncStdio({
+    const packageInfo = __webpack_require__(4147), host_1 = __webpack_require__(7905), in_out_1 = __webpack_require__(6156), sync_stdio_1 = __webpack_require__(1416), name = packageInfo.name, version = packageInfo.version, noStack = !!process.env.JSII_NOSTACK, debug = !!process.env.JSII_DEBUG, debugTiming = !!process.env.JSII_DEBUG_TIMING, stdio = new sync_stdio_1.SyncStdio({
         errorFD: null !== (_a = process.stderr.fd) && void 0 !== _a ? _a : 2,
         readFD: 3,
         writeFD: 3
     }), inout = new in_out_1.InputOutput(stdio), host = new host_1.KernelHost(inout, {
         debug,
-        noStack
+        noStack,
+        debugTiming
     });
     host.once("exit", process.exit.bind(process)), inout.write({
         hello: `${name}@${version}`
