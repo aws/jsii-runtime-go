@@ -7099,14 +7099,12 @@ var __webpack_modules__ = {
         const spec = __webpack_require__(1804);
         const spec_1 = __webpack_require__(1804);
         const cp = __webpack_require__(2081);
-        const fs_1 = __webpack_require__(7147);
         const fs = __webpack_require__(9477);
         const module_1 = __webpack_require__(8188);
         const os = __webpack_require__(2037);
         const path = __webpack_require__(4822);
         const api = __webpack_require__(2816);
         const api_1 = __webpack_require__(2816);
-        const link_1 = __webpack_require__(8261);
         const objects_1 = __webpack_require__(2309);
         const onExit = __webpack_require__(6703);
         const wire = __webpack_require__(8614);
@@ -7163,19 +7161,13 @@ var __webpack_modules__ = {
                 }
                 const originalUmask = process.umask(18);
                 try {
-                    const {path: extractedTo, cache} = this._debugTime((() => tar.extract(req.tarball, {
+                    const {cache} = this._debugTime((() => tar.extract(req.tarball, packageDir, {
                         strict: true,
                         strip: 1,
                         unlink: true
                     }, req.name, req.version)), `tar.extract(${req.tarball}) => ${packageDir}`);
-                    fs.mkdirSync(path.dirname(packageDir), {
-                        recursive: true
-                    });
                     if (cache != null) {
                         this._debug(`Package cache enabled, extraction resulted in a cache ${cache}`);
-                        this._debugTime((() => (0, link_1.link)(extractedTo, packageDir)), `link(${extractedTo}, ${packageDir})`);
-                    } else {
-                        (0, fs_1.renameSync)(extractedTo, packageDir);
                     }
                 } finally {
                     process.umask(originalUmask);
@@ -8883,36 +8875,44 @@ var __webpack_modules__ = {
         });
         exports.setPackageCacheEnabled = exports.getPackageCacheEnabled = exports.extract = void 0;
         const fs_1 = __webpack_require__(7147);
-        const os_1 = __webpack_require__(2037);
-        const path_1 = __webpack_require__(4822);
         const tar = __webpack_require__(1189);
         const disk_cache_1 = __webpack_require__(7202);
+        const link_1 = __webpack_require__(8261);
         const default_cache_root_1 = __webpack_require__(1034);
         let packageCacheEnabled = ((_a = process.env.JSII_RUNTIME_PACKAGE_CACHE) === null || _a === void 0 ? void 0 : _a.toLocaleUpperCase()) === "enabled";
-        function extract(file, options, ...comments) {
-            return (packageCacheEnabled ? extractToCache : extractToTemporary)(file, options, ...comments);
+        function extract(file, outDir, options, ...comments) {
+            (0, fs_1.mkdirSync)(outDir, {
+                recursive: true
+            });
+            try {
+                return (packageCacheEnabled ? extractViaCache : extractToOutDir)(file, outDir, options, ...comments);
+            } catch (err) {
+                (0, fs_1.rmSync)(outDir, {
+                    force: true,
+                    recursive: true
+                });
+                throw err;
+            }
         }
         exports.extract = extract;
-        function extractToCache(file, options = {}, ...comments) {
+        function extractViaCache(file, outDir, options = {}, ...comments) {
             var _a;
             const cacheRoot = (_a = process.env.JSII_RUNTIME_PACKAGE_CACHE_ROOT) !== null && _a !== void 0 ? _a : (0, 
             default_cache_root_1.defaultCacheRoot)();
-            const cache = disk_cache_1.DiskCache.inDirectory(cacheRoot);
-            const entry = cache.entryFor(file, ...comments);
-            return entry.lock((lock => {
+            const dirCache = disk_cache_1.DiskCache.inDirectory(cacheRoot);
+            const entry = dirCache.entryFor(file, ...comments);
+            const {path, cache} = entry.lock((lock => {
                 let cache = "hit";
                 if (!entry.pathExists) {
-                    const tmpPath = `${entry.path}.tmp`;
-                    (0, fs_1.mkdirSync)(tmpPath, {
+                    (0, fs_1.mkdirSync)(entry.path, {
                         recursive: true
                     });
                     try {
                         untarInto({
                             ...options,
-                            cwd: tmpPath,
+                            cwd: entry.path,
                             file
                         });
-                        (0, fs_1.renameSync)(tmpPath, entry.path);
                     } catch (error) {
                         (0, fs_1.rmSync)(entry.path, {
                             force: true,
@@ -8928,17 +8928,18 @@ var __webpack_modules__ = {
                     cache
                 };
             }));
+            (0, link_1.link)(path, outDir);
+            return {
+                cache
+            };
         }
-        function extractToTemporary(file, options = {}) {
-            const path = (0, fs_1.mkdtempSync)((0, path_1.join)((0, os_1.tmpdir)(), "jsii-runtime-untar-"));
+        function extractToOutDir(file, cwd, options = {}) {
             untarInto({
                 ...options,
-                cwd: path,
+                cwd,
                 file
             });
-            return {
-                path
-            };
+            return {};
         }
         function untarInto(options) {
             try {
@@ -16195,7 +16196,7 @@ var __webpack_modules__ = {
     },
     4147: module => {
         "use strict";
-        module.exports = JSON.parse('{"name":"@jsii/runtime","version":"1.68.0","description":"jsii runtime kernel process","license":"Apache-2.0","author":{"name":"Amazon Web Services","url":"https://aws.amazon.com"},"homepage":"https://github.com/aws/jsii","bugs":{"url":"https://github.com/aws/jsii/issues"},"repository":{"type":"git","url":"https://github.com/aws/jsii.git","directory":"packages/@jsii/runtime"},"engines":{"node":">= 14.6.0"},"main":"lib/index.js","types":"lib/index.d.ts","bin":{"jsii-runtime":"bin/jsii-runtime"},"scripts":{"build":"tsc --build && chmod +x bin/jsii-runtime && npx webpack-cli && npm run lint","watch":"tsc --build -w","lint":"eslint . --ext .js,.ts --ignore-path=.gitignore --ignore-pattern=webpack.config.js","lint:fix":"yarn lint --fix","test":"jest","test:update":"jest -u","package":"package-js"},"dependencies":{"@jsii/kernel":"^1.68.0","@jsii/check-node":"1.68.0","@jsii/spec":"^1.68.0"},"devDependencies":{"@scope/jsii-calc-base":"^1.68.0","@scope/jsii-calc-lib":"^1.68.0","jsii-build-tools":"^1.68.0","jsii-calc":"^3.20.120","source-map-loader":"^4.0.0","webpack":"^5.74.0","webpack-cli":"^4.10.0"}}');
+        module.exports = JSON.parse('{"name":"@jsii/runtime","version":"1.69.0","description":"jsii runtime kernel process","license":"Apache-2.0","author":{"name":"Amazon Web Services","url":"https://aws.amazon.com"},"homepage":"https://github.com/aws/jsii","bugs":{"url":"https://github.com/aws/jsii/issues"},"repository":{"type":"git","url":"https://github.com/aws/jsii.git","directory":"packages/@jsii/runtime"},"engines":{"node":">= 14.6.0"},"main":"lib/index.js","types":"lib/index.d.ts","bin":{"jsii-runtime":"bin/jsii-runtime"},"scripts":{"build":"tsc --build && chmod +x bin/jsii-runtime && npx webpack-cli && npm run lint","watch":"tsc --build -w","lint":"eslint . --ext .js,.ts --ignore-path=.gitignore --ignore-pattern=webpack.config.js","lint:fix":"yarn lint --fix","test":"jest","test:update":"jest -u","package":"package-js"},"dependencies":{"@jsii/kernel":"^1.69.0","@jsii/check-node":"1.69.0","@jsii/spec":"^1.69.0"},"devDependencies":{"@scope/jsii-calc-base":"^1.69.0","@scope/jsii-calc-lib":"^1.69.0","jsii-build-tools":"^1.69.0","jsii-calc":"^3.20.120","source-map-loader":"^4.0.0","webpack":"^5.74.0","webpack-cli":"^4.10.0"}}');
     },
     5277: module => {
         "use strict";
