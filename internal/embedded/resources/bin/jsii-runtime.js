@@ -2624,51 +2624,91 @@ var __webpack_modules__ = {
     },
     6027: (module, __unused_webpack_exports, __webpack_require__) => {
         const internalRe = __webpack_require__(9541);
+        const constants = __webpack_require__(9041);
+        const SemVer = __webpack_require__(3013);
+        const identifiers = __webpack_require__(3650);
+        const parse = __webpack_require__(7507);
+        const valid = __webpack_require__(2555);
+        const clean = __webpack_require__(3470);
+        const inc = __webpack_require__(5210);
+        const diff = __webpack_require__(5209);
+        const major = __webpack_require__(5847);
+        const minor = __webpack_require__(1757);
+        const patch = __webpack_require__(8150);
+        const prerelease = __webpack_require__(8011);
+        const compare = __webpack_require__(2247);
+        const rcompare = __webpack_require__(9201);
+        const compareLoose = __webpack_require__(2310);
+        const compareBuild = __webpack_require__(6845);
+        const sort = __webpack_require__(1934);
+        const rsort = __webpack_require__(7391);
+        const gt = __webpack_require__(6077);
+        const lt = __webpack_require__(866);
+        const eq = __webpack_require__(8443);
+        const neq = __webpack_require__(1017);
+        const gte = __webpack_require__(4578);
+        const lte = __webpack_require__(698);
+        const cmp = __webpack_require__(1918);
+        const coerce = __webpack_require__(4115);
+        const Comparator = __webpack_require__(7706);
+        const Range = __webpack_require__(6833);
+        const satisfies = __webpack_require__(8915);
+        const toComparators = __webpack_require__(8378);
+        const maxSatisfying = __webpack_require__(1678);
+        const minSatisfying = __webpack_require__(1553);
+        const minVersion = __webpack_require__(2262);
+        const validRange = __webpack_require__(7396);
+        const outside = __webpack_require__(939);
+        const gtr = __webpack_require__(4933);
+        const ltr = __webpack_require__(7233);
+        const intersects = __webpack_require__(8842);
+        const simplifyRange = __webpack_require__(3018);
+        const subset = __webpack_require__(8563);
         module.exports = {
+            parse,
+            valid,
+            clean,
+            inc,
+            diff,
+            major,
+            minor,
+            patch,
+            prerelease,
+            compare,
+            rcompare,
+            compareLoose,
+            compareBuild,
+            sort,
+            rsort,
+            gt,
+            lt,
+            eq,
+            neq,
+            gte,
+            lte,
+            cmp,
+            coerce,
+            Comparator,
+            Range,
+            satisfies,
+            toComparators,
+            maxSatisfying,
+            minSatisfying,
+            minVersion,
+            validRange,
+            outside,
+            gtr,
+            ltr,
+            intersects,
+            simplifyRange,
+            subset,
+            SemVer,
             re: internalRe.re,
             src: internalRe.src,
             tokens: internalRe.t,
-            SEMVER_SPEC_VERSION: __webpack_require__(9041).SEMVER_SPEC_VERSION,
-            SemVer: __webpack_require__(3013),
-            compareIdentifiers: __webpack_require__(3650).compareIdentifiers,
-            rcompareIdentifiers: __webpack_require__(3650).rcompareIdentifiers,
-            parse: __webpack_require__(7507),
-            valid: __webpack_require__(2555),
-            clean: __webpack_require__(3470),
-            inc: __webpack_require__(5210),
-            diff: __webpack_require__(5209),
-            major: __webpack_require__(5847),
-            minor: __webpack_require__(1757),
-            patch: __webpack_require__(8150),
-            prerelease: __webpack_require__(8011),
-            compare: __webpack_require__(2247),
-            rcompare: __webpack_require__(9201),
-            compareLoose: __webpack_require__(2310),
-            compareBuild: __webpack_require__(6845),
-            sort: __webpack_require__(1934),
-            rsort: __webpack_require__(7391),
-            gt: __webpack_require__(6077),
-            lt: __webpack_require__(866),
-            eq: __webpack_require__(8443),
-            neq: __webpack_require__(1017),
-            gte: __webpack_require__(4578),
-            lte: __webpack_require__(698),
-            cmp: __webpack_require__(1918),
-            coerce: __webpack_require__(4115),
-            Comparator: __webpack_require__(7706),
-            Range: __webpack_require__(6833),
-            satisfies: __webpack_require__(8915),
-            toComparators: __webpack_require__(8378),
-            maxSatisfying: __webpack_require__(1678),
-            minSatisfying: __webpack_require__(1553),
-            minVersion: __webpack_require__(2262),
-            validRange: __webpack_require__(7396),
-            outside: __webpack_require__(939),
-            gtr: __webpack_require__(4933),
-            ltr: __webpack_require__(7233),
-            intersects: __webpack_require__(8842),
-            simplifyRange: __webpack_require__(3018),
-            subset: __webpack_require__(8563)
+            SEMVER_SPEC_VERSION: constants.SEMVER_SPEC_VERSION,
+            compareIdentifiers: identifiers.compareIdentifiers,
+            rcompareIdentifiers: identifiers.rcompareIdentifiers
         };
     },
     9041: module => {

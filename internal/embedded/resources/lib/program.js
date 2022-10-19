@@ -7359,7 +7359,10 @@ var __webpack_modules__ = {
                     this._debug("promise result:", result);
                 } catch (e) {
                     this._debug("promise error:", e);
-                    throw new JsiiFault(e.message);
+                    if (e.name === "@jsii/kernel.Fault") {
+                        throw new JsiiFault(e.message);
+                    }
+                    throw new RuntimeError(e);
                 }
                 return {
                     result: this._fromSandbox(result, (_a = method.returns) !== null && _a !== void 0 ? _a : "void", `returned by async method ${method.name}`)
@@ -7387,7 +7390,7 @@ var __webpack_modules__ = {
             }
             complete(req) {
                 var _a;
-                const {cbid, err, result} = req;
+                const {cbid, err, result, name} = req;
                 this._debug("complete", cbid, err, result);
                 const cb = this.waiting.get(cbid);
                 if (!cb) {
@@ -7395,7 +7398,7 @@ var __webpack_modules__ = {
                 }
                 if (err) {
                     this._debug("completed with error:", err);
-                    cb.fail(new Error(err));
+                    cb.fail(name === "@jsii/kernel.Fault" ? new JsiiFault(err) : new RuntimeError(err));
                 } else {
                     const sandoxResult = this._toSandbox(result, (_a = cb.expectedReturnType) !== null && _a !== void 0 ? _a : "void", `returned by callback ${cb.toString()}`);
                     this._debug("completed with result:", sandoxResult);
@@ -10447,7 +10450,10 @@ var __webpack_modules__ = {
                     const completeReq = req;
                     if ("complete" in completeReq && completeReq.complete.cbid === callback.cbid) {
                         if (completeReq.complete.err) {
-                            throw new kernel_1.JsiiFault(completeReq.complete.err);
+                            if (completeReq.complete.name === "@jsii/kernel.Fault") {
+                                throw new kernel_1.JsiiFault(completeReq.complete.err);
+                            }
+                            throw new kernel_1.RuntimeError(completeReq.complete.err);
                         }
                         return completeReq.complete.result;
                     }
@@ -10688,7 +10694,11 @@ var __webpack_modules__ = {
         exports.loadAssemblyFromPath = loadAssemblyFromPath;
         function loadAssemblyFromFile(pathToFile, validate = true) {
             const data = fs.readFileSync(pathToFile);
-            return loadAssemblyFromBuffer(data, (filename => fs.readFileSync(path.resolve(pathToFile, "..", filename))), validate);
+            try {
+                return loadAssemblyFromBuffer(data, (filename => fs.readFileSync(path.resolve(pathToFile, "..", filename))), validate);
+            } catch (e) {
+                throw new Error(`Error loading assembly from file ${pathToFile}:\n${e}`);
+            }
         }
         exports.loadAssemblyFromFile = loadAssemblyFromFile;
         function followRedirect(assemblyRedirect, readFile) {
@@ -10904,11 +10914,16 @@ var __webpack_modules__ = {
         }
         exports.isAssemblyRedirect = isAssemblyRedirect;
         function validateAssemblyRedirect(obj) {
-            const ajv = new ajv_1.default;
+            const ajv = new ajv_1.default({
+                allErrors: true
+            });
             const validate = ajv.compile(exports.assemblyRedirectSchema);
             validate(obj);
             if (validate.errors) {
-                throw new Error(`Invalid assembly redirect:\n${validate.errors.map((e => ` * ${e.message}`)).join("\n").toString()}`);
+                throw new Error(`Invalid assembly redirect:\n * ${ajv.errorsText(validate.errors, {
+                    separator: "\n * ",
+                    dataVar: "redirect"
+                })}`);
             }
             return obj;
         }
@@ -10923,11 +10938,20 @@ var __webpack_modules__ = {
         const ajv_1 = __webpack_require__(2785);
         exports.schema = __webpack_require__(9402);
         function validateAssembly(obj) {
-            const ajv = new ajv_1.default;
+            const ajv = new ajv_1.default({
+                allErrors: true
+            });
             const validate = ajv.compile(exports.schema);
             validate(obj);
             if (validate.errors) {
-                throw new Error(`Invalid assembly:\n${validate.errors.map((e => ` * ${e.message}`)).join("\n").toString()}`);
+                let descr = "";
+                if (typeof obj.name === "string" && obj.name !== "") {
+                    descr = typeof obj.version === "string" ? ` ${obj.name}@${obj.version}` : ` ${obj.name}`;
+                }
+                throw new Error(`Invalid assembly${descr}:\n * ${ajv.errorsText(validate.errors, {
+                    separator: "\n * ",
+                    dataVar: "assembly"
+                })}`);
             }
             return obj;
         }
@@ -16196,7 +16220,7 @@ var __webpack_modules__ = {
     },
     4147: module => {
         "use strict";
-        module.exports = JSON.parse('{"name":"@jsii/runtime","version":"1.69.0","description":"jsii runtime kernel process","license":"Apache-2.0","author":{"name":"Amazon Web Services","url":"https://aws.amazon.com"},"homepage":"https://github.com/aws/jsii","bugs":{"url":"https://github.com/aws/jsii/issues"},"repository":{"type":"git","url":"https://github.com/aws/jsii.git","directory":"packages/@jsii/runtime"},"engines":{"node":">= 14.6.0"},"main":"lib/index.js","types":"lib/index.d.ts","bin":{"jsii-runtime":"bin/jsii-runtime"},"scripts":{"build":"tsc --build && chmod +x bin/jsii-runtime && npx webpack-cli && npm run lint","watch":"tsc --build -w","lint":"eslint . --ext .js,.ts --ignore-path=.gitignore --ignore-pattern=webpack.config.js","lint:fix":"yarn lint --fix","test":"jest","test:update":"jest -u","package":"package-js"},"dependencies":{"@jsii/kernel":"^1.69.0","@jsii/check-node":"1.69.0","@jsii/spec":"^1.69.0"},"devDependencies":{"@scope/jsii-calc-base":"^1.69.0","@scope/jsii-calc-lib":"^1.69.0","jsii-build-tools":"^1.69.0","jsii-calc":"^3.20.120","source-map-loader":"^4.0.0","webpack":"^5.74.0","webpack-cli":"^4.10.0"}}');
+        module.exports = JSON.parse('{"name":"@jsii/runtime","version":"1.70.0","description":"jsii runtime kernel process","license":"Apache-2.0","author":{"name":"Amazon Web Services","url":"https://aws.amazon.com"},"homepage":"https://github.com/aws/jsii","bugs":{"url":"https://github.com/aws/jsii/issues"},"repository":{"type":"git","url":"https://github.com/aws/jsii.git","directory":"packages/@jsii/runtime"},"engines":{"node":">= 14.6.0"},"main":"lib/index.js","types":"lib/index.d.ts","bin":{"jsii-runtime":"bin/jsii-runtime"},"scripts":{"build":"tsc --build && chmod +x bin/jsii-runtime && npx webpack-cli && npm run lint","watch":"tsc --build -w","lint":"eslint . --ext .js,.ts --ignore-path=.gitignore --ignore-pattern=webpack.config.js","lint:fix":"yarn lint --fix","test":"jest","test:update":"jest -u","package":"package-js"},"dependencies":{"@jsii/kernel":"^1.70.0","@jsii/check-node":"1.70.0","@jsii/spec":"^1.70.0"},"devDependencies":{"@scope/jsii-calc-base":"^1.70.0","@scope/jsii-calc-lib":"^1.70.0","jsii-build-tools":"^1.70.0","jsii-calc":"^3.20.120","source-map-loader":"^4.0.1","webpack":"^5.74.0","webpack-cli":"^4.10.0"}}');
     },
     5277: module => {
         "use strict";
