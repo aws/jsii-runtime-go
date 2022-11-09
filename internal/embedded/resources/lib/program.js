@@ -2621,13 +2621,23 @@ var __webpack_modules__ = {
         const t = __webpack_require__(1090);
         const path = __webpack_require__(4822);
         module.exports = (opt_, files, cb) => {
-            if (typeof files === "function") cb = files;
-            if (Array.isArray(opt_)) files = opt_, opt_ = {};
-            if (!files || !Array.isArray(files) || !files.length) throw new TypeError("no files or directories specified");
+            if (typeof files === "function") {
+                cb = files;
+            }
+            if (Array.isArray(opt_)) {
+                files = opt_, opt_ = {};
+            }
+            if (!files || !Array.isArray(files) || !files.length) {
+                throw new TypeError("no files or directories specified");
+            }
             files = Array.from(files);
             const opt = hlo(opt_);
-            if (opt.sync && typeof cb === "function") throw new TypeError("callback not supported for sync tar functions");
-            if (!opt.file && typeof cb === "function") throw new TypeError("callback only supported with file option");
+            if (opt.sync && typeof cb === "function") {
+                throw new TypeError("callback not supported for sync tar functions");
+            }
+            if (!opt.file && typeof cb === "function") {
+                throw new TypeError("callback only supported with file option");
+            }
             return opt.file && opt.sync ? createFileSync(opt, files) : opt.file ? createFile(opt, files, cb) : opt.sync ? createSync(opt, files) : create(opt, files);
         };
         const createFileSync = (opt, files) => {
@@ -2656,12 +2666,14 @@ var __webpack_modules__ = {
             files.forEach((file => {
                 if (file.charAt(0) === "@") {
                     t({
-                        file: path.resolve(p.cwd, file.substr(1)),
+                        file: path.resolve(p.cwd, file.slice(1)),
                         sync: true,
                         noResume: true,
                         onentry: entry => p.add(entry)
                     });
-                } else p.add(file);
+                } else {
+                    p.add(file);
+                }
             }));
             p.end();
         };
@@ -2670,11 +2682,13 @@ var __webpack_modules__ = {
                 const file = files.shift();
                 if (file.charAt(0) === "@") {
                     return t({
-                        file: path.resolve(p.cwd, file.substr(1)),
+                        file: path.resolve(p.cwd, file.slice(1)),
                         noResume: true,
                         onentry: entry => p.add(entry)
                     }).then((_ => addFilesAsync(p, files)));
-                } else p.add(file);
+                } else {
+                    p.add(file);
+                }
             }
             p.end();
         };
@@ -2698,14 +2712,29 @@ var __webpack_modules__ = {
         const path = __webpack_require__(4822);
         const stripSlash = __webpack_require__(6401);
         module.exports = (opt_, files, cb) => {
-            if (typeof opt_ === "function") cb = opt_, files = null, opt_ = {}; else if (Array.isArray(opt_)) files = opt_, 
-            opt_ = {};
-            if (typeof files === "function") cb = files, files = null;
-            if (!files) files = []; else files = Array.from(files);
+            if (typeof opt_ === "function") {
+                cb = opt_, files = null, opt_ = {};
+            } else if (Array.isArray(opt_)) {
+                files = opt_, opt_ = {};
+            }
+            if (typeof files === "function") {
+                cb = files, files = null;
+            }
+            if (!files) {
+                files = [];
+            } else {
+                files = Array.from(files);
+            }
             const opt = hlo(opt_);
-            if (opt.sync && typeof cb === "function") throw new TypeError("callback not supported for sync tar functions");
-            if (!opt.file && typeof cb === "function") throw new TypeError("callback only supported with file option");
-            if (files.length) filesFilter(opt, files);
+            if (opt.sync && typeof cb === "function") {
+                throw new TypeError("callback not supported for sync tar functions");
+            }
+            if (!opt.file && typeof cb === "function") {
+                throw new TypeError("callback only supported with file option");
+            }
+            if (files.length) {
+                filesFilter(opt, files);
+            }
             return opt.file && opt.sync ? extractFileSync(opt) : opt.file ? extractFile(opt, cb) : opt.sync ? extractSync(opt) : extract(opt);
         };
         const filesFilter = (opt, files) => {
@@ -2738,7 +2767,9 @@ var __webpack_modules__ = {
                 u.on("error", reject);
                 u.on("close", resolve);
                 fs.stat(file, ((er, stat) => {
-                    if (er) reject(er); else {
+                    if (er) {
+                        reject(er);
+                    } else {
                         const stream = new fsm.ReadStream(file, {
                             readSize,
                             size: stat.size
@@ -2791,11 +2822,19 @@ var __webpack_modules__ = {
                 this.devmin = 0;
                 this.atime = null;
                 this.ctime = null;
-                if (Buffer.isBuffer(data)) this.decode(data, off || 0, ex, gex); else if (data) this.set(data);
+                if (Buffer.isBuffer(data)) {
+                    this.decode(data, off || 0, ex, gex);
+                } else if (data) {
+                    this.set(data);
+                }
             }
             decode(buf, off, ex, gex) {
-                if (!off) off = 0;
-                if (!buf || !(buf.length >= off + 512)) throw new Error("need 512 bytes for header");
+                if (!off) {
+                    off = 0;
+                }
+                if (!buf || !(buf.length >= off + 512)) {
+                    throw new Error("need 512 bytes for header");
+                }
                 this.path = decString(buf, off, 100);
                 this.mode = decNumber(buf, off + 100, 8);
                 this.uid = decNumber(buf, off + 108, 8);
@@ -2806,9 +2845,15 @@ var __webpack_modules__ = {
                 this[SLURP](ex);
                 this[SLURP](gex, true);
                 this[TYPE] = decString(buf, off + 156, 1);
-                if (this[TYPE] === "") this[TYPE] = "0";
-                if (this[TYPE] === "0" && this.path.substr(-1) === "/") this[TYPE] = "5";
-                if (this[TYPE] === "5") this.size = 0;
+                if (this[TYPE] === "") {
+                    this[TYPE] = "0";
+                }
+                if (this[TYPE] === "0" && this.path.slice(-1) === "/") {
+                    this[TYPE] = "5";
+                }
+                if (this[TYPE] === "5") {
+                    this.size = 0;
+                }
                 this.linkpath = decString(buf, off + 157, 100);
                 if (buf.slice(off + 257, off + 265).toString() === "ustar\x0000") {
                     this.uname = decString(buf, off + 265, 32);
@@ -2820,20 +2865,30 @@ var __webpack_modules__ = {
                         this.path = prefix + "/" + this.path;
                     } else {
                         const prefix = decString(buf, off + 345, 130);
-                        if (prefix) this.path = prefix + "/" + this.path;
+                        if (prefix) {
+                            this.path = prefix + "/" + this.path;
+                        }
                         this.atime = decDate(buf, off + 476, 12);
                         this.ctime = decDate(buf, off + 488, 12);
                     }
                 }
                 let sum = 8 * 32;
-                for (let i = off; i < off + 148; i++) sum += buf[i];
-                for (let i = off + 156; i < off + 512; i++) sum += buf[i];
+                for (let i = off; i < off + 148; i++) {
+                    sum += buf[i];
+                }
+                for (let i = off + 156; i < off + 512; i++) {
+                    sum += buf[i];
+                }
                 this.cksumValid = sum === this.cksum;
-                if (this.cksum === null && sum === 8 * 32) this.nullBlock = true;
+                if (this.cksum === null && sum === 8 * 32) {
+                    this.nullBlock = true;
+                }
             }
             [SLURP](ex, global) {
                 for (const k in ex) {
-                    if (ex[k] !== null && ex[k] !== undefined && !(global && k === "path")) this[k] = ex[k];
+                    if (ex[k] !== null && ex[k] !== undefined && !(global && k === "path")) {
+                        this[k] = ex[k];
+                    }
                 }
             }
             encode(buf, off) {
@@ -2841,8 +2896,12 @@ var __webpack_modules__ = {
                     buf = this.block = Buffer.alloc(512);
                     off = 0;
                 }
-                if (!off) off = 0;
-                if (!(buf.length >= off + 512)) throw new Error("need 512 bytes for header");
+                if (!off) {
+                    off = 0;
+                }
+                if (!(buf.length >= off + 512)) {
+                    throw new Error("need 512 bytes for header");
+                }
                 const prefixSize = this.ctime || this.atime ? 130 : 155;
                 const split = splitPrefix(this.path || "", prefixSize);
                 const path = split[0];
@@ -2862,14 +2921,20 @@ var __webpack_modules__ = {
                 this.needPax = encNumber(buf, off + 329, 8, this.devmaj) || this.needPax;
                 this.needPax = encNumber(buf, off + 337, 8, this.devmin) || this.needPax;
                 this.needPax = encString(buf, off + 345, prefixSize, prefix) || this.needPax;
-                if (buf[off + 475] !== 0) this.needPax = encString(buf, off + 345, 155, prefix) || this.needPax; else {
+                if (buf[off + 475] !== 0) {
+                    this.needPax = encString(buf, off + 345, 155, prefix) || this.needPax;
+                } else {
                     this.needPax = encString(buf, off + 345, 130, prefix) || this.needPax;
                     this.needPax = encDate(buf, off + 476, 12, this.atime) || this.needPax;
                     this.needPax = encDate(buf, off + 488, 12, this.ctime) || this.needPax;
                 }
                 let sum = 8 * 32;
-                for (let i = off; i < off + 148; i++) sum += buf[i];
-                for (let i = off + 156; i < off + 512; i++) sum += buf[i];
+                for (let i = off; i < off + 148; i++) {
+                    sum += buf[i];
+                }
+                for (let i = off + 156; i < off + 512; i++) {
+                    sum += buf[i];
+                }
                 this.cksum = sum;
                 encNumber(buf, off + 148, 8, this.cksum);
                 this.cksumValid = true;
@@ -2877,7 +2942,9 @@ var __webpack_modules__ = {
             }
             set(data) {
                 for (const i in data) {
-                    if (data[i] !== null && data[i] !== undefined) this[i] = data[i];
+                    if (data[i] !== null && data[i] !== undefined) {
+                        this[i] = data[i];
+                    }
                 }
             }
             get type() {
@@ -2887,7 +2954,11 @@ var __webpack_modules__ = {
                 return this[TYPE];
             }
             set type(type) {
-                if (types.code.has(type)) this[TYPE] = types.code.get(type); else this[TYPE] = type;
+                if (types.code.has(type)) {
+                    this[TYPE] = types.code.get(type);
+                } else {
+                    this[TYPE] = type;
+                }
             }
         }
         const splitPrefix = (p, prefixSize) => {
@@ -2896,16 +2967,24 @@ var __webpack_modules__ = {
             let prefix = "";
             let ret;
             const root = pathModule.parse(p).root || ".";
-            if (Buffer.byteLength(pp) < pathSize) ret = [ pp, prefix, false ]; else {
+            if (Buffer.byteLength(pp) < pathSize) {
+                ret = [ pp, prefix, false ];
+            } else {
                 prefix = pathModule.dirname(pp);
                 pp = pathModule.basename(pp);
                 do {
-                    if (Buffer.byteLength(pp) <= pathSize && Buffer.byteLength(prefix) <= prefixSize) ret = [ pp, prefix, false ]; else if (Buffer.byteLength(pp) > pathSize && Buffer.byteLength(prefix) <= prefixSize) ret = [ pp.substr(0, pathSize - 1), prefix, true ]; else {
+                    if (Buffer.byteLength(pp) <= pathSize && Buffer.byteLength(prefix) <= prefixSize) {
+                        ret = [ pp, prefix, false ];
+                    } else if (Buffer.byteLength(pp) > pathSize && Buffer.byteLength(prefix) <= prefixSize) {
+                        ret = [ pp.slice(0, pathSize - 1), prefix, true ];
+                    } else {
                         pp = pathModule.join(pathModule.basename(prefix), pp);
                         prefix = pathModule.dirname(prefix);
                     }
                 } while (prefix !== root && !ret);
-                if (!ret) ret = [ p.substr(0, pathSize - 1), "", true ];
+                if (!ret) {
+                    ret = [ p.slice(0, pathSize - 1), "", true ];
+                }
             }
             return ret;
         };
@@ -2939,7 +3018,13 @@ var __webpack_modules__ = {
     2795: module => {
         "use strict";
         const encode = (num, buf) => {
-            if (!Number.isSafeInteger(num)) throw Error("cannot encode number outside of javascript safe integer range"); else if (num < 0) encodeNegative(num, buf); else encodePositive(num, buf);
+            if (!Number.isSafeInteger(num)) {
+                throw Error("cannot encode number outside of javascript safe integer range");
+            } else if (num < 0) {
+                encodeNegative(num, buf);
+            } else {
+                encodePositive(num, buf);
+            }
             return buf;
         };
         const encodePositive = (num, buf) => {
@@ -2956,7 +3041,11 @@ var __webpack_modules__ = {
             for (var i = buf.length; i > 1; i--) {
                 var byte = num & 255;
                 num = Math.floor(num / 256);
-                if (flipped) buf[i - 1] = onesComp(byte); else if (byte === 0) buf[i - 1] = 0; else {
+                if (flipped) {
+                    buf[i - 1] = onesComp(byte);
+                } else if (byte === 0) {
+                    buf[i - 1] = 0;
+                } else {
                     flipped = true;
                     buf[i - 1] = twosComp(byte);
                 }
@@ -2965,8 +3054,12 @@ var __webpack_modules__ = {
         const parse = buf => {
             const pre = buf[0];
             const value = pre === 128 ? pos(buf.slice(1, buf.length)) : pre === 255 ? twos(buf) : null;
-            if (value === null) throw Error("invalid base256 encoding");
-            if (!Number.isSafeInteger(value)) throw Error("parsed number outside of javascript safe integer range");
+            if (value === null) {
+                throw Error("invalid base256 encoding");
+            }
+            if (!Number.isSafeInteger(value)) {
+                throw Error("parsed number outside of javascript safe integer range");
+            }
             return value;
         };
         const twos = buf => {
@@ -2976,11 +3069,17 @@ var __webpack_modules__ = {
             for (var i = len - 1; i > -1; i--) {
                 var byte = buf[i];
                 var f;
-                if (flipped) f = onesComp(byte); else if (byte === 0) f = byte; else {
+                if (flipped) {
+                    f = onesComp(byte);
+                } else if (byte === 0) {
+                    f = byte;
+                } else {
                     flipped = true;
                     f = twosComp(byte);
                 }
-                if (f !== 0) sum -= f * Math.pow(256, len - i - 1);
+                if (f !== 0) {
+                    sum -= f * Math.pow(256, len - i - 1);
+                }
             }
             return sum;
         };
@@ -2989,7 +3088,9 @@ var __webpack_modules__ = {
             var sum = 0;
             for (var i = len - 1; i > -1; i--) {
                 var byte = buf[i];
-                if (byte !== 0) sum += byte * Math.pow(256, len - i - 1);
+                if (byte !== 0) {
+                    sum += byte * Math.pow(256, len - i - 1);
+                }
             }
             return sum;
         };
@@ -3009,15 +3110,32 @@ var __webpack_modules__ = {
         const path = __webpack_require__(4822);
         const stripSlash = __webpack_require__(6401);
         module.exports = (opt_, files, cb) => {
-            if (typeof opt_ === "function") cb = opt_, files = null, opt_ = {}; else if (Array.isArray(opt_)) files = opt_, 
-            opt_ = {};
-            if (typeof files === "function") cb = files, files = null;
-            if (!files) files = []; else files = Array.from(files);
+            if (typeof opt_ === "function") {
+                cb = opt_, files = null, opt_ = {};
+            } else if (Array.isArray(opt_)) {
+                files = opt_, opt_ = {};
+            }
+            if (typeof files === "function") {
+                cb = files, files = null;
+            }
+            if (!files) {
+                files = [];
+            } else {
+                files = Array.from(files);
+            }
             const opt = hlo(opt_);
-            if (opt.sync && typeof cb === "function") throw new TypeError("callback not supported for sync tar functions");
-            if (!opt.file && typeof cb === "function") throw new TypeError("callback only supported with file option");
-            if (files.length) filesFilter(opt, files);
-            if (!opt.noResume) onentryFunction(opt);
+            if (opt.sync && typeof cb === "function") {
+                throw new TypeError("callback not supported for sync tar functions");
+            }
+            if (!opt.file && typeof cb === "function") {
+                throw new TypeError("callback only supported with file option");
+            }
+            if (files.length) {
+                filesFilter(opt, files);
+            }
+            if (!opt.noResume) {
+                onentryFunction(opt);
+            }
             return opt.file && opt.sync ? listFileSync(opt) : opt.file ? listFile(opt, cb) : list(opt);
         };
         const onentryFunction = opt => {
@@ -3046,7 +3164,9 @@ var __webpack_modules__ = {
             try {
                 const stat = fs.statSync(file);
                 const readSize = opt.maxReadSize || 16 * 1024 * 1024;
-                if (stat.size < readSize) p.end(fs.readFileSync(file)); else {
+                if (stat.size < readSize) {
+                    p.end(fs.readFileSync(file));
+                } else {
                     let pos = 0;
                     const buf = Buffer.allocUnsafe(readSize);
                     fd = fs.openSync(file, "r");
@@ -3074,7 +3194,9 @@ var __webpack_modules__ = {
                 parse.on("error", reject);
                 parse.on("end", resolve);
                 fs.stat(file, ((er, stat) => {
-                    if (er) reject(er); else {
+                    if (er) {
+                        reject(er);
+                    } else {
                         const stream = new fsm.ReadStream(file, {
                             readSize,
                             size: stat.size
@@ -3119,7 +3241,9 @@ var __webpack_modules__ = {
         const cSet = (cache, key, val) => cache.set(normPath(key), val);
         const checkCwd = (dir, cb) => {
             fs.stat(dir, ((er, st) => {
-                if (er || !st.isDirectory()) er = new CwdError(dir, er && er.code || "ENOTDIR");
+                if (er || !st.isDirectory()) {
+                    er = new CwdError(dir, er && er.code || "ENOTDIR");
+                }
                 cb(er);
             }));
         };
@@ -3136,25 +3260,43 @@ var __webpack_modules__ = {
             const cache = opt.cache;
             const cwd = normPath(opt.cwd);
             const done = (er, created) => {
-                if (er) cb(er); else {
+                if (er) {
+                    cb(er);
+                } else {
                     cSet(cache, dir, true);
-                    if (created && doChown) chownr(created, uid, gid, (er => done(er))); else if (needChmod) fs.chmod(dir, mode, cb); else cb();
+                    if (created && doChown) {
+                        chownr(created, uid, gid, (er => done(er)));
+                    } else if (needChmod) {
+                        fs.chmod(dir, mode, cb);
+                    } else {
+                        cb();
+                    }
                 }
             };
-            if (cache && cGet(cache, dir) === true) return done();
-            if (dir === cwd) return checkCwd(dir, done);
-            if (preserve) return mkdirp(dir, {
-                mode
-            }).then((made => done(null, made)), done);
+            if (cache && cGet(cache, dir) === true) {
+                return done();
+            }
+            if (dir === cwd) {
+                return checkCwd(dir, done);
+            }
+            if (preserve) {
+                return mkdirp(dir, {
+                    mode
+                }).then((made => done(null, made)), done);
+            }
             const sub = normPath(path.relative(cwd, dir));
             const parts = sub.split("/");
             mkdir_(cwd, parts, mode, cache, unlink, cwd, null, done);
         };
         const mkdir_ = (base, parts, mode, cache, unlink, cwd, created, cb) => {
-            if (!parts.length) return cb(null, created);
+            if (!parts.length) {
+                return cb(null, created);
+            }
             const p = parts.shift();
             const part = normPath(path.resolve(base + "/" + p));
-            if (cGet(cache, part)) return mkdir_(part, parts, mode, cache, unlink, cwd, created, cb);
+            if (cGet(cache, part)) {
+                return mkdir_(part, parts, mode, cache, unlink, cwd, created, cb);
+            }
             fs.mkdir(part, mode, onmkdir(part, parts, mode, cache, unlink, cwd, created, cb));
         };
         const onmkdir = (part, parts, mode, cache, unlink, cwd, created, cb) => er => {
@@ -3163,12 +3305,20 @@ var __webpack_modules__ = {
                     if (statEr) {
                         statEr.path = statEr.path && normPath(statEr.path);
                         cb(statEr);
-                    } else if (st.isDirectory()) mkdir_(part, parts, mode, cache, unlink, cwd, created, cb); else if (unlink) {
+                    } else if (st.isDirectory()) {
+                        mkdir_(part, parts, mode, cache, unlink, cwd, created, cb);
+                    } else if (unlink) {
                         fs.unlink(part, (er => {
-                            if (er) return cb(er);
+                            if (er) {
+                                return cb(er);
+                            }
                             fs.mkdir(part, mode, onmkdir(part, parts, mode, cache, unlink, cwd, created, cb));
                         }));
-                    } else if (st.isSymbolicLink()) return cb(new SymlinkError(part, part + "/" + parts.join("/"))); else cb(er);
+                    } else if (st.isSymbolicLink()) {
+                        return cb(new SymlinkError(part, part + "/" + parts.join("/")));
+                    } else {
+                        cb(er);
+                    }
                 }));
             } else {
                 created = created || part;
@@ -3183,7 +3333,9 @@ var __webpack_modules__ = {
             } catch (er) {
                 code = er.code;
             } finally {
-                if (!ok) throw new CwdError(dir, code);
+                if (!ok) {
+                    throw new CwdError(dir, code);
+                }
             }
         };
         module.exports.sync = (dir, opt) => {
@@ -3200,21 +3352,31 @@ var __webpack_modules__ = {
             const cwd = normPath(opt.cwd);
             const done = created => {
                 cSet(cache, dir, true);
-                if (created && doChown) chownr.sync(created, uid, gid);
-                if (needChmod) fs.chmodSync(dir, mode);
+                if (created && doChown) {
+                    chownr.sync(created, uid, gid);
+                }
+                if (needChmod) {
+                    fs.chmodSync(dir, mode);
+                }
             };
-            if (cache && cGet(cache, dir) === true) return done();
+            if (cache && cGet(cache, dir) === true) {
+                return done();
+            }
             if (dir === cwd) {
                 checkCwdSync(cwd);
                 return done();
             }
-            if (preserve) return done(mkdirp.sync(dir, mode));
+            if (preserve) {
+                return done(mkdirp.sync(dir, mode));
+            }
             const sub = normPath(path.relative(cwd, dir));
             const parts = sub.split("/");
             let created = null;
             for (let p = parts.shift(), part = cwd; p && (part += "/" + p); p = parts.shift()) {
                 part = normPath(path.resolve(part));
-                if (cGet(cache, part)) continue;
+                if (cGet(cache, part)) {
+                    continue;
+                }
                 try {
                     fs.mkdirSync(part, mode);
                     created = created || part;
@@ -3230,7 +3392,9 @@ var __webpack_modules__ = {
                         created = created || part;
                         cSet(cache, part, true);
                         continue;
-                    } else if (st.isSymbolicLink()) return new SymlinkError(part, part + "/" + parts.join("/"));
+                    } else if (st.isSymbolicLink()) {
+                        return new SymlinkError(part, part + "/" + parts.join("/"));
+                    }
                 }
             }
             return done(created);
@@ -3240,11 +3404,19 @@ var __webpack_modules__ = {
         "use strict";
         module.exports = (mode, isDir, portable) => {
             mode &= 4095;
-            if (portable) mode = (mode | 384) & ~18;
+            if (portable) {
+                mode = (mode | 384) & ~18;
+            }
             if (isDir) {
-                if (mode & 256) mode |= 64;
-                if (mode & 32) mode |= 8;
-                if (mode & 4) mode |= 1;
+                if (mode & 256) {
+                    mode |= 64;
+                }
+                if (mode & 32) {
+                    mode |= 8;
+                }
+                if (mode & 4) {
+                    mode |= 1;
+                }
             }
             return mode;
         };
@@ -3253,7 +3425,9 @@ var __webpack_modules__ = {
         const normalizeCache = Object.create(null);
         const {hasOwnProperty} = Object.prototype;
         module.exports = s => {
-            if (!hasOwnProperty.call(normalizeCache, s)) normalizeCache[s] = s.normalize("NFKD");
+            if (!hasOwnProperty.call(normalizeCache, s)) {
+                normalizeCache[s] = s.normalize("NFKD");
+            }
             return normalizeCache[s];
         };
     },
@@ -3323,18 +3497,26 @@ var __webpack_modules__ = {
                 this.statCache = opt.statCache || new Map;
                 this.readdirCache = opt.readdirCache || new Map;
                 this[WRITEENTRYCLASS] = WriteEntry;
-                if (typeof opt.onwarn === "function") this.on("warn", opt.onwarn);
+                if (typeof opt.onwarn === "function") {
+                    this.on("warn", opt.onwarn);
+                }
                 this.portable = !!opt.portable;
                 this.zip = null;
                 if (opt.gzip) {
-                    if (typeof opt.gzip !== "object") opt.gzip = {};
-                    if (this.portable) opt.gzip.portable = true;
+                    if (typeof opt.gzip !== "object") {
+                        opt.gzip = {};
+                    }
+                    if (this.portable) {
+                        opt.gzip.portable = true;
+                    }
                     this.zip = new zlib.Gzip(opt.gzip);
                     this.zip.on("data", (chunk => super.write(chunk)));
                     this.zip.on("end", (_ => super.end()));
                     this.zip.on("drain", (_ => this[ONDRAIN]()));
                     this.on("resume", (_ => this.zip.resume()));
-                } else this.on("drain", this[ONDRAIN]);
+                } else {
+                    this.on("drain", this[ONDRAIN]);
+                }
                 this.noDirRecurse = !!opt.noDirRecurse;
                 this.follow = !!opt.follow;
                 this.noMtime = !!opt.noMtime;
@@ -3354,19 +3536,29 @@ var __webpack_modules__ = {
                 return this;
             }
             end(path) {
-                if (path) this.write(path);
+                if (path) {
+                    this.write(path);
+                }
                 this[ENDED] = true;
                 this[PROCESS]();
                 return this;
             }
             write(path) {
-                if (this[ENDED]) throw new Error("write after end");
-                if (path instanceof ReadEntry) this[ADDTARENTRY](path); else this[ADDFSENTRY](path);
+                if (this[ENDED]) {
+                    throw new Error("write after end");
+                }
+                if (path instanceof ReadEntry) {
+                    this[ADDTARENTRY](path);
+                } else {
+                    this[ADDFSENTRY](path);
+                }
                 return this.flowing;
             }
             [ADDTARENTRY](p) {
                 const absolute = normPath(path.resolve(this.cwd, p.path));
-                if (!this.filter(p.path, p)) p.resume(); else {
+                if (!this.filter(p.path, p)) {
+                    p.resume();
+                } else {
                     const job = new PackJob(p.path, absolute, false);
                     job.entry = new WriteEntryTar(p, this[ENTRYOPT](job));
                     job.entry.on("end", (_ => this[JOBDONE](job)));
@@ -3387,13 +3579,19 @@ var __webpack_modules__ = {
                 fs[stat](job.absolute, ((er, stat) => {
                     job.pending = false;
                     this[JOBS] -= 1;
-                    if (er) this.emit("error", er); else this[ONSTAT](job, stat);
+                    if (er) {
+                        this.emit("error", er);
+                    } else {
+                        this[ONSTAT](job, stat);
+                    }
                 }));
             }
             [ONSTAT](job, stat) {
                 this.statCache.set(job.absolute, stat);
                 job.stat = stat;
-                if (!this.filter(job.path, stat)) job.ignore = true;
+                if (!this.filter(job.path, stat)) {
+                    job.ignore = true;
+                }
                 this[PROCESS]();
             }
             [READDIR](job) {
@@ -3402,7 +3600,9 @@ var __webpack_modules__ = {
                 fs.readdir(job.absolute, ((er, entries) => {
                     job.pending = false;
                     this[JOBS] -= 1;
-                    if (er) return this.emit("error", er);
+                    if (er) {
+                        return this.emit("error", er);
+                    }
                     this[ONREADDIR](job, entries);
                 }));
             }
@@ -3412,7 +3612,9 @@ var __webpack_modules__ = {
                 this[PROCESS]();
             }
             [PROCESS]() {
-                if (this[PROCESSING]) return;
+                if (this[PROCESSING]) {
+                    return;
+                }
                 this[PROCESSING] = true;
                 for (let w = this[QUEUE].head; w !== null && this[JOBS] < this.jobs; w = w.next) {
                     this[PROCESSJOB](w.value);
@@ -3424,7 +3626,9 @@ var __webpack_modules__ = {
                 }
                 this[PROCESSING] = false;
                 if (this[ENDED] && !this[QUEUE].length && this[JOBS] === 0) {
-                    if (this.zip) this.zip.end(EOF); else {
+                    if (this.zip) {
+                        this.zip.end(EOF);
+                    } else {
                         super.write(EOF);
                         super.end();
                     }
@@ -3439,26 +3643,46 @@ var __webpack_modules__ = {
                 this[PROCESS]();
             }
             [PROCESSJOB](job) {
-                if (job.pending) return;
+                if (job.pending) {
+                    return;
+                }
                 if (job.entry) {
-                    if (job === this[CURRENT] && !job.piped) this[PIPE](job);
+                    if (job === this[CURRENT] && !job.piped) {
+                        this[PIPE](job);
+                    }
                     return;
                 }
                 if (!job.stat) {
-                    if (this.statCache.has(job.absolute)) this[ONSTAT](job, this.statCache.get(job.absolute)); else this[STAT](job);
+                    if (this.statCache.has(job.absolute)) {
+                        this[ONSTAT](job, this.statCache.get(job.absolute));
+                    } else {
+                        this[STAT](job);
+                    }
                 }
-                if (!job.stat) return;
-                if (job.ignore) return;
+                if (!job.stat) {
+                    return;
+                }
+                if (job.ignore) {
+                    return;
+                }
                 if (!this.noDirRecurse && job.stat.isDirectory() && !job.readdir) {
-                    if (this.readdirCache.has(job.absolute)) this[ONREADDIR](job, this.readdirCache.get(job.absolute)); else this[READDIR](job);
-                    if (!job.readdir) return;
+                    if (this.readdirCache.has(job.absolute)) {
+                        this[ONREADDIR](job, this.readdirCache.get(job.absolute));
+                    } else {
+                        this[READDIR](job);
+                    }
+                    if (!job.readdir) {
+                        return;
+                    }
                 }
                 job.entry = this[ENTRY](job);
                 if (!job.entry) {
                     job.ignore = true;
                     return;
                 }
-                if (job === this[CURRENT] && !job.piped) this[PIPE](job);
+                if (job === this[CURRENT] && !job.piped) {
+                    this[PIPE](job);
+                }
             }
             [ENTRYOPT](job) {
                 return {
@@ -3486,7 +3710,9 @@ var __webpack_modules__ = {
                 }
             }
             [ONDRAIN]() {
-                if (this[CURRENT] && this[CURRENT].entry) this[CURRENT].entry.resume();
+                if (this[CURRENT] && this[CURRENT].entry) {
+                    this[CURRENT].entry.resume();
+                }
             }
             [PIPE](job) {
                 job.piped = true;
@@ -3501,16 +3727,22 @@ var __webpack_modules__ = {
                 const zip = this.zip;
                 if (zip) {
                     source.on("data", (chunk => {
-                        if (!zip.write(chunk)) source.pause();
+                        if (!zip.write(chunk)) {
+                            source.pause();
+                        }
                     }));
                 } else {
                     source.on("data", (chunk => {
-                        if (!super.write(chunk)) source.pause();
+                        if (!super.write(chunk)) {
+                            source.pause();
+                        }
                     }));
                 }
             }
             pause() {
-                if (this.zip) this.zip.pause();
+                if (this.zip) {
+                    this.zip.pause();
+                }
                 return super.pause();
             }
         });
@@ -3562,6 +3794,7 @@ var __webpack_modules__ = {
         const Entry = __webpack_require__(7847);
         const Pax = __webpack_require__(9154);
         const zlib = __webpack_require__(3704);
+        const {nextTick} = __webpack_require__(7282);
         const gzipHeader = Buffer.from([ 31, 139 ]);
         const STATE = Symbol("state");
         const WRITEENTRY = Symbol("writeEntry");
@@ -3592,6 +3825,7 @@ var __webpack_modules__ = {
         const SAW_VALID_ENTRY = Symbol("sawValidEntry");
         const SAW_NULL_BLOCK = Symbol("sawNullBlock");
         const SAW_EOF = Symbol("sawEOF");
+        const CLOSESTREAM = Symbol("closeStream");
         const noop = _ => true;
         module.exports = warner(class Parser extends EE {
             constructor(opt) {
@@ -3604,12 +3838,13 @@ var __webpack_modules__ = {
                         this.warn("TAR_BAD_ARCHIVE", "Unrecognized archive format");
                     }
                 }));
-                if (opt.ondone) this.on(DONE, opt.ondone); else {
+                if (opt.ondone) {
+                    this.on(DONE, opt.ondone);
+                } else {
                     this.on(DONE, (_ => {
                         this.emit("prefinish");
                         this.emit("finish");
                         this.emit("end");
-                        this.emit("close");
                     }));
                 }
                 this.strict = !!opt.strict;
@@ -3630,11 +3865,18 @@ var __webpack_modules__ = {
                 this[ABORTED] = false;
                 this[SAW_NULL_BLOCK] = false;
                 this[SAW_EOF] = false;
-                if (typeof opt.onwarn === "function") this.on("warn", opt.onwarn);
-                if (typeof opt.onentry === "function") this.on("entry", opt.onentry);
+                this.on("end", (() => this[CLOSESTREAM]()));
+                if (typeof opt.onwarn === "function") {
+                    this.on("warn", opt.onwarn);
+                }
+                if (typeof opt.onentry === "function") {
+                    this.on("entry", opt.onentry);
+                }
             }
             [CONSUMEHEADER](chunk, position) {
-                if (this[SAW_VALID_ENTRY] === null) this[SAW_VALID_ENTRY] = false;
+                if (this[SAW_VALID_ENTRY] === null) {
+                    this[SAW_VALID_ENTRY] = false;
+                }
                 let header;
                 try {
                     header = new Header(chunk, position, this[EX], this[GEX]);
@@ -3644,7 +3886,9 @@ var __webpack_modules__ = {
                 if (header.nullBlock) {
                     if (this[SAW_NULL_BLOCK]) {
                         this[SAW_EOF] = true;
-                        if (this[STATE] === "begin") this[STATE] = "header";
+                        if (this[STATE] === "begin") {
+                            this[STATE] = "header";
+                        }
                         this[EMIT]("eof");
                     } else {
                         this[SAW_NULL_BLOCK] = true;
@@ -3652,25 +3896,37 @@ var __webpack_modules__ = {
                     }
                 } else {
                     this[SAW_NULL_BLOCK] = false;
-                    if (!header.cksumValid) this.warn("TAR_ENTRY_INVALID", "checksum failure", {
-                        header
-                    }); else if (!header.path) this.warn("TAR_ENTRY_INVALID", "path is required", {
-                        header
-                    }); else {
+                    if (!header.cksumValid) {
+                        this.warn("TAR_ENTRY_INVALID", "checksum failure", {
+                            header
+                        });
+                    } else if (!header.path) {
+                        this.warn("TAR_ENTRY_INVALID", "path is required", {
+                            header
+                        });
+                    } else {
                         const type = header.type;
-                        if (/^(Symbolic)?Link$/.test(type) && !header.linkpath) this.warn("TAR_ENTRY_INVALID", "linkpath required", {
-                            header
-                        }); else if (!/^(Symbolic)?Link$/.test(type) && header.linkpath) this.warn("TAR_ENTRY_INVALID", "linkpath forbidden", {
-                            header
-                        }); else {
+                        if (/^(Symbolic)?Link$/.test(type) && !header.linkpath) {
+                            this.warn("TAR_ENTRY_INVALID", "linkpath required", {
+                                header
+                            });
+                        } else if (!/^(Symbolic)?Link$/.test(type) && header.linkpath) {
+                            this.warn("TAR_ENTRY_INVALID", "linkpath forbidden", {
+                                header
+                            });
+                        } else {
                             const entry = this[WRITEENTRY] = new Entry(header, this[EX], this[GEX]);
                             if (!this[SAW_VALID_ENTRY]) {
                                 if (entry.remain) {
                                     const onend = () => {
-                                        if (!entry.invalid) this[SAW_VALID_ENTRY] = true;
+                                        if (!entry.invalid) {
+                                            this[SAW_VALID_ENTRY] = true;
+                                        }
                                     };
                                     entry.on("end", onend);
-                                } else this[SAW_VALID_ENTRY] = true;
+                                } else {
+                                    this[SAW_VALID_ENTRY] = true;
+                                }
                             }
                             if (entry.meta) {
                                 if (entry.size > this.maxMetaEntrySize) {
@@ -3691,26 +3947,35 @@ var __webpack_modules__ = {
                                     this[STATE] = entry.remain ? "ignore" : "header";
                                     entry.resume();
                                 } else {
-                                    if (entry.remain) this[STATE] = "body"; else {
+                                    if (entry.remain) {
+                                        this[STATE] = "body";
+                                    } else {
                                         this[STATE] = "header";
                                         entry.end();
                                     }
                                     if (!this[READENTRY]) {
                                         this[QUEUE].push(entry);
                                         this[NEXTENTRY]();
-                                    } else this[QUEUE].push(entry);
+                                    } else {
+                                        this[QUEUE].push(entry);
+                                    }
                                 }
                             }
                         }
                     }
                 }
             }
+            [CLOSESTREAM]() {
+                nextTick((() => this.emit("close")));
+            }
             [PROCESSENTRY](entry) {
                 let go = true;
                 if (!entry) {
                     this[READENTRY] = null;
                     go = false;
-                } else if (Array.isArray(entry)) this.emit.apply(this, entry); else {
+                } else if (Array.isArray(entry)) {
+                    this.emit.apply(this, entry);
+                } else {
                     this[READENTRY] = entry;
                     this.emit("entry", entry);
                     if (!entry.emittedEnd) {
@@ -3726,8 +3991,12 @@ var __webpack_modules__ = {
                     const re = this[READENTRY];
                     const drainNow = !re || re.flowing || re.size === re.remain;
                     if (drainNow) {
-                        if (!this[WRITING]) this.emit("drain");
-                    } else re.once("drain", (_ => this.emit("drain")));
+                        if (!this[WRITING]) {
+                            this.emit("drain");
+                        }
+                    } else {
+                        re.once("drain", (_ => this.emit("drain")));
+                    }
                 }
             }
             [CONSUMEBODY](chunk, position) {
@@ -3745,11 +4014,17 @@ var __webpack_modules__ = {
             [CONSUMEMETA](chunk, position) {
                 const entry = this[WRITEENTRY];
                 const ret = this[CONSUMEBODY](chunk, position);
-                if (!this[WRITEENTRY]) this[EMITMETA](entry);
+                if (!this[WRITEENTRY]) {
+                    this[EMITMETA](entry);
+                }
                 return ret;
             }
             [EMIT](ev, data, extra) {
-                if (!this[QUEUE].length && !this[READENTRY]) this.emit(ev, data, extra); else this[QUEUE].push([ ev, data, extra ]);
+                if (!this[QUEUE].length && !this[READENTRY]) {
+                    this.emit(ev, data, extra);
+                } else {
+                    this[QUEUE].push([ ev, data, extra ]);
+                }
             }
             [EMITMETA](entry) {
                 this[EMIT]("meta", this[META]);
@@ -3786,7 +4061,9 @@ var __webpack_modules__ = {
                 });
             }
             write(chunk) {
-                if (this[ABORTED]) return;
+                if (this[ABORTED]) {
+                    return;
+                }
                 if (this[UNZIP] === null && chunk) {
                     if (this[BUFFER]) {
                         chunk = Buffer.concat([ this[BUFFER], chunk ]);
@@ -3797,7 +4074,9 @@ var __webpack_modules__ = {
                         return true;
                     }
                     for (let i = 0; this[UNZIP] === null && i < gzipHeader.length; i++) {
-                        if (chunk[i] !== gzipHeader[i]) this[UNZIP] = false;
+                        if (chunk[i] !== gzipHeader[i]) {
+                            this[UNZIP] = false;
+                        }
                     }
                     if (this[UNZIP] === null) {
                         const ended = this[ENDED];
@@ -3816,14 +4095,22 @@ var __webpack_modules__ = {
                     }
                 }
                 this[WRITING] = true;
-                if (this[UNZIP]) this[UNZIP].write(chunk); else this[CONSUMECHUNK](chunk);
+                if (this[UNZIP]) {
+                    this[UNZIP].write(chunk);
+                } else {
+                    this[CONSUMECHUNK](chunk);
+                }
                 this[WRITING] = false;
                 const ret = this[QUEUE].length ? false : this[READENTRY] ? this[READENTRY].flowing : true;
-                if (!ret && !this[QUEUE].length) this[READENTRY].once("drain", (_ => this.emit("drain")));
+                if (!ret && !this[QUEUE].length) {
+                    this[READENTRY].once("drain", (_ => this.emit("drain")));
+                }
                 return ret;
             }
             [BUFFERCONCAT](c) {
-                if (c && !this[ABORTED]) this[BUFFER] = this[BUFFER] ? Buffer.concat([ this[BUFFER], c ]) : c;
+                if (c && !this[ABORTED]) {
+                    this[BUFFER] = this[BUFFER] ? Buffer.concat([ this[BUFFER], c ]) : c;
+                }
             }
             [MAYBEEND]() {
                 if (this[ENDED] && !this[EMITTEDEND] && !this[ABORTED] && !this[CONSUMING]) {
@@ -3834,21 +4121,29 @@ var __webpack_modules__ = {
                         this.warn("TAR_BAD_ARCHIVE", `Truncated input (needed ${entry.blockRemain} more bytes, only ${have} available)`, {
                             entry
                         });
-                        if (this[BUFFER]) entry.write(this[BUFFER]);
+                        if (this[BUFFER]) {
+                            entry.write(this[BUFFER]);
+                        }
                         entry.end();
                     }
                     this[EMIT](DONE);
                 }
             }
             [CONSUMECHUNK](chunk) {
-                if (this[CONSUMING]) this[BUFFERCONCAT](chunk); else if (!chunk && !this[BUFFER]) this[MAYBEEND](); else {
+                if (this[CONSUMING]) {
+                    this[BUFFERCONCAT](chunk);
+                } else if (!chunk && !this[BUFFER]) {
+                    this[MAYBEEND]();
+                } else {
                     this[CONSUMING] = true;
                     if (this[BUFFER]) {
                         this[BUFFERCONCAT](chunk);
                         const c = this[BUFFER];
                         this[BUFFER] = null;
                         this[CONSUMECHUNKSUB](c);
-                    } else this[CONSUMECHUNKSUB](chunk);
+                    } else {
+                        this[CONSUMECHUNKSUB](chunk);
+                    }
                     while (this[BUFFER] && this[BUFFER].length >= 512 && !this[ABORTED] && !this[SAW_EOF]) {
                         const c = this[BUFFER];
                         this[BUFFER] = null;
@@ -3856,7 +4151,9 @@ var __webpack_modules__ = {
                     }
                     this[CONSUMING] = false;
                 }
-                if (!this[BUFFER] || this[ENDED]) this[MAYBEEND]();
+                if (!this[BUFFER] || this[ENDED]) {
+                    this[MAYBEEND]();
+                }
             }
             [CONSUMECHUNKSUB](chunk) {
                 let position = 0;
@@ -3883,12 +4180,18 @@ var __webpack_modules__ = {
                     }
                 }
                 if (position < length) {
-                    if (this[BUFFER]) this[BUFFER] = Buffer.concat([ chunk.slice(position), this[BUFFER] ]); else this[BUFFER] = chunk.slice(position);
+                    if (this[BUFFER]) {
+                        this[BUFFER] = Buffer.concat([ chunk.slice(position), this[BUFFER] ]);
+                    } else {
+                        this[BUFFER] = chunk.slice(position);
+                    }
                 }
             }
             end(chunk) {
                 if (!this[ABORTED]) {
-                    if (this[UNZIP]) this[UNZIP].end(chunk); else {
+                    if (this[UNZIP]) {
+                        this[UNZIP].end(chunk);
+                    } else {
                         this[ENDED] = true;
                         this.write(chunk);
                     }
@@ -3908,7 +4211,9 @@ var __webpack_modules__ = {
             const reservations = new Map;
             const getDirs = path => {
                 const dirs = path.split("/").slice(0, -1).reduce(((set, path) => {
-                    if (set.length) path = join(set[set.length - 1], path);
+                    if (set.length) {
+                        path = join(set[set.length - 1], path);
+                    }
                     set.push(path || "/");
                     return set;
                 }), []);
@@ -3917,7 +4222,9 @@ var __webpack_modules__ = {
             const running = new Set;
             const getQueues = fn => {
                 const res = reservations.get(fn);
-                if (!res) throw new Error("function does not have any path reservations");
+                if (!res) {
+                    throw new Error("function does not have any path reservations");
+                }
                 return {
                     paths: res.paths.map((path => queues.get(path))),
                     dirs: [ ...res.dirs ].map((path => queues.get(path)))
@@ -3928,30 +4235,44 @@ var __webpack_modules__ = {
                 return paths.every((q => q[0] === fn)) && dirs.every((q => q[0] instanceof Set && q[0].has(fn)));
             };
             const run = fn => {
-                if (running.has(fn) || !check(fn)) return false;
+                if (running.has(fn) || !check(fn)) {
+                    return false;
+                }
                 running.add(fn);
                 fn((() => clear(fn)));
                 return true;
             };
             const clear = fn => {
-                if (!running.has(fn)) return false;
+                if (!running.has(fn)) {
+                    return false;
+                }
                 const {paths, dirs} = reservations.get(fn);
                 const next = new Set;
                 paths.forEach((path => {
                     const q = queues.get(path);
                     assert.equal(q[0], fn);
-                    if (q.length === 1) queues.delete(path); else {
+                    if (q.length === 1) {
+                        queues.delete(path);
+                    } else {
                         q.shift();
-                        if (typeof q[0] === "function") next.add(q[0]); else q[0].forEach((fn => next.add(fn)));
+                        if (typeof q[0] === "function") {
+                            next.add(q[0]);
+                        } else {
+                            q[0].forEach((fn => next.add(fn)));
+                        }
                     }
                 }));
                 dirs.forEach((dir => {
                     const q = queues.get(dir);
                     assert(q[0] instanceof Set);
-                    if (q[0].size === 1 && q.length === 1) queues.delete(dir); else if (q[0].size === 1) {
+                    if (q[0].size === 1 && q.length === 1) {
+                        queues.delete(dir);
+                    } else if (q[0].size === 1) {
                         q.shift();
                         next.add(q[0]);
-                    } else q[0].delete(fn);
+                    } else {
+                        q[0].delete(fn);
+                    }
                 }));
                 running.delete(fn);
                 next.forEach((fn => run(fn)));
@@ -3966,11 +4287,21 @@ var __webpack_modules__ = {
                 });
                 paths.forEach((path => {
                     const q = queues.get(path);
-                    if (!q) queues.set(path, [ fn ]); else q.push(fn);
+                    if (!q) {
+                        queues.set(path, [ fn ]);
+                    } else {
+                        q.push(fn);
+                    }
                 }));
                 dirs.forEach((dir => {
                     const q = queues.get(dir);
-                    if (!q) queues.set(dir, [ new Set([ fn ]) ]); else if (q[q.length - 1] instanceof Set) q[q.length - 1].add(fn); else q.push(new Set([ fn ]));
+                    if (!q) {
+                        queues.set(dir, [ new Set([ fn ]) ]);
+                    } else if (q[q.length - 1] instanceof Set) {
+                        q[q.length - 1].add(fn);
+                    } else {
+                        q.push(new Set([ fn ]));
+                    }
                 }));
                 return run(fn);
             };
@@ -4005,11 +4336,15 @@ var __webpack_modules__ = {
             }
             encode() {
                 const body = this.encodeBody();
-                if (body === "") return null;
+                if (body === "") {
+                    return null;
+                }
                 const bodyLen = Buffer.byteLength(body);
                 const bufLen = 512 * Math.ceil(1 + bodyLen / 512);
                 const buf = Buffer.allocUnsafe(bufLen);
-                for (let i = 0; i < 512; i++) buf[i] = 0;
+                for (let i = 0; i < 512; i++) {
+                    buf[i] = 0;
+                }
                 new Header({
                     path: ("PaxHeader/" + path.basename(this.path)).slice(0, 99),
                     mode: this.mode || 420,
@@ -4027,19 +4362,25 @@ var __webpack_modules__ = {
                     ctime: this.ctime || null
                 }).encode(buf);
                 buf.write(body, 512, bodyLen, "utf8");
-                for (let i = bodyLen + 512; i < buf.length; i++) buf[i] = 0;
+                for (let i = bodyLen + 512; i < buf.length; i++) {
+                    buf[i] = 0;
+                }
                 return buf;
             }
             encodeBody() {
                 return this.encodeField("path") + this.encodeField("ctime") + this.encodeField("atime") + this.encodeField("dev") + this.encodeField("ino") + this.encodeField("nlink") + this.encodeField("charset") + this.encodeField("comment") + this.encodeField("gid") + this.encodeField("gname") + this.encodeField("linkpath") + this.encodeField("mtime") + this.encodeField("size") + this.encodeField("uid") + this.encodeField("uname");
             }
             encodeField(field) {
-                if (this[field] === null || this[field] === undefined) return "";
+                if (this[field] === null || this[field] === undefined) {
+                    return "";
+                }
                 const v = this[field] instanceof Date ? this[field].getTime() / 1e3 : this[field];
                 const s = " " + (field === "dev" || field === "ino" || field === "nlink" ? "SCHILY." : "") + field + "=" + v + "\n";
                 const byteLen = Buffer.byteLength(s);
                 let digits = Math.floor(Math.log(byteLen) / Math.log(10)) + 1;
-                if (byteLen + digits >= Math.pow(10, digits)) digits += 1;
+                if (byteLen + digits >= Math.pow(10, digits)) {
+                    digits += 1;
+                }
                 const len = digits + byteLen;
                 return len + s;
             }
@@ -4049,11 +4390,15 @@ var __webpack_modules__ = {
         const parseKV = string => string.replace(/\n$/, "").split("\n").reduce(parseKVLine, Object.create(null));
         const parseKVLine = (set, line) => {
             const n = parseInt(line, 10);
-            if (n !== Buffer.byteLength(line) + 1) return set;
-            line = line.substr((n + " ").length);
+            if (n !== Buffer.byteLength(line) + 1) {
+                return set;
+            }
+            line = line.slice((n + " ").length);
             const kv = line.split("=");
             const k = kv.shift().replace(/^SCHILY\.(dev|ino|nlink)/, "$1");
-            if (!k) return set;
+            if (!k) {
+                return set;
+            }
             const v = kv.join("=");
             set[k] = /^([A-Z]+\.)?([mac]|birth|creation)time$/.test(k) ? new Date(v * 1e3) : /^[0-9]+$/.test(v) ? +v : v;
             return set;
@@ -4105,7 +4450,9 @@ var __webpack_modules__ = {
                 }
                 this.path = normPath(header.path);
                 this.mode = header.mode;
-                if (this.mode) this.mode = this.mode & 4095;
+                if (this.mode) {
+                    this.mode = this.mode & 4095;
+                }
                 this.uid = header.uid;
                 this.gid = header.gid;
                 this.uname = header.uname;
@@ -4117,23 +4464,35 @@ var __webpack_modules__ = {
                 this.linkpath = normPath(header.linkpath);
                 this.uname = header.uname;
                 this.gname = header.gname;
-                if (ex) this[SLURP](ex);
-                if (gex) this[SLURP](gex, true);
+                if (ex) {
+                    this[SLURP](ex);
+                }
+                if (gex) {
+                    this[SLURP](gex, true);
+                }
             }
             write(data) {
                 const writeLen = data.length;
-                if (writeLen > this.blockRemain) throw new Error("writing more to entry than is appropriate");
+                if (writeLen > this.blockRemain) {
+                    throw new Error("writing more to entry than is appropriate");
+                }
                 const r = this.remain;
                 const br = this.blockRemain;
                 this.remain = Math.max(0, r - writeLen);
                 this.blockRemain = Math.max(0, br - writeLen);
-                if (this.ignore) return true;
-                if (r >= writeLen) return super.write(data);
+                if (this.ignore) {
+                    return true;
+                }
+                if (r >= writeLen) {
+                    return super.write(data);
+                }
                 return super.write(data.slice(0, r));
             }
             [SLURP](ex, global) {
                 for (const k in ex) {
-                    if (ex[k] !== null && ex[k] !== undefined && !(global && k === "path")) this[k] = k === "path" || k === "linkpath" ? normPath(ex[k]) : ex[k];
+                    if (ex[k] !== null && ex[k] !== undefined && !(global && k === "path")) {
+                        this[k] = k === "path" || k === "linkpath" ? normPath(ex[k]) : ex[k];
+                    }
                 }
             }
         };
@@ -4149,9 +4508,15 @@ var __webpack_modules__ = {
         const Header = __webpack_require__(5017);
         module.exports = (opt_, files, cb) => {
             const opt = hlo(opt_);
-            if (!opt.file) throw new TypeError("file is required");
-            if (opt.gzip) throw new TypeError("cannot append to compressed archives");
-            if (!files || !Array.isArray(files) || !files.length) throw new TypeError("no files or directories specified");
+            if (!opt.file) {
+                throw new TypeError("file is required");
+            }
+            if (opt.gzip) {
+                throw new TypeError("cannot append to compressed archives");
+            }
+            if (!files || !Array.isArray(files) || !files.length) {
+                throw new TypeError("no files or directories specified");
+            }
             files = Array.from(files);
             return opt.sync ? replaceSync(opt, files) : replace(opt, files, cb);
         };
@@ -4164,22 +4529,36 @@ var __webpack_modules__ = {
                 try {
                     fd = fs.openSync(opt.file, "r+");
                 } catch (er) {
-                    if (er.code === "ENOENT") fd = fs.openSync(opt.file, "w+"); else throw er;
+                    if (er.code === "ENOENT") {
+                        fd = fs.openSync(opt.file, "w+");
+                    } else {
+                        throw er;
+                    }
                 }
                 const st = fs.fstatSync(fd);
                 const headBuf = Buffer.alloc(512);
                 POSITION: for (position = 0; position < st.size; position += 512) {
                     for (let bufPos = 0, bytes = 0; bufPos < 512; bufPos += bytes) {
                         bytes = fs.readSync(fd, headBuf, bufPos, headBuf.length - bufPos, position + bufPos);
-                        if (position === 0 && headBuf[0] === 31 && headBuf[1] === 139) throw new Error("cannot append to compressed archives");
-                        if (!bytes) break POSITION;
+                        if (position === 0 && headBuf[0] === 31 && headBuf[1] === 139) {
+                            throw new Error("cannot append to compressed archives");
+                        }
+                        if (!bytes) {
+                            break POSITION;
+                        }
                     }
                     const h = new Header(headBuf);
-                    if (!h.cksumValid) break;
+                    if (!h.cksumValid) {
+                        break;
+                    }
                     const entryBlockSize = 512 * Math.ceil(h.size / 512);
-                    if (position + entryBlockSize + 512 > st.size) break;
+                    if (position + entryBlockSize + 512 > st.size) {
+                        break;
+                    }
                     position += entryBlockSize;
-                    if (opt.mtimeCache) opt.mtimeCache.set(h.path, h.mtime);
+                    if (opt.mtimeCache) {
+                        opt.mtimeCache.set(h.path, h.mtime);
+                    }
                 }
                 threw = false;
                 streamSync(opt, p, position, fd, files);
@@ -4204,27 +4583,47 @@ var __webpack_modules__ = {
             const p = new Pack(opt);
             const getPos = (fd, size, cb_) => {
                 const cb = (er, pos) => {
-                    if (er) fs.close(fd, (_ => cb_(er))); else cb_(null, pos);
+                    if (er) {
+                        fs.close(fd, (_ => cb_(er)));
+                    } else {
+                        cb_(null, pos);
+                    }
                 };
                 let position = 0;
-                if (size === 0) return cb(null, 0);
+                if (size === 0) {
+                    return cb(null, 0);
+                }
                 let bufPos = 0;
                 const headBuf = Buffer.alloc(512);
                 const onread = (er, bytes) => {
-                    if (er) return cb(er);
+                    if (er) {
+                        return cb(er);
+                    }
                     bufPos += bytes;
                     if (bufPos < 512 && bytes) {
                         return fs.read(fd, headBuf, bufPos, headBuf.length - bufPos, position + bufPos, onread);
                     }
-                    if (position === 0 && headBuf[0] === 31 && headBuf[1] === 139) return cb(new Error("cannot append to compressed archives"));
-                    if (bufPos < 512) return cb(null, position);
+                    if (position === 0 && headBuf[0] === 31 && headBuf[1] === 139) {
+                        return cb(new Error("cannot append to compressed archives"));
+                    }
+                    if (bufPos < 512) {
+                        return cb(null, position);
+                    }
                     const h = new Header(headBuf);
-                    if (!h.cksumValid) return cb(null, position);
+                    if (!h.cksumValid) {
+                        return cb(null, position);
+                    }
                     const entryBlockSize = 512 * Math.ceil(h.size / 512);
-                    if (position + entryBlockSize + 512 > size) return cb(null, position);
+                    if (position + entryBlockSize + 512 > size) {
+                        return cb(null, position);
+                    }
                     position += entryBlockSize + 512;
-                    if (position >= size) return cb(null, position);
-                    if (opt.mtimeCache) opt.mtimeCache.set(h.path, h.mtime);
+                    if (position >= size) {
+                        return cb(null, position);
+                    }
+                    if (opt.mtimeCache) {
+                        opt.mtimeCache.set(h.path, h.mtime);
+                    }
                     bufPos = 0;
                     fs.read(fd, headBuf, 0, 512, position, onread);
                 };
@@ -4238,11 +4637,17 @@ var __webpack_modules__ = {
                         flag = "w+";
                         return fs.open(opt.file, flag, onopen);
                     }
-                    if (er) return reject(er);
+                    if (er) {
+                        return reject(er);
+                    }
                     fs.fstat(fd, ((er, st) => {
-                        if (er) return fs.close(fd, (() => reject(er)));
+                        if (er) {
+                            return fs.close(fd, (() => reject(er)));
+                        }
                         getPos(fd, st.size, ((er, position) => {
-                            if (er) return reject(er);
+                            if (er) {
+                                return reject(er);
+                            }
                             const stream = new fsm.WriteStream(opt.file, {
                                 fd,
                                 start: position
@@ -4262,12 +4667,14 @@ var __webpack_modules__ = {
             files.forEach((file => {
                 if (file.charAt(0) === "@") {
                     t({
-                        file: path.resolve(p.cwd, file.substr(1)),
+                        file: path.resolve(p.cwd, file.slice(1)),
                         sync: true,
                         noResume: true,
                         onentry: entry => p.add(entry)
                     });
-                } else p.add(file);
+                } else {
+                    p.add(file);
+                }
             }));
             p.end();
         };
@@ -4276,11 +4683,13 @@ var __webpack_modules__ = {
                 const file = files.shift();
                 if (file.charAt(0) === "@") {
                     return t({
-                        file: path.resolve(p.cwd, file.substr(1)),
+                        file: path.resolve(p.cwd, file.slice(1)),
                         noResume: true,
                         onentry: entry => p.add(entry)
                     }).then((_ => addFilesAsync(p, files)));
-                } else p.add(file);
+                } else {
+                    p.add(file);
+                }
             }
             p.end();
         };
@@ -4292,7 +4701,7 @@ var __webpack_modules__ = {
             let parsed = parse(path);
             while (isAbsolute(path) || parsed.root) {
                 const root = path.charAt(0) === "/" && path.slice(0, 4) !== "//?/" ? "/" : parsed.root;
-                path = path.substr(root.length);
+                path = path.slice(root.length);
                 r += root;
                 parsed = parse(path);
             }
@@ -4359,15 +4768,21 @@ var __webpack_modules__ = {
         const platform = process.env.TESTING_TAR_FAKE_PLATFORM || process.platform;
         const isWindows = platform === "win32";
         const unlinkFile = (path, cb) => {
-            if (!isWindows) return fs.unlink(path, cb);
+            if (!isWindows) {
+                return fs.unlink(path, cb);
+            }
             const name = path + ".DELETE." + crypto.randomBytes(16).toString("hex");
             fs.rename(path, name, (er => {
-                if (er) return cb(er);
+                if (er) {
+                    return cb(er);
+                }
                 fs.unlink(name, cb);
             }));
         };
         const unlinkFileSync = path => {
-            if (!isWindows) return fs.unlinkSync(path);
+            if (!isWindows) {
+                return fs.unlinkSync(path);
+            }
             const name = path + ".DELETE." + crypto.randomBytes(16).toString("hex");
             fs.renameSync(path, name);
             fs.unlinkSync(name);
@@ -4378,15 +4793,21 @@ var __webpack_modules__ = {
             abs = cacheKeyNormalize(abs);
             for (const path of cache.keys()) {
                 const pnorm = cacheKeyNormalize(path);
-                if (pnorm === abs || pnorm.indexOf(abs + "/") === 0) cache.delete(path);
+                if (pnorm === abs || pnorm.indexOf(abs + "/") === 0) {
+                    cache.delete(path);
+                }
             }
         };
         const dropCache = cache => {
-            for (const key of cache.keys()) cache.delete(key);
+            for (const key of cache.keys()) {
+                cache.delete(key);
+            }
         };
         class Unpack extends Parser {
             constructor(opt) {
-                if (!opt) opt = {};
+                if (!opt) {
+                    opt = {};
+                }
                 opt.ondone = _ => {
                     this[ENDED] = true;
                     this[MAYBECLOSE]();
@@ -4401,7 +4822,9 @@ var __webpack_modules__ = {
                 this[ENDED] = false;
                 this.dirCache = opt.dirCache || new Map;
                 if (typeof opt.uid === "number" || typeof opt.gid === "number") {
-                    if (typeof opt.uid !== "number" || typeof opt.gid !== "number") throw new TypeError("cannot set owner without number uid and gid");
+                    if (typeof opt.uid !== "number" || typeof opt.gid !== "number") {
+                        throw new TypeError("cannot set owner without number uid and gid");
+                    }
                     if (opt.preserveOwner) {
                         throw new TypeError("cannot preserve owner in archive and also set owner explicitly");
                     }
@@ -4413,7 +4836,11 @@ var __webpack_modules__ = {
                     this.gid = null;
                     this.setOwner = false;
                 }
-                if (opt.preserveOwner === undefined && typeof opt.uid !== "number") this.preserveOwner = process.getuid && process.getuid() === 0; else this.preserveOwner = !!opt.preserveOwner;
+                if (opt.preserveOwner === undefined && typeof opt.uid !== "number") {
+                    this.preserveOwner = process.getuid && process.getuid() === 0;
+                } else {
+                    this.preserveOwner = !!opt.preserveOwner;
+                }
                 this.processUid = (this.preserveOwner || this.setOwner) && process.getuid ? process.getuid() : null;
                 this.processGid = (this.preserveOwner || this.setOwner) && process.getgid ? process.getgid() : null;
                 this.forceChown = opt.forceChown === true;
@@ -4432,7 +4859,9 @@ var __webpack_modules__ = {
                 this.on("entry", (entry => this[ONENTRY](entry)));
             }
             warn(code, msg, data = {}) {
-                if (code === "TAR_BAD_ARCHIVE" || code === "TAR_ABORT") data.recoverable = false;
+                if (code === "TAR_BAD_ARCHIVE" || code === "TAR_ABORT") {
+                    data.recoverable = false;
+                }
                 return super.warn(code, msg, data);
             }
             [MAYBECLOSE]() {
@@ -4440,17 +4869,22 @@ var __webpack_modules__ = {
                     this.emit("prefinish");
                     this.emit("finish");
                     this.emit("end");
-                    this.emit("close");
                 }
             }
             [CHECKPATH](entry) {
                 if (this.strip) {
                     const parts = normPath(entry.path).split("/");
-                    if (parts.length < this.strip) return false;
+                    if (parts.length < this.strip) {
+                        return false;
+                    }
                     entry.path = parts.slice(this.strip).join("/");
                     if (entry.type === "Link") {
                         const linkparts = normPath(entry.linkpath).split("/");
-                        if (linkparts.length >= this.strip) entry.linkpath = linkparts.slice(this.strip).join("/"); else return false;
+                        if (linkparts.length >= this.strip) {
+                            entry.linkpath = linkparts.slice(this.strip).join("/");
+                        } else {
+                            return false;
+                        }
                     }
                 }
                 if (!this.preservePaths) {
@@ -4472,7 +4906,11 @@ var __webpack_modules__ = {
                         });
                     }
                 }
-                if (path.isAbsolute(entry.path)) entry.absolute = normPath(path.resolve(entry.path)); else entry.absolute = normPath(path.resolve(this.cwd, entry.path));
+                if (path.isAbsolute(entry.path)) {
+                    entry.absolute = normPath(path.resolve(entry.path));
+                } else {
+                    entry.absolute = normPath(path.resolve(this.cwd, entry.path));
+                }
                 if (!this.preservePaths && entry.absolute.indexOf(this.cwd + "/") !== 0 && entry.absolute !== this.cwd) {
                     this.warn("TAR_ENTRY_ERROR", "path escaped extraction target", {
                         entry,
@@ -4482,22 +4920,28 @@ var __webpack_modules__ = {
                     });
                     return false;
                 }
-                if (entry.absolute === this.cwd && entry.type !== "Directory" && entry.type !== "GNUDumpDir") return false;
+                if (entry.absolute === this.cwd && entry.type !== "Directory" && entry.type !== "GNUDumpDir") {
+                    return false;
+                }
                 if (this.win32) {
                     const {root: aRoot} = path.win32.parse(entry.absolute);
-                    entry.absolute = aRoot + wc.encode(entry.absolute.substr(aRoot.length));
+                    entry.absolute = aRoot + wc.encode(entry.absolute.slice(aRoot.length));
                     const {root: pRoot} = path.win32.parse(entry.path);
-                    entry.path = pRoot + wc.encode(entry.path.substr(pRoot.length));
+                    entry.path = pRoot + wc.encode(entry.path.slice(pRoot.length));
                 }
                 return true;
             }
             [ONENTRY](entry) {
-                if (!this[CHECKPATH](entry)) return entry.resume();
+                if (!this[CHECKPATH](entry)) {
+                    return entry.resume();
+                }
                 assert.equal(typeof entry.absolute, "string");
                 switch (entry.type) {
                   case "Directory":
                   case "GNUDumpDir":
-                    if (entry.mode) entry.mode = entry.mode | 448;
+                    if (entry.mode) {
+                        entry.mode = entry.mode | 448;
+                    }
 
                   case "File":
                   case "OldFile":
@@ -4514,7 +4958,9 @@ var __webpack_modules__ = {
                 }
             }
             [ONERROR](er, entry) {
-                if (er.name === "CwdError") this.emit("error", er); else {
+                if (er.name === "CwdError") {
+                    this.emit("error", er);
+                } else {
                     this.warn("TAR_ENTRY_ERROR", er, {
                         entry
                     });
@@ -4554,7 +5000,9 @@ var __webpack_modules__ = {
                     autoClose: false
                 });
                 stream.on("error", (er => {
-                    if (stream.fd) fs.close(stream.fd, (() => {}));
+                    if (stream.fd) {
+                        fs.close(stream.fd, (() => {}));
+                    }
                     stream.write = () => true;
                     this[ONERROR](er, entry);
                     fullyDone();
@@ -4562,14 +5010,20 @@ var __webpack_modules__ = {
                 let actions = 1;
                 const done = er => {
                     if (er) {
-                        if (stream.fd) fs.close(stream.fd, (() => {}));
+                        if (stream.fd) {
+                            fs.close(stream.fd, (() => {}));
+                        }
                         this[ONERROR](er, entry);
                         fullyDone();
                         return;
                     }
                     if (--actions === 0) {
                         fs.close(stream.fd, (er => {
-                            if (er) this[ONERROR](er, entry); else this[UNPEND]();
+                            if (er) {
+                                this[ONERROR](er, entry);
+                            } else {
+                                this[UNPEND]();
+                            }
                             fullyDone();
                         }));
                     }
@@ -4659,11 +5113,17 @@ var __webpack_modules__ = {
             [CHECKFS](entry) {
                 this[PEND]();
                 const paths = [ entry.path ];
-                if (entry.linkpath) paths.push(entry.linkpath);
+                if (entry.linkpath) {
+                    paths.push(entry.linkpath);
+                }
                 this.reservations.reserve(paths, (done => this[CHECKFS2](entry, done)));
             }
             [PRUNECACHE](entry) {
-                if (entry.type === "SymbolicLink") dropCache(this.dirCache); else if (entry.type !== "Directory") pruneCache(this.dirCache, entry.absolute);
+                if (entry.type === "SymbolicLink") {
+                    dropCache(this.dirCache);
+                } else if (entry.type !== "Directory") {
+                    pruneCache(this.dirCache, entry.absolute);
+                }
             }
             [CHECKFS2](entry, fullyDone) {
                 this[PRUNECACHE](entry);
@@ -4705,23 +5165,33 @@ var __webpack_modules__ = {
                             done();
                             return;
                         }
-                        if (lstatEr || this[ISREUSABLE](entry, st)) return this[MAKEFS](null, entry, done);
+                        if (lstatEr || this[ISREUSABLE](entry, st)) {
+                            return this[MAKEFS](null, entry, done);
+                        }
                         if (st.isDirectory()) {
                             if (entry.type === "Directory") {
                                 const needChmod = !this.noChmod && entry.mode && (st.mode & 4095) !== entry.mode;
                                 const afterChmod = er => this[MAKEFS](er, entry, done);
-                                if (!needChmod) return afterChmod();
+                                if (!needChmod) {
+                                    return afterChmod();
+                                }
                                 return fs.chmod(entry.absolute, entry.mode, afterChmod);
                             }
                             if (entry.absolute !== this.cwd) {
                                 return fs.rmdir(entry.absolute, (er => this[MAKEFS](er, entry, done)));
                             }
                         }
-                        if (entry.absolute === this.cwd) return this[MAKEFS](null, entry, done);
+                        if (entry.absolute === this.cwd) {
+                            return this[MAKEFS](null, entry, done);
+                        }
                         unlinkFile(entry.absolute, (er => this[MAKEFS](er, entry, done)));
                     }));
                 };
-                if (this[CHECKED_CWD]) start(); else checkCwd();
+                if (this[CHECKED_CWD]) {
+                    start();
+                } else {
+                    checkCwd();
+                }
             }
             [MAKEFS](er, entry, done) {
                 if (er) {
@@ -4748,7 +5218,9 @@ var __webpack_modules__ = {
             }
             [LINK](entry, linkpath, link, done) {
                 fs[link](linkpath, entry.absolute, (er => {
-                    if (er) this[ONERROR](er, entry); else {
+                    if (er) {
+                        this[ONERROR](er, entry);
+                    } else {
                         this[UNPEND]();
                         entry.resume();
                     }
@@ -4771,19 +5243,27 @@ var __webpack_modules__ = {
                 this[PRUNECACHE](entry);
                 if (!this[CHECKED_CWD]) {
                     const er = this[MKDIR](this.cwd, this.dmode);
-                    if (er) return this[ONERROR](er, entry);
+                    if (er) {
+                        return this[ONERROR](er, entry);
+                    }
                     this[CHECKED_CWD] = true;
                 }
                 if (entry.absolute !== this.cwd) {
                     const parent = normPath(path.dirname(entry.absolute));
                     if (parent !== this.cwd) {
                         const mkParent = this[MKDIR](parent, this.dmode);
-                        if (mkParent) return this[ONERROR](mkParent, entry);
+                        if (mkParent) {
+                            return this[ONERROR](mkParent, entry);
+                        }
                     }
                 }
                 const [lstatEr, st] = callSync((() => fs.lstatSync(entry.absolute)));
-                if (st && (this.keep || this.newer && st.mtime > entry.mtime)) return this[SKIP](entry);
-                if (lstatEr || this[ISREUSABLE](entry, st)) return this[MAKEFS](null, entry);
+                if (st && (this.keep || this.newer && st.mtime > entry.mtime)) {
+                    return this[SKIP](entry);
+                }
+                if (lstatEr || this[ISREUSABLE](entry, st)) {
+                    return this[MAKEFS](null, entry);
+                }
                 if (st.isDirectory()) {
                     if (entry.type === "Directory") {
                         const needChmod = !this.noChmod && entry.mode && (st.mode & 4095) !== entry.mode;
@@ -4807,7 +5287,9 @@ var __webpack_modules__ = {
                     } catch (e) {
                         closeError = e;
                     }
-                    if (er || closeError) this[ONERROR](er || closeError, entry);
+                    if (er || closeError) {
+                        this[ONERROR](er || closeError, entry);
+                    }
                     done();
                 };
                 let fd;
@@ -4917,16 +5399,24 @@ var __webpack_modules__ = {
         const r = __webpack_require__(3666);
         module.exports = (opt_, files, cb) => {
             const opt = hlo(opt_);
-            if (!opt.file) throw new TypeError("file is required");
-            if (opt.gzip) throw new TypeError("cannot append to compressed archives");
-            if (!files || !Array.isArray(files) || !files.length) throw new TypeError("no files or directories specified");
+            if (!opt.file) {
+                throw new TypeError("file is required");
+            }
+            if (opt.gzip) {
+                throw new TypeError("cannot append to compressed archives");
+            }
+            if (!files || !Array.isArray(files) || !files.length) {
+                throw new TypeError("no files or directories specified");
+            }
             files = Array.from(files);
             mtimeFilter(opt);
             return r(opt, files, cb);
         };
         const mtimeFilter = opt => {
             const filter = opt.filter;
-            if (!opt.mtimeCache) opt.mtimeCache = new Map;
+            if (!opt.mtimeCache) {
+                opt.mtimeCache = new Map;
+            }
             opt.filter = filter ? (path, stat) => filter(path, stat) && !(opt.mtimeCache.get(path) > stat.mtime) : (path, stat) => !(opt.mtimeCache.get(path) > stat.mtime);
         };
     },
@@ -4934,8 +5424,12 @@ var __webpack_modules__ = {
         "use strict";
         module.exports = Base => class extends Base {
             warn(code, message, data = {}) {
-                if (this.file) data.file = this.file;
-                if (this.cwd) data.cwd = this.cwd;
+                if (this.file) {
+                    data.file = this.file;
+                }
+                if (this.cwd) {
+                    data.cwd = this.cwd;
+                }
                 data.code = message instanceof Error && message.code || code;
                 data.tarCode = code;
                 if (!this.strict && data.recoverable !== false) {
@@ -4944,7 +5438,11 @@ var __webpack_modules__ = {
                         message = message.message;
                     }
                     this.emit("warn", data.tarCode, message, data);
-                } else if (message instanceof Error) this.emit("error", Object.assign(message, data)); else this.emit("error", Object.assign(new Error(`${code}: ${message}`), data));
+                } else if (message instanceof Error) {
+                    this.emit("error", Object.assign(message, data));
+                } else {
+                    this.emit("error", Object.assign(new Error(`${code}: ${message}`), data));
+                }
             }
         };
     },
@@ -4969,7 +5467,9 @@ var __webpack_modules__ = {
         const normPath = __webpack_require__(4240);
         const stripSlash = __webpack_require__(6401);
         const prefixPath = (path, prefix) => {
-            if (!prefix) return normPath(path);
+            if (!prefix) {
+                return normPath(path);
+            }
             path = normPath(path).replace(/^\.(\/|$)/, "");
             return stripSlash(prefix) + "/" + path;
         };
@@ -5001,7 +5501,9 @@ var __webpack_modules__ = {
             constructor(p, opt) {
                 opt = opt || {};
                 super(opt);
-                if (typeof p !== "string") throw new TypeError("path is required");
+                if (typeof p !== "string") {
+                    throw new TypeError("path is required");
+                }
                 this.path = normPath(p);
                 this.portable = !!opt.portable;
                 this.myuid = process.getuid && process.getuid() || 0;
@@ -5024,7 +5526,9 @@ var __webpack_modules__ = {
                 this.length = null;
                 this.pos = null;
                 this.remain = null;
-                if (typeof opt.onwarn === "function") this.on("warn", opt.onwarn);
+                if (typeof opt.onwarn === "function") {
+                    this.on("warn", opt.onwarn);
+                }
                 let pathWarn = false;
                 if (!this.preservePaths) {
                     const [root, stripped] = stripAbsolutePath(this.path);
@@ -5039,29 +5543,41 @@ var __webpack_modules__ = {
                     p = p.replace(/\\/g, "/");
                 }
                 this.absolute = normPath(opt.absolute || path.resolve(this.cwd, p));
-                if (this.path === "") this.path = "./";
+                if (this.path === "") {
+                    this.path = "./";
+                }
                 if (pathWarn) {
                     this.warn("TAR_ENTRY_INFO", `stripping ${pathWarn} from absolute path`, {
                         entry: this,
                         path: pathWarn + this.path
                     });
                 }
-                if (this.statCache.has(this.absolute)) this[ONLSTAT](this.statCache.get(this.absolute)); else this[LSTAT]();
+                if (this.statCache.has(this.absolute)) {
+                    this[ONLSTAT](this.statCache.get(this.absolute));
+                } else {
+                    this[LSTAT]();
+                }
             }
             emit(ev, ...data) {
-                if (ev === "error") this[HAD_ERROR] = true;
+                if (ev === "error") {
+                    this[HAD_ERROR] = true;
+                }
                 return super.emit(ev, ...data);
             }
             [LSTAT]() {
                 fs.lstat(this.absolute, ((er, stat) => {
-                    if (er) return this.emit("error", er);
+                    if (er) {
+                        return this.emit("error", er);
+                    }
                     this[ONLSTAT](stat);
                 }));
             }
             [ONLSTAT](stat) {
                 this.statCache.set(this.absolute, stat);
                 this.stat = stat;
-                if (!stat.isFile()) stat.size = 0;
+                if (!stat.isFile()) {
+                    stat.size = 0;
+                }
                 this.type = getType(stat);
                 this.emit("stat", stat);
                 this[PROCESS]();
@@ -5088,7 +5604,9 @@ var __webpack_modules__ = {
                 return prefixPath(path, this.prefix);
             }
             [HEADER]() {
-                if (this.type === "Directory" && this.portable) this.noMtime = true;
+                if (this.type === "Directory" && this.portable) {
+                    this.noMtime = true;
+                }
                 this.header = new Header({
                     path: this[PREFIX](this.path),
                     linkpath: this.type === "Link" ? this[PREFIX](this.linkpath) : this.linkpath,
@@ -5121,14 +5639,18 @@ var __webpack_modules__ = {
                 super.write(this.header.block);
             }
             [DIRECTORY]() {
-                if (this.path.substr(-1) !== "/") this.path += "/";
+                if (this.path.slice(-1) !== "/") {
+                    this.path += "/";
+                }
                 this.stat.size = 0;
                 this[HEADER]();
                 this.end();
             }
             [SYMLINK]() {
                 fs.readlink(this.absolute, ((er, linkpath) => {
-                    if (er) return this.emit("error", er);
+                    if (er) {
+                        return this.emit("error", er);
+                    }
                     this[ONREADLINK](linkpath);
                 }));
             }
@@ -5149,23 +5671,31 @@ var __webpack_modules__ = {
                     const linkKey = this.stat.dev + ":" + this.stat.ino;
                     if (this.linkCache.has(linkKey)) {
                         const linkpath = this.linkCache.get(linkKey);
-                        if (linkpath.indexOf(this.cwd) === 0) return this[HARDLINK](linkpath);
+                        if (linkpath.indexOf(this.cwd) === 0) {
+                            return this[HARDLINK](linkpath);
+                        }
                     }
                     this.linkCache.set(linkKey, this.absolute);
                 }
                 this[HEADER]();
-                if (this.stat.size === 0) return this.end();
+                if (this.stat.size === 0) {
+                    return this.end();
+                }
                 this[OPENFILE]();
             }
             [OPENFILE]() {
                 fs.open(this.absolute, "r", ((er, fd) => {
-                    if (er) return this.emit("error", er);
+                    if (er) {
+                        return this.emit("error", er);
+                    }
                     this[ONOPENFILE](fd);
                 }));
             }
             [ONOPENFILE](fd) {
                 this.fd = fd;
-                if (this[HAD_ERROR]) return this[CLOSE]();
+                if (this[HAD_ERROR]) {
+                    return this[CLOSE]();
+                }
                 this.blockLen = 512 * Math.ceil(this.stat.size / 512);
                 this.blockRemain = this.blockLen;
                 const bufLen = Math.min(this.blockLen, this.maxReadSize);
@@ -5212,7 +5742,11 @@ var __webpack_modules__ = {
                 }
                 const writeBuf = this.offset === 0 && bytesRead === this.buf.length ? this.buf : this.buf.slice(this.offset, this.offset + bytesRead);
                 const flushed = this.write(writeBuf);
-                if (!flushed) this[AWAITDRAIN]((() => this[ONDRAIN]())); else this[ONDRAIN]();
+                if (!flushed) {
+                    this[AWAITDRAIN]((() => this[ONDRAIN]()));
+                } else {
+                    this[ONDRAIN]();
+                }
             }
             [AWAITDRAIN](cb) {
                 this.once("drain", cb);
@@ -5231,7 +5765,9 @@ var __webpack_modules__ = {
             }
             [ONDRAIN]() {
                 if (!this.remain) {
-                    if (this.blockRemain) super.write(Buffer.alloc(this.blockRemain));
+                    if (this.blockRemain) {
+                        super.write(Buffer.alloc(this.blockRemain));
+                    }
                     return this[CLOSE]((er => er ? this.emit("error", er) : this.end()));
                 }
                 if (this.offset >= this.length) {
@@ -5286,7 +5822,9 @@ var __webpack_modules__ = {
                 this.noMtime = !!opt.noMtime;
                 this.readEntry = readEntry;
                 this.type = readEntry.type;
-                if (this.type === "Directory" && this.portable) this.noMtime = true;
+                if (this.type === "Directory" && this.portable) {
+                    this.noMtime = true;
+                }
                 this.prefix = opt.prefix || null;
                 this.path = normPath(readEntry.path);
                 this.mode = this[MODE](readEntry.mode);
@@ -5299,7 +5837,9 @@ var __webpack_modules__ = {
                 this.atime = this.portable ? null : readEntry.atime;
                 this.ctime = this.portable ? null : readEntry.ctime;
                 this.linkpath = normPath(readEntry.linkpath);
-                if (typeof opt.onwarn === "function") this.on("warn", opt.onwarn);
+                if (typeof opt.onwarn === "function") {
+                    this.on("warn", opt.onwarn);
+                }
                 let pathWarn = false;
                 if (!this.preservePaths) {
                     const [root, stripped] = stripAbsolutePath(this.path);
@@ -5356,12 +5896,16 @@ var __webpack_modules__ = {
             }
             write(data) {
                 const writeLen = data.length;
-                if (writeLen > this.blockRemain) throw new Error("writing more to entry than is appropriate");
+                if (writeLen > this.blockRemain) {
+                    throw new Error("writing more to entry than is appropriate");
+                }
                 this.blockRemain -= writeLen;
                 return super.write(data);
             }
             end() {
-                if (this.blockRemain) super.write(Buffer.alloc(this.blockRemain));
+                if (this.blockRemain) {
+                    super.write(Buffer.alloc(this.blockRemain));
+                }
                 return super.end();
             }
         });
@@ -16220,7 +16764,7 @@ var __webpack_modules__ = {
     },
     4147: module => {
         "use strict";
-        module.exports = JSON.parse('{"name":"@jsii/runtime","version":"1.70.0","description":"jsii runtime kernel process","license":"Apache-2.0","author":{"name":"Amazon Web Services","url":"https://aws.amazon.com"},"homepage":"https://github.com/aws/jsii","bugs":{"url":"https://github.com/aws/jsii/issues"},"repository":{"type":"git","url":"https://github.com/aws/jsii.git","directory":"packages/@jsii/runtime"},"engines":{"node":">= 14.6.0"},"main":"lib/index.js","types":"lib/index.d.ts","bin":{"jsii-runtime":"bin/jsii-runtime"},"scripts":{"build":"tsc --build && chmod +x bin/jsii-runtime && npx webpack-cli && npm run lint","watch":"tsc --build -w","lint":"eslint . --ext .js,.ts --ignore-path=.gitignore --ignore-pattern=webpack.config.js","lint:fix":"yarn lint --fix","test":"jest","test:update":"jest -u","package":"package-js"},"dependencies":{"@jsii/kernel":"^1.70.0","@jsii/check-node":"1.70.0","@jsii/spec":"^1.70.0"},"devDependencies":{"@scope/jsii-calc-base":"^1.70.0","@scope/jsii-calc-lib":"^1.70.0","jsii-build-tools":"^1.70.0","jsii-calc":"^3.20.120","source-map-loader":"^4.0.1","webpack":"^5.74.0","webpack-cli":"^4.10.0"}}');
+        module.exports = JSON.parse('{"name":"@jsii/runtime","version":"1.71.0","description":"jsii runtime kernel process","license":"Apache-2.0","author":{"name":"Amazon Web Services","url":"https://aws.amazon.com"},"homepage":"https://github.com/aws/jsii","bugs":{"url":"https://github.com/aws/jsii/issues"},"repository":{"type":"git","url":"https://github.com/aws/jsii.git","directory":"packages/@jsii/runtime"},"engines":{"node":">= 14.6.0"},"main":"lib/index.js","types":"lib/index.d.ts","bin":{"jsii-runtime":"bin/jsii-runtime"},"scripts":{"build":"tsc --build && chmod +x bin/jsii-runtime && npx webpack-cli && npm run lint","watch":"tsc --build -w","lint":"eslint . --ext .js,.ts --ignore-path=.gitignore --ignore-pattern=webpack.config.js","lint:fix":"yarn lint --fix","test":"jest","test:update":"jest -u","package":"package-js"},"dependencies":{"@jsii/kernel":"^1.71.0","@jsii/check-node":"1.71.0","@jsii/spec":"^1.71.0"},"devDependencies":{"@scope/jsii-calc-base":"^1.71.0","@scope/jsii-calc-lib":"^1.71.0","jsii-build-tools":"^1.71.0","jsii-calc":"^3.20.120","source-map-loader":"^4.0.1","webpack":"^5.74.0","webpack-cli":"^4.10.0"}}');
     },
     5277: module => {
         "use strict";
