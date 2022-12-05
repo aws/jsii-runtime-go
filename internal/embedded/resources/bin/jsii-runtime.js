@@ -3754,8 +3754,7 @@ var __webpack_modules__ = {
         }), new NodeRelease(18, {
             endOfLife: new Date("2025-04-30")
         }), new NodeRelease(19, {
-            endOfLife: new Date("2023-06-01"),
-            untested: true
+            endOfLife: new Date("2023-06-01")
         }), new NodeRelease(20, {
             endOfLife: new Date("2026-04-30"),
             untested: true
@@ -3771,24 +3770,32 @@ var __webpack_modules__ = {
         const console_1 = __webpack_require__(6206);
         const process_1 = __webpack_require__(7282);
         const constants_1 = __webpack_require__(6829);
-        function checkNode() {
+        function checkNode(envPrefix = "JSII") {
             const {nodeRelease, knownBroken} = constants_1.NodeRelease.forThisRuntime();
+            const defaultCallToAction = "Should you encounter odd runtime issues, please try using one of the supported release before filing a bug report.";
             if (nodeRelease === null || nodeRelease === void 0 ? void 0 : nodeRelease.endOfLife) {
                 const qualifier = nodeRelease.endOfLifeDate ? ` on ${nodeRelease.endOfLifeDate.toISOString().slice(0, 10)}` : "";
                 veryVisibleMessage(chalk_1.bgRed.white.bold, `Node ${nodeRelease.majorVersion} has reached end-of-life${qualifier} and is not supported.`, `Please upgrade to a supported node version as soon as possible.`);
             } else if (knownBroken) {
-                veryVisibleMessage(chalk_1.bgRed.white.bold, `Node ${process_1.version} is unsupported and has known compatibility issues with this software.`);
+                const silenceVariable = `${envPrefix}_SILENCE_WARNING_KNOWN_BROKEN_NODE_VERSION`;
+                if (!process.env[silenceVariable]) veryVisibleMessage(chalk_1.bgRed.white.bold, `Node ${process_1.version} is unsupported and has known compatibility issues with this software.`, defaultCallToAction, silenceVariable);
             } else if (!nodeRelease || nodeRelease.untested) {
-                veryVisibleMessage(chalk_1.bgYellow.black, `This software has not been tested with node ${process_1.version}.`);
+                const silenceVariable = `${envPrefix}_SILENCE_WARNING_UNTESTED_NODE_VERSION`;
+                if (!process.env[silenceVariable]) {
+                    veryVisibleMessage(chalk_1.bgYellow.black, `This software has not been tested with node ${process_1.version}.`, defaultCallToAction, silenceVariable);
+                }
             } else if (nodeRelease === null || nodeRelease === void 0 ? void 0 : nodeRelease.deprecated) {
-                const deadline = nodeRelease.endOfLifeDate.toISOString().slice(0, 10);
-                veryVisibleMessage(chalk_1.bgYellowBright.black, `Node ${nodeRelease.majorVersion} is approaching end-of-life and will no longer be supported in new releases after ${deadline}.`, `Please upgrade to a supported node version as soon as possible.`);
+                const silenceVariable = `${envPrefix}_SILENCE_WARNING_DEPRECATED_NODE_VERSION`;
+                if (!process.env[silenceVariable]) {
+                    const deadline = nodeRelease.endOfLifeDate.toISOString().slice(0, 10);
+                    veryVisibleMessage(chalk_1.bgYellowBright.black, `Node ${nodeRelease.majorVersion} is approaching end-of-life and will no longer be supported in new releases after ${deadline}.`, `Please upgrade to a supported node version as soon as possible.`, silenceVariable);
+                }
             }
-            function veryVisibleMessage(chalk, message, callToAction = "You may to encounter runtime issues, and should switch to a supported release.") {
+            function veryVisibleMessage(chalk, message, callToAction, silenceVariable) {
                 const lines = [ message, callToAction, "", `This software is currently running on node ${process_1.version}.`, "As of the current release of this software, supported node releases are:", ...constants_1.NodeRelease.ALL_RELEASES.filter((release => release.supported)).sort(((l, r) => {
                     var _a, _b, _c, _d;
                     return ((_b = (_a = r.endOfLifeDate) === null || _a === void 0 ? void 0 : _a.getTime()) !== null && _b !== void 0 ? _b : 0) - ((_d = (_c = l.endOfLifeDate) === null || _c === void 0 ? void 0 : _c.getTime()) !== null && _d !== void 0 ? _d : 0);
-                })).map((release => `- ${release.toString()}${release.deprecated ? " [DEPRECATED]" : ""}`)) ];
+                })).map((release => `- ${release.toString()}${release.deprecated ? " [DEPRECATED]" : ""}`)), ...silenceVariable ? [ "", `This warning can be silenced by setting the ${silenceVariable} environment variable.` ] : [] ];
                 const len = Math.max(...lines.map((l => l.length)));
                 const border = chalk("!".repeat(len + 8));
                 const spacer = chalk(`!!  ${" ".repeat(len)}  !!`);
