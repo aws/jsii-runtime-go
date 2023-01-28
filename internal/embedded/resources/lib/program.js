@@ -14253,7 +14253,7 @@ var __webpack_modules__ = {
                     strictTypesError(it, `type "${t}" not allowed by context "${it.dataTypes.join(",")}"`);
                 }
             }));
-            it.dataTypes = it.dataTypes.filter((t => includesType(types, t)));
+            narrowSchemaTypes(it, types);
         }
         function checkMultipleTypes(it, ts) {
             if (ts.length > 1 && !(ts.length === 2 && ts.includes("null"))) {
@@ -14277,6 +14277,13 @@ var __webpack_modules__ = {
         }
         function includesType(ts, t) {
             return ts.includes(t) || t === "integer" && ts.includes("number");
+        }
+        function narrowSchemaTypes(it, withTypes) {
+            const ts = [];
+            for (const t of it.dataTypes) {
+                if (includesType(withTypes, t)) ts.push(t); else if (withTypes.includes("integer") && t === "number") ts.push("integer");
+            }
+            it.dataTypes = ts;
         }
         function strictTypesError(it, msg) {
             const schemaPath = it.schemaEnv.baseId + it.errSchemaPath;
@@ -17243,7 +17250,7 @@ var __webpack_modules__ = {
     },
     4147: module => {
         "use strict";
-        module.exports = JSON.parse('{"name":"@jsii/runtime","version":"1.73.0","description":"jsii runtime kernel process","license":"Apache-2.0","author":{"name":"Amazon Web Services","url":"https://aws.amazon.com"},"homepage":"https://github.com/aws/jsii","bugs":{"url":"https://github.com/aws/jsii/issues"},"repository":{"type":"git","url":"https://github.com/aws/jsii.git","directory":"packages/@jsii/runtime"},"engines":{"node":">= 14.6.0"},"main":"lib/index.js","types":"lib/index.d.ts","bin":{"jsii-runtime":"bin/jsii-runtime"},"scripts":{"build":"tsc --build && chmod +x bin/jsii-runtime && npx webpack-cli && npm run lint","watch":"tsc --build -w","lint":"eslint . --ext .js,.ts --ignore-path=.gitignore --ignore-pattern=webpack.config.js","lint:fix":"yarn lint --fix","test":"jest","test:update":"jest -u","package":"package-js"},"dependencies":{"@jsii/kernel":"^1.73.0","@jsii/check-node":"1.73.0","@jsii/spec":"^1.73.0"},"devDependencies":{"@scope/jsii-calc-base":"^1.73.0","@scope/jsii-calc-lib":"^1.73.0","jsii-build-tools":"^1.73.0","jsii-calc":"^3.20.120","source-map-loader":"^4.0.1","webpack":"^5.75.0","webpack-cli":"^5.0.1"}}');
+        module.exports = JSON.parse('{"name":"@jsii/runtime","version":"1.74.0","description":"jsii runtime kernel process","license":"Apache-2.0","author":{"name":"Amazon Web Services","url":"https://aws.amazon.com"},"homepage":"https://github.com/aws/jsii","bugs":{"url":"https://github.com/aws/jsii/issues"},"repository":{"type":"git","url":"https://github.com/aws/jsii.git","directory":"packages/@jsii/runtime"},"engines":{"node":">= 14.6.0"},"main":"lib/index.js","types":"lib/index.d.ts","bin":{"jsii-runtime":"bin/jsii-runtime"},"scripts":{"build":"tsc --build && chmod +x bin/jsii-runtime && npx webpack-cli && npm run lint","watch":"tsc --build -w","lint":"eslint . --ext .js,.ts --ignore-path=.gitignore --ignore-pattern=webpack.config.js","lint:fix":"yarn lint --fix","test":"jest","test:update":"jest -u","package":"package-js"},"dependencies":{"@jsii/kernel":"^1.74.0","@jsii/check-node":"1.74.0","@jsii/spec":"^1.74.0"},"devDependencies":{"@scope/jsii-calc-base":"^1.74.0","@scope/jsii-calc-lib":"^1.74.0","jsii-build-tools":"^1.74.0","jsii-calc":"^3.20.120","source-map-loader":"^4.0.1","webpack":"^5.75.0","webpack-cli":"^5.0.1"}}');
     },
     5277: module => {
         "use strict";
