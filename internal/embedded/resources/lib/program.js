@@ -5944,6 +5944,7 @@ var __webpack_modules__ = {
         const BUFFERSHIFT = Symbol("bufferShift");
         const OBJECTMODE = Symbol("objectMode");
         const DESTROYED = Symbol("destroyed");
+        const ERROR = Symbol("error");
         const EMITDATA = Symbol("emitData");
         const EMITEND = Symbol("emitEnd");
         const EMITEND2 = Symbol("emitEnd2");
@@ -6215,6 +6216,7 @@ var __webpack_modules__ = {
                     return ret;
                 } else if (ev === "error") {
                     this[EMITTED_ERROR] = data;
+                    super.emit(ERROR, data);
                     const ret = super.emit("error", data);
                     this[MAYBE_EMIT_END]();
                     return ret;
@@ -6283,20 +6285,28 @@ var __webpack_modules__ = {
                 }));
             }
             [ASYNCITERATOR]() {
+                let stopped = false;
+                const stop = () => {
+                    this.pause();
+                    stopped = true;
+                    return Promise.resolve({
+                        done: true
+                    });
+                };
                 const next = () => {
+                    if (stopped) return stop();
                     const res = this.read();
                     if (res !== null) return Promise.resolve({
                         done: false,
                         value: res
                     });
-                    if (this[EOF]) return Promise.resolve({
-                        done: true
-                    });
+                    if (this[EOF]) return stop();
                     let resolve = null;
                     let reject = null;
                     const onerr = er => {
                         this.removeListener("data", ondata);
                         this.removeListener("end", onend);
+                        stop();
                         reject(er);
                     };
                     const ondata = value => {
@@ -6311,6 +6321,7 @@ var __webpack_modules__ = {
                     const onend = () => {
                         this.removeListener("error", onerr);
                         this.removeListener("data", ondata);
+                        stop();
                         resolve({
                             done: true
                         });
@@ -6326,20 +6337,41 @@ var __webpack_modules__ = {
                     }));
                 };
                 return {
-                    next
+                    next,
+                    throw: stop,
+                    return: stop,
+                    [ASYNCITERATOR]() {
+                        return this;
+                    }
                 };
             }
             [ITERATOR]() {
-                const next = () => {
-                    const value = this.read();
-                    const done = value === null;
+                let stopped = false;
+                const stop = () => {
+                    this.pause();
+                    this.removeListener(ERROR, stop);
+                    this.removeListener("end", stop);
+                    stopped = true;
                     return {
-                        value,
-                        done
+                        done: true
                     };
                 };
+                const next = () => {
+                    if (stopped) return stop();
+                    const value = this.read();
+                    return value === null ? stop() : {
+                        value
+                    };
+                };
+                this.once("end", stop);
+                this.once(ERROR, stop);
                 return {
-                    next
+                    next,
+                    throw: stop,
+                    return: stop,
+                    [ITERATOR]() {
+                        return this;
+                    }
                 };
             }
             destroy(er) {
@@ -17250,7 +17282,7 @@ var __webpack_modules__ = {
     },
     4147: module => {
         "use strict";
-        module.exports = JSON.parse('{"name":"@jsii/runtime","version":"1.74.0","description":"jsii runtime kernel process","license":"Apache-2.0","author":{"name":"Amazon Web Services","url":"https://aws.amazon.com"},"homepage":"https://github.com/aws/jsii","bugs":{"url":"https://github.com/aws/jsii/issues"},"repository":{"type":"git","url":"https://github.com/aws/jsii.git","directory":"packages/@jsii/runtime"},"engines":{"node":">= 14.6.0"},"main":"lib/index.js","types":"lib/index.d.ts","bin":{"jsii-runtime":"bin/jsii-runtime"},"scripts":{"build":"tsc --build && chmod +x bin/jsii-runtime && npx webpack-cli && npm run lint","watch":"tsc --build -w","lint":"eslint . --ext .js,.ts --ignore-path=.gitignore --ignore-pattern=webpack.config.js","lint:fix":"yarn lint --fix","test":"jest","test:update":"jest -u","package":"package-js"},"dependencies":{"@jsii/kernel":"^1.74.0","@jsii/check-node":"1.74.0","@jsii/spec":"^1.74.0"},"devDependencies":{"@scope/jsii-calc-base":"^1.74.0","@scope/jsii-calc-lib":"^1.74.0","jsii-build-tools":"^1.74.0","jsii-calc":"^3.20.120","source-map-loader":"^4.0.1","webpack":"^5.75.0","webpack-cli":"^5.0.1"}}');
+        module.exports = JSON.parse('{"name":"@jsii/runtime","version":"1.75.0","description":"jsii runtime kernel process","license":"Apache-2.0","author":{"name":"Amazon Web Services","url":"https://aws.amazon.com"},"homepage":"https://github.com/aws/jsii","bugs":{"url":"https://github.com/aws/jsii/issues"},"repository":{"type":"git","url":"https://github.com/aws/jsii.git","directory":"packages/@jsii/runtime"},"engines":{"node":">= 14.6.0"},"main":"lib/index.js","types":"lib/index.d.ts","bin":{"jsii-runtime":"bin/jsii-runtime"},"scripts":{"build":"tsc --build && chmod +x bin/jsii-runtime && npx webpack-cli && npm run lint","watch":"tsc --build -w","lint":"eslint . --ext .js,.ts --ignore-path=.gitignore --ignore-pattern=webpack.config.js","lint:fix":"yarn lint --fix","test":"jest","test:update":"jest -u","package":"package-js"},"dependencies":{"@jsii/kernel":"^1.75.0","@jsii/check-node":"1.75.0","@jsii/spec":"^1.75.0"},"devDependencies":{"@scope/jsii-calc-base":"^1.75.0","@scope/jsii-calc-lib":"^1.75.0","jsii-build-tools":"^1.75.0","jsii-calc":"^3.20.120","source-map-loader":"^4.0.1","webpack":"^5.75.0","webpack-cli":"^5.0.1"}}');
     },
     5277: module => {
         "use strict";
