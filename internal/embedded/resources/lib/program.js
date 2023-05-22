@@ -4864,7 +4864,7 @@ var __webpack_modules__ = {
         const {hasOwnProperty} = Object.prototype;
         module.exports = s => {
             if (!hasOwnProperty.call(normalizeCache, s)) {
-                normalizeCache[s] = s.normalize("NFKD");
+                normalizeCache[s] = s.normalize("NFD");
             }
             return normalizeCache[s];
         };
@@ -4887,7 +4887,7 @@ var __webpack_modules__ = {
                 this.piped = false;
             }
         }
-        const MiniPass = __webpack_require__(3201);
+        const {Minipass} = __webpack_require__(3201);
         const zlib = __webpack_require__(3704);
         const ReadEntry = __webpack_require__(7847);
         const WriteEntry = __webpack_require__(8418);
@@ -4919,7 +4919,7 @@ var __webpack_modules__ = {
         const path = __webpack_require__(4822);
         const warner = __webpack_require__(8783);
         const normPath = __webpack_require__(4240);
-        const Pack = warner(class Pack extends MiniPass {
+        const Pack = warner(class Pack extends Minipass {
             constructor(opt) {
                 super(opt);
                 opt = opt || Object.create(null);
@@ -5717,7 +5717,7 @@ var __webpack_modules__ = {
                 return true;
             };
             const reserve = (paths, fn) => {
-                paths = isWindows ? [ "win32 parallelization disabled" ] : paths.map((p => normalize(stripSlashes(join(p))).toLowerCase()));
+                paths = isWindows ? [ "win32 parallelization disabled" ] : paths.map((p => stripSlashes(join(normalize(p))).toLowerCase()));
                 const dirs = new Set(paths.map((path => getDirs(path))).reduce(((a, b) => a.concat(b))));
                 reservations.set(fn, {
                     dirs,
@@ -5845,10 +5845,10 @@ var __webpack_modules__ = {
     },
     7847: (module, __unused_webpack_exports, __webpack_require__) => {
         "use strict";
-        const MiniPass = __webpack_require__(3201);
+        const {Minipass} = __webpack_require__(3201);
         const normPath = __webpack_require__(4240);
         const SLURP = Symbol("slurp");
-        module.exports = class ReadEntry extends MiniPass {
+        module.exports = class ReadEntry extends Minipass {
             constructor(header, ex, gex) {
                 super();
                 this.pause();
@@ -6226,7 +6226,7 @@ var __webpack_modules__ = {
             fs.unlinkSync(name);
         };
         const uint32 = (a, b, c) => a === a >>> 0 ? a : b === b >>> 0 ? b : c;
-        const cacheKeyNormalize = path => normalize(stripSlash(normPath(path))).toLowerCase();
+        const cacheKeyNormalize = path => stripSlash(normPath(normalize(path))).toLowerCase();
         const pruneCache = (cache, abs) => {
             abs = cacheKeyNormalize(abs);
             for (const path of cache.keys()) {
@@ -6897,7 +6897,7 @@ var __webpack_modules__ = {
     },
     8418: (module, __unused_webpack_exports, __webpack_require__) => {
         "use strict";
-        const MiniPass = __webpack_require__(3201);
+        const {Minipass} = __webpack_require__(3201);
         const Pax = __webpack_require__(9154);
         const Header = __webpack_require__(5017);
         const fs = __webpack_require__(7147);
@@ -6935,7 +6935,7 @@ var __webpack_modules__ = {
         const winchars = __webpack_require__(6564);
         const stripAbsolutePath = __webpack_require__(6014);
         const modeFix = __webpack_require__(9574);
-        const WriteEntry = warner(class WriteEntry extends MiniPass {
+        const WriteEntry = warner(class WriteEntry extends Minipass {
             constructor(p, opt) {
                 opt = opt || {};
                 super(opt);
@@ -7249,7 +7249,7 @@ var __webpack_modules__ = {
                 cb();
             }
         }
-        const WriteEntryTar = warner(class WriteEntryTar extends MiniPass {
+        const WriteEntryTar = warner(class WriteEntryTar extends Minipass {
             constructor(readEntry, opt) {
                 opt = opt || {};
                 super(opt);
@@ -7352,7 +7352,7 @@ var __webpack_modules__ = {
         const getType = stat => stat.isFile() ? "File" : stat.isDirectory() ? "Directory" : stat.isSymbolicLink() ? "SymbolicLink" : "Unsupported";
         module.exports = WriteEntry;
     },
-    3201: (module, __unused_webpack_exports, __webpack_require__) => {
+    3201: (__unused_webpack_module, exports, __webpack_require__) => {
         "use strict";
         const proc = typeof process === "object" && process ? process : {
             stdout: null,
@@ -7854,7 +7854,7 @@ var __webpack_modules__ = {
                 return !!s && (s instanceof Minipass || s instanceof Stream || s instanceof EE && (typeof s.pipe === "function" || typeof s.write === "function" && typeof s.end === "function"));
             }
         }
-        module.exports = Minipass;
+        exports.Minipass = Minipass;
     },
     3459: (__unused_webpack_module, exports) => {
         "use strict";
@@ -17312,7 +17312,7 @@ var __webpack_modules__ = {
     },
     4147: module => {
         "use strict";
-        module.exports = JSON.parse('{"name":"@jsii/runtime","version":"1.81.0","description":"jsii runtime kernel process","license":"Apache-2.0","author":{"name":"Amazon Web Services","url":"https://aws.amazon.com"},"homepage":"https://github.com/aws/jsii","bugs":{"url":"https://github.com/aws/jsii/issues"},"repository":{"type":"git","url":"https://github.com/aws/jsii.git","directory":"packages/@jsii/runtime"},"engines":{"node":">= 14.6.0"},"main":"lib/index.js","types":"lib/index.d.ts","bin":{"jsii-runtime":"bin/jsii-runtime"},"scripts":{"build":"tsc --build && chmod +x bin/jsii-runtime && npx webpack-cli && npm run lint","watch":"tsc --build -w","lint":"eslint . --ext .js,.ts --ignore-path=.gitignore --ignore-pattern=webpack.config.js","lint:fix":"yarn lint --fix","test":"jest","test:update":"jest -u","package":"package-js"},"dependencies":{"@jsii/kernel":"^1.81.0","@jsii/check-node":"1.81.0","@jsii/spec":"^1.81.0"},"devDependencies":{"@scope/jsii-calc-base":"^1.81.0","@scope/jsii-calc-lib":"^1.81.0","jsii-build-tools":"^1.81.0","jsii-calc":"^3.20.120","source-map-loader":"^4.0.1","webpack":"^5.79.0","webpack-cli":"^5.0.1"}}');
+        module.exports = JSON.parse('{"name":"@jsii/runtime","version":"1.82.0","description":"jsii runtime kernel process","license":"Apache-2.0","author":{"name":"Amazon Web Services","url":"https://aws.amazon.com"},"homepage":"https://github.com/aws/jsii","bugs":{"url":"https://github.com/aws/jsii/issues"},"repository":{"type":"git","url":"https://github.com/aws/jsii.git","directory":"packages/@jsii/runtime"},"engines":{"node":">= 14.6.0"},"main":"lib/index.js","types":"lib/index.d.ts","bin":{"jsii-runtime":"bin/jsii-runtime"},"scripts":{"build":"tsc --build && chmod +x bin/jsii-runtime && npx webpack-cli && npm run lint","watch":"tsc --build -w","lint":"eslint . --ext .js,.ts --ignore-path=.gitignore --ignore-pattern=webpack.config.js","lint:fix":"yarn lint --fix","test":"jest","test:update":"jest -u","package":"package-js"},"dependencies":{"@jsii/kernel":"^1.82.0","@jsii/check-node":"1.82.0","@jsii/spec":"^1.82.0"},"devDependencies":{"@scope/jsii-calc-base":"^1.82.0","@scope/jsii-calc-lib":"^1.82.0","jsii-build-tools":"^1.82.0","jsii-calc":"^3.20.120","source-map-loader":"^4.0.1","webpack":"^5.82.1","webpack-cli":"^5.1.1"}}');
     },
     5277: module => {
         "use strict";

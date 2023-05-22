@@ -1905,7 +1905,7 @@ var __webpack_modules__ = {
                         version = version.version;
                     }
                 } else if (typeof version !== "string") {
-                    throw new TypeError(`Invalid Version: ${__webpack_require__(3837).inspect(version)}`);
+                    throw new TypeError(`Invalid version. Must be a string. Got type "${typeof version}".`);
                 }
                 if (version.length > MAX_LENGTH) {
                     throw new TypeError(`version is longer than ${MAX_LENGTH} characters`);
@@ -3887,10 +3887,6 @@ var __webpack_modules__ = {
     6224: module => {
         "use strict";
         module.exports = require("tty");
-    },
-    3837: module => {
-        "use strict";
-        module.exports = require("util");
     }
 };
 

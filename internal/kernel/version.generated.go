@@ -1,3 +1,3 @@
 package kernel
 
-const version = "1.81.0"
+const version = "1.82.0"
