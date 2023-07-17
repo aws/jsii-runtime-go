@@ -1463,6 +1463,7 @@ var __webpack_modules__ = {
                         comp = comp.value;
                     }
                 }
+                comp = comp.trim().split(/\s+/).join(" ");
                 debug("comparator", comp, options);
                 this.options = options;
                 this.loose = !!options.loose;
@@ -1549,7 +1550,7 @@ var __webpack_modules__ = {
         }
         module.exports = Comparator;
         const parseOptions = __webpack_require__(3867);
-        const {re, t} = __webpack_require__(9541);
+        const {safeRe: re, t} = __webpack_require__(9541);
         const cmp = __webpack_require__(1918);
         const debug = __webpack_require__(5432);
         const SemVer = __webpack_require__(3013);
@@ -1575,10 +1576,10 @@ var __webpack_modules__ = {
                 this.options = options;
                 this.loose = !!options.loose;
                 this.includePrerelease = !!options.includePrerelease;
-                this.raw = range;
-                this.set = range.split("||").map((r => this.parseRange(r.trim()))).filter((c => c.length));
+                this.raw = range.trim().split(/\s+/).join(" ");
+                this.set = this.raw.split("||").map((r => this.parseRange(r))).filter((c => c.length));
                 if (!this.set.length) {
-                    throw new TypeError(`Invalid SemVer Range: ${range}`);
+                    throw new TypeError(`Invalid SemVer Range: ${this.raw}`);
                 }
                 if (this.set.length > 1) {
                     const first = this.set[0];
@@ -1604,7 +1605,6 @@ var __webpack_modules__ = {
                 return this.range;
             }
             parseRange(range) {
-                range = range.trim();
                 const memoOpts = (this.options.includePrerelease && FLAG_INCLUDE_PRERELEASE) | (this.options.loose && FLAG_LOOSE);
                 const memoKey = memoOpts + ":" + range;
                 const cached = cache.get(memoKey);
@@ -1619,7 +1619,6 @@ var __webpack_modules__ = {
                 debug("comparator trim", range);
                 range = range.replace(re[t.TILDETRIM], tildeTrimReplace);
                 range = range.replace(re[t.CARETTRIM], caretTrimReplace);
-                range = range.split(/\s+/).join(" ");
                 let rangeList = range.split(" ").map((comp => parseComparator(comp, this.options))).join(" ").split(/\s+/).map((comp => replaceGTE0(comp, this.options)));
                 if (loose) {
                     rangeList = rangeList.filter((comp => {
@@ -1677,7 +1676,7 @@ var __webpack_modules__ = {
         const Comparator = __webpack_require__(7706);
         const debug = __webpack_require__(5432);
         const SemVer = __webpack_require__(3013);
-        const {re, t, comparatorTrimReplace, tildeTrimReplace, caretTrimReplace} = __webpack_require__(9541);
+        const {safeRe: re, t, comparatorTrimReplace, tildeTrimReplace, caretTrimReplace} = __webpack_require__(9541);
         const {FLAG_INCLUDE_PRERELEASE, FLAG_LOOSE} = __webpack_require__(9041);
         const isNullSet = c => c.value === "<0.0.0-0";
         const isAny = c => c.value === "";
@@ -1892,7 +1891,7 @@ var __webpack_modules__ = {
     3013: (module, __unused_webpack_exports, __webpack_require__) => {
         const debug = __webpack_require__(5432);
         const {MAX_LENGTH, MAX_SAFE_INTEGER} = __webpack_require__(9041);
-        const {re, t} = __webpack_require__(9541);
+        const {safeRe: re, t} = __webpack_require__(9541);
         const parseOptions = __webpack_require__(3867);
         const {compareIdentifiers} = __webpack_require__(3650);
         class SemVer {
@@ -2123,8 +2122,10 @@ var __webpack_modules__ = {
                   default:
                     throw new Error(`invalid increment argument: ${release}`);
                 }
-                this.format();
-                this.raw = this.version;
+                this.raw = this.format();
+                if (this.build.length) {
+                    this.raw += `+${this.build.join(".")}`;
+                }
                 return this;
             }
         }
@@ -2194,7 +2195,7 @@ var __webpack_modules__ = {
     4115: (module, __unused_webpack_exports, __webpack_require__) => {
         const SemVer = __webpack_require__(3013);
         const parse = __webpack_require__(7507);
-        const {re, t} = __webpack_require__(9541);
+        const {safeRe: re, t} = __webpack_require__(9541);
         const coerce = (version, options) => {
             if (version instanceof SemVer) {
                 return version;
@@ -2258,6 +2259,19 @@ var __webpack_modules__ = {
             const highVersion = v1Higher ? v1 : v2;
             const lowVersion = v1Higher ? v2 : v1;
             const highHasPre = !!highVersion.prerelease.length;
+            const lowHasPre = !!lowVersion.prerelease.length;
+            if (lowHasPre && !highHasPre) {
+                if (!lowVersion.patch && !lowVersion.minor) {
+                    return "major";
+                }
+                if (highVersion.patch) {
+                    return "patch";
+                }
+                if (highVersion.minor) {
+                    return "minor";
+                }
+                return "major";
+            }
             const prefix = highHasPre ? "pre" : "";
             if (v1.major !== v2.major) {
                 return prefix + "major";
@@ -2268,16 +2282,7 @@ var __webpack_modules__ = {
             if (v1.patch !== v2.patch) {
                 return prefix + "patch";
             }
-            if (highHasPre) {
-                return "prerelease";
-            }
-            if (lowVersion.patch) {
-                return "patch";
-            }
-            if (lowVersion.minor) {
-                return "minor";
-            }
-            return "major";
+            return "prerelease";
         };
         module.exports = diff;
     },
@@ -2550,15 +2555,18 @@ var __webpack_modules__ = {
         const debug = __webpack_require__(5432);
         exports = module.exports = {};
         const re = exports.re = [];
+        const safeRe = exports.safeRe = [];
         const src = exports.src = [];
         const t = exports.t = {};
         let R = 0;
         const createToken = (name, value, isGlobal) => {
+            const safe = value.split("\\s*").join("\\s{0,1}").split("\\s+").join("\\s");
             const index = R++;
             debug(name, index, value);
             t[name] = index;
             src[index] = value;
             re[index] = new RegExp(value, isGlobal ? "g" : undefined);
+            safeRe[index] = new RegExp(safe, isGlobal ? "g" : undefined);
         };
         createToken("NUMERICIDENTIFIER", "0|[1-9]\\d*");
         createToken("NUMERICIDENTIFIERLOOSE", "[0-9]+");
