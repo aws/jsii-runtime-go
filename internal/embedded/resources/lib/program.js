@@ -9328,7 +9328,7 @@ var __webpack_modules__ = {
             if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
             return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
         };
-        var _DiskCache_root;
+        var _DiskCache_instances, _a, _DiskCache_CACHE, _DiskCache_root, _DiskCache_entries, _Entry_instances, _Entry_lockFile_get, _Entry_markerFile_get;
         Object.defineProperty(exports, "__esModule", {
             value: true
         });
@@ -9342,6 +9342,7 @@ var __webpack_modules__ = {
         const PRUNE_AFTER_MILLISECONDS = process.env.JSII_RUNTIME_PACKAGE_CACHE_TTL ? parseInt(process.env.JSII_RUNTIME_PACKAGE_CACHE_TTL, 10) * ONE_DAY_IN_MS : 30 * ONE_DAY_IN_MS;
         class DiskCache {
             constructor(root) {
+                _DiskCache_instances.add(this);
                 _DiskCache_root.set(this, void 0);
                 __classPrivateFieldSet(this, _DiskCache_root, root, "f");
                 process.once("beforeExit", (() => this.pruneExpiredEntries()));
@@ -9356,10 +9357,10 @@ var __webpack_modules__ = {
                     (0, fs_1.writeFileSync)((0, path_1.join)(path, ".nosync"), "");
                 }
                 path = (0, fs_1.realpathSync)(path);
-                if (!this.CACHE.has(path)) {
-                    this.CACHE.set(path, new DiskCache(path));
+                if (!__classPrivateFieldGet(this, _a, "f", _DiskCache_CACHE).has(path)) {
+                    __classPrivateFieldGet(this, _a, "f", _DiskCache_CACHE).set(path, new DiskCache(path));
                 }
-                return this.CACHE.get(path);
+                return __classPrivateFieldGet(this, _a, "f", _DiskCache_CACHE).get(path);
             }
             entry(...key) {
                 if (key.length === 0) {
@@ -9378,7 +9379,7 @@ var __webpack_modules__ = {
             }
             pruneExpiredEntries() {
                 const cutOff = new Date(Date.now() - PRUNE_AFTER_MILLISECONDS);
-                for (const entry of this.entries()) {
+                for (const entry of __classPrivateFieldGet(this, _DiskCache_instances, "m", _DiskCache_entries).call(this)) {
                     if (entry.atime < cutOff) {
                         entry.lock((lockedEntry => {
                             if (entry.atime > cutOff) {
@@ -9403,28 +9404,31 @@ var __webpack_modules__ = {
                     }
                 }
             }
-            * entries() {
-                yield* inDirectory(__classPrivateFieldGet(this, _DiskCache_root, "f"));
-                function* inDirectory(dir) {
-                    if ((0, fs_1.existsSync)((0, path_1.join)(dir, MARKER_FILE_NAME))) {
-                        return yield new Entry(dir);
-                    }
-                    for (const file of directoriesUnder(dir)) {
-                        yield* inDirectory(file);
-                    }
-                }
-            }
         }
         exports.DiskCache = DiskCache;
-        _DiskCache_root = new WeakMap;
-        DiskCache.CACHE = new Map;
+        _a = DiskCache, _DiskCache_root = new WeakMap, _DiskCache_instances = new WeakSet, 
+        _DiskCache_entries = function* _DiskCache_entries() {
+            yield* inDirectory(__classPrivateFieldGet(this, _DiskCache_root, "f"));
+            function* inDirectory(dir) {
+                if ((0, fs_1.existsSync)((0, path_1.join)(dir, MARKER_FILE_NAME))) {
+                    return yield new Entry(dir);
+                }
+                for (const file of directoriesUnder(dir)) {
+                    yield* inDirectory(file);
+                }
+            }
+        };
+        _DiskCache_CACHE = {
+            value: new Map
+        };
         class Entry {
             constructor(path) {
                 this.path = path;
+                _Entry_instances.add(this);
             }
             get atime() {
                 try {
-                    const stat = (0, fs_1.statSync)(this.markerFile);
+                    const stat = (0, fs_1.statSync)(__classPrivateFieldGet(this, _Entry_instances, "a", _Entry_markerFile_get));
                     return stat.atime;
                 } catch (err) {
                     if (err.code !== "ENOENT") {
@@ -9436,17 +9440,11 @@ var __webpack_modules__ = {
             get pathExists() {
                 return (0, fs_1.existsSync)(this.path);
             }
-            get lockFile() {
-                return `${this.path}.lock`;
-            }
-            get markerFile() {
-                return (0, path_1.join)(this.path, MARKER_FILE_NAME);
-            }
             lock(cb) {
                 (0, fs_1.mkdirSync)((0, path_1.dirname)(this.path), {
                     recursive: true
                 });
-                (0, lockfile_1.lockSync)(this.lockFile, {
+                (0, lockfile_1.lockSync)(__classPrivateFieldGet(this, _Entry_instances, "a", _Entry_lockFile_get), {
                     retries: 12,
                     stale: 5e3
                 });
@@ -9476,18 +9474,18 @@ var __webpack_modules__ = {
                                 throw new Error(`Cannot touch ${this.path} once the lock block was returned!`);
                             }
                             if (this.pathExists) {
-                                if ((0, fs_1.existsSync)(this.markerFile)) {
+                                if ((0, fs_1.existsSync)(__classPrivateFieldGet(this, _Entry_instances, "a", _Entry_markerFile_get))) {
                                     const now = new Date;
-                                    (0, fs_1.utimesSync)(this.markerFile, now, now);
+                                    (0, fs_1.utimesSync)(__classPrivateFieldGet(this, _Entry_instances, "a", _Entry_markerFile_get), now, now);
                                 } else {
-                                    (0, fs_1.writeFileSync)(this.markerFile, "");
+                                    (0, fs_1.writeFileSync)(__classPrivateFieldGet(this, _Entry_instances, "a", _Entry_markerFile_get), "");
                                 }
                             }
                         }
                     });
                 } finally {
                     disposed = true;
-                    (0, lockfile_1.unlockSync)(this.lockFile);
+                    (0, lockfile_1.unlockSync)(__classPrivateFieldGet(this, _Entry_instances, "a", _Entry_lockFile_get));
                 }
             }
             read(file) {
@@ -9502,6 +9500,11 @@ var __webpack_modules__ = {
             }
         }
         exports.Entry = Entry;
+        _Entry_instances = new WeakSet, _Entry_lockFile_get = function _Entry_lockFile_get() {
+            return `${this.path}.lock`;
+        }, _Entry_markerFile_get = function _Entry_markerFile_get() {
+            return (0, path_1.join)(this.path, MARKER_FILE_NAME);
+        };
         function* directoriesUnder(root, recursive = false, ignoreErrors = true) {
             for (const file of (0, fs_1.readdirSync)(root)) {
                 const path = (0, path_1.join)(root, file);
@@ -9576,14 +9579,26 @@ var __webpack_modules__ = {
         const api = __webpack_require__(2816);
         exports.api = api;
     },
-    2742: (__unused_webpack_module, exports, __webpack_require__) => {
+    2742: function(__unused_webpack_module, exports, __webpack_require__) {
         "use strict";
+        var __classPrivateFieldGet = this && this.__classPrivateFieldGet || function(receiver, state, kind, f) {
+            if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a getter");
+            if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
+            return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
+        };
+        var __classPrivateFieldSet = this && this.__classPrivateFieldSet || function(receiver, state, value, kind, f) {
+            if (kind === "m") throw new TypeError("Private method is not writable");
+            if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a setter");
+            if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot write private member to an object whose class did not declare it");
+            return kind === "a" ? f.call(receiver, value) : f ? f.value = value : state.set(receiver, value), 
+            value;
+        };
+        var _Kernel_instances, _Kernel_assemblies, _Kernel_objects, _Kernel_cbs, _Kernel_waiting, _Kernel_promises, _Kernel_serializerHost, _Kernel_nextid, _Kernel_syncInProgress, _Kernel_installDir, _Kernel_require, _Kernel_load, _Kernel_addAssembly, _Kernel_findCtor, _Kernel_getPackageDir, _Kernel_create, _Kernel_getSuperPropertyName, _Kernel_applyPropertyOverride, _Kernel_defineOverridenProperty, _Kernel_applyMethodOverride, _Kernel_defineOverridenMethod, _Kernel_findInvokeTarget, _Kernel_validateMethodArguments, _Kernel_assemblyFor, _Kernel_findSymbol, _Kernel_typeInfoForFqn, _Kernel_isVisibleType, _Kernel_typeInfoForMethod, _Kernel_tryTypeInfoForMethod, _Kernel_tryTypeInfoForProperty, _Kernel_typeInfoForProperty, _Kernel_toSandbox, _Kernel_fromSandbox, _Kernel_toSandboxValues, _Kernel_fromSandboxValues, _Kernel_boxUnboxParameters, _Kernel_debug, _Kernel_debugTime, _Kernel_ensureSync, _Kernel_findPropertyTarget, _Kernel_getBinScriptCommand, _Kernel_makecbid, _Kernel_makeprid;
         Object.defineProperty(exports, "__esModule", {
             value: true
         });
         exports.Kernel = exports.RuntimeError = exports.JsiiFault = void 0;
         const spec = __webpack_require__(1804);
-        const spec_1 = __webpack_require__(1804);
         const cp = __webpack_require__(2081);
         const fs = __webpack_require__(9728);
         const module_1 = __webpack_require__(8188);
@@ -9612,71 +9627,36 @@ var __webpack_modules__ = {
         class Kernel {
             constructor(callbackHandler) {
                 this.callbackHandler = callbackHandler;
+                _Kernel_instances.add(this);
                 this.traceEnabled = false;
                 this.debugTimingEnabled = false;
-                this.assemblies = new Map;
-                this.objects = new objects_1.ObjectTable(this._typeInfoForFqn.bind(this));
-                this.cbs = new Map;
-                this.waiting = new Map;
-                this.promises = new Map;
-                this.nextid = 2e4;
+                this.validateAssemblies = false;
+                _Kernel_assemblies.set(this, new Map);
+                _Kernel_objects.set(this, new objects_1.ObjectTable(__classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_typeInfoForFqn).bind(this)));
+                _Kernel_cbs.set(this, new Map);
+                _Kernel_waiting.set(this, new Map);
+                _Kernel_promises.set(this, new Map);
+                _Kernel_serializerHost.set(this, void 0);
+                _Kernel_nextid.set(this, 2e4);
+                _Kernel_syncInProgress.set(this, void 0);
+                _Kernel_installDir.set(this, void 0);
+                _Kernel_require.set(this, void 0);
+                __classPrivateFieldSet(this, _Kernel_serializerHost, {
+                    objects: __classPrivateFieldGet(this, _Kernel_objects, "f"),
+                    debug: __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_debug).bind(this),
+                    isVisibleType: __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_isVisibleType).bind(this),
+                    findSymbol: __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_findSymbol).bind(this),
+                    lookupType: __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_typeInfoForFqn).bind(this)
+                }, "f");
             }
             load(req) {
-                return this._debugTime((() => this._load(req)), `load(${JSON.stringify(req, null, 2)})`);
-            }
-            _load(req) {
-                var _a, _b, _c;
-                this._debug("load", req);
-                if ("assembly" in req) {
-                    throw new JsiiFault('`assembly` field is deprecated for "load", use `name`, `version` and `tarball` instead');
-                }
-                const pkgname = req.name;
-                const pkgver = req.version;
-                const packageDir = this._getPackageDir(pkgname);
-                if (fs.pathExistsSync(packageDir)) {
-                    const epkg = fs.readJsonSync(path.join(packageDir, "package.json"));
-                    if (epkg.version !== pkgver) {
-                        throw new JsiiFault(`Multiple versions ${pkgver} and ${epkg.version} of the ` + `package '${pkgname}' cannot be loaded together since this is unsupported by ` + "some runtime environments");
-                    }
-                    this._debug("look up already-loaded assembly", pkgname);
-                    const assm = this.assemblies.get(pkgname);
-                    return {
-                        assembly: assm.metadata.name,
-                        types: Object.keys((_a = assm.metadata.types) !== null && _a !== void 0 ? _a : {}).length
-                    };
-                }
-                const originalUmask = process.umask(18);
-                try {
-                    const {cache} = this._debugTime((() => tar.extract(req.tarball, packageDir, {
-                        strict: true,
-                        strip: 1,
-                        unlink: true
-                    }, req.name, req.version)), `tar.extract(${req.tarball}) => ${packageDir}`);
-                    if (cache != null) {
-                        this._debug(`Package cache enabled, extraction resulted in a cache ${cache}`);
-                    }
-                } finally {
-                    process.umask(originalUmask);
-                }
-                let assmSpec;
-                try {
-                    assmSpec = this._debugTime((() => (0, spec_1.loadAssemblyFromPath)(packageDir)), `loadAssemblyFromPath(${packageDir})`);
-                } catch (e) {
-                    throw new JsiiFault(`Error for package tarball ${req.tarball}: ${e.message}`);
-                }
-                const closure = this._debugTime((() => this.require(packageDir)), `require(${packageDir})`);
-                const assm = new Assembly(assmSpec, closure);
-                this._debugTime((() => this._addAssembly(assm)), `registerAssembly({ name: ${assm.metadata.name}, types: ${Object.keys((_b = assm.metadata.types) !== null && _b !== void 0 ? _b : {}).length} })`);
-                return {
-                    assembly: assmSpec.name,
-                    types: Object.keys((_c = assmSpec.types) !== null && _c !== void 0 ? _c : {}).length
-                };
+                return __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_debugTime).call(this, (() => __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_load).call(this, req)), `load(${JSON.stringify(req, null, 2)})`);
             }
             getBinScriptCommand(req) {
-                return this._getBinScriptCommand(req);
+                return __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_getBinScriptCommand).call(this, req);
             }
             invokeBinScript(req) {
-                const {command, args, env} = this._getBinScriptCommand(req);
+                const {command, args, env} = __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_getBinScriptCommand).call(this, req);
                 const result = cp.spawnSync(command, args, {
                     encoding: "utf-8",
                     env,
@@ -9690,27 +9670,27 @@ var __webpack_modules__ = {
                 };
             }
             create(req) {
-                return this._create(req);
+                return __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_create).call(this, req);
             }
             del(req) {
                 const {objref} = req;
-                this._debug("del", objref);
-                this.objects.deleteObject(objref);
+                __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_debug).call(this, "del", objref);
+                __classPrivateFieldGet(this, _Kernel_objects, "f").deleteObject(objref);
                 return {};
             }
             sget(req) {
                 const {fqn, property} = req;
                 const symbol = `${fqn}.${property}`;
-                this._debug("sget", symbol);
-                const ti = this._typeInfoForProperty(property, fqn);
+                __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_debug).call(this, "sget", symbol);
+                const ti = __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_typeInfoForProperty).call(this, property, fqn);
                 if (!ti.static) {
                     throw new JsiiFault(`property ${symbol} is not static`);
                 }
-                const prototype = this._findSymbol(fqn);
-                const value = this._ensureSync(`property ${property}`, (() => prototype[property]));
-                this._debug("value:", value);
-                const ret = this._fromSandbox(value, ti, `of static property ${symbol}`);
-                this._debug("ret", ret);
+                const prototype = __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_findSymbol).call(this, fqn);
+                const value = __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_ensureSync).call(this, `property ${property}`, (() => prototype[property]));
+                __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_debug).call(this, "value:", value);
+                const ret = __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_fromSandbox).call(this, value, ti, `of static property ${symbol}`);
+                __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_debug).call(this, "ret", ret);
                 return {
                     value: ret
                 };
@@ -9718,57 +9698,57 @@ var __webpack_modules__ = {
             sset(req) {
                 const {fqn, property, value} = req;
                 const symbol = `${fqn}.${property}`;
-                this._debug("sset", symbol);
-                const ti = this._typeInfoForProperty(property, fqn);
+                __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_debug).call(this, "sset", symbol);
+                const ti = __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_typeInfoForProperty).call(this, property, fqn);
                 if (!ti.static) {
                     throw new JsiiFault(`property ${symbol} is not static`);
                 }
                 if (ti.immutable) {
                     throw new JsiiFault(`static property ${symbol} is readonly`);
                 }
-                const prototype = this._findSymbol(fqn);
-                this._ensureSync(`property ${property}`, (() => prototype[property] = this._toSandbox(value, ti, `assigned to static property ${symbol}`)));
+                const prototype = __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_findSymbol).call(this, fqn);
+                __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_ensureSync).call(this, `property ${property}`, (() => prototype[property] = __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_toSandbox).call(this, value, ti, `assigned to static property ${symbol}`)));
                 return {};
             }
             get(req) {
                 const {objref, property} = req;
-                this._debug("get", objref, property);
-                const {instance, fqn, interfaces} = this.objects.findObject(objref);
-                const ti = this._typeInfoForProperty(property, fqn, interfaces);
-                const propertyToGet = this._findPropertyTarget(instance, property);
-                const value = this._ensureSync(`property '${objref[api_1.TOKEN_REF]}.${propertyToGet}'`, (() => instance[propertyToGet]));
-                this._debug("value:", value);
-                const ret = this._fromSandbox(value, ti, `of property ${fqn}.${property}`);
-                this._debug("ret:", ret);
+                __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_debug).call(this, "get", objref, property);
+                const {instance, fqn, interfaces} = __classPrivateFieldGet(this, _Kernel_objects, "f").findObject(objref);
+                const ti = __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_typeInfoForProperty).call(this, property, fqn, interfaces);
+                const propertyToGet = __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_findPropertyTarget).call(this, instance, property);
+                const value = __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_ensureSync).call(this, `property '${objref[api_1.TOKEN_REF]}.${propertyToGet}'`, (() => instance[propertyToGet]));
+                __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_debug).call(this, "value:", value);
+                const ret = __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_fromSandbox).call(this, value, ti, `of property ${fqn}.${property}`);
+                __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_debug).call(this, "ret:", ret);
                 return {
                     value: ret
                 };
             }
             set(req) {
                 const {objref, property, value} = req;
-                this._debug("set", objref, property, value);
-                const {instance, fqn, interfaces} = this.objects.findObject(objref);
-                const propInfo = this._typeInfoForProperty(req.property, fqn, interfaces);
+                __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_debug).call(this, "set", objref, property, value);
+                const {instance, fqn, interfaces} = __classPrivateFieldGet(this, _Kernel_objects, "f").findObject(objref);
+                const propInfo = __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_typeInfoForProperty).call(this, req.property, fqn, interfaces);
                 if (propInfo.immutable) {
                     throw new JsiiFault(`Cannot set value of immutable property ${req.property} to ${req.value}`);
                 }
-                const propertyToSet = this._findPropertyTarget(instance, property);
-                this._ensureSync(`property '${objref[api_1.TOKEN_REF]}.${propertyToSet}'`, (() => instance[propertyToSet] = this._toSandbox(value, propInfo, `assigned to property ${fqn}.${property}`)));
+                const propertyToSet = __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_findPropertyTarget).call(this, instance, property);
+                __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_ensureSync).call(this, `property '${objref[api_1.TOKEN_REF]}.${propertyToSet}'`, (() => instance[propertyToSet] = __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_toSandbox).call(this, value, propInfo, `assigned to property ${fqn}.${property}`)));
                 return {};
             }
             invoke(req) {
                 var _a, _b;
                 const {objref, method} = req;
                 const args = (_a = req.args) !== null && _a !== void 0 ? _a : [];
-                this._debug("invoke", objref, method, args);
-                const {ti, obj, fn} = this._findInvokeTarget(objref, method, args);
+                __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_debug).call(this, "invoke", objref, method, args);
+                const {ti, obj, fn} = __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_findInvokeTarget).call(this, objref, method, args);
                 if (ti.async) {
                     throw new JsiiFault(`${method} is an async method, use "begin" instead`);
                 }
-                const fqn = (0, objects_1.jsiiTypeFqn)(obj);
-                const ret = this._ensureSync(`method '${objref[api_1.TOKEN_REF]}.${method}'`, (() => fn.apply(obj, this._toSandboxValues(args, `method ${fqn ? `${fqn}#` : ""}${method}`, ti.parameters))));
-                const result = this._fromSandbox(ret, (_b = ti.returns) !== null && _b !== void 0 ? _b : "void", `returned by method ${fqn ? `${fqn}#` : ""}${method}`);
-                this._debug("invoke result", result);
+                const fqn = (0, objects_1.jsiiTypeFqn)(obj, __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_isVisibleType).bind(this));
+                const ret = __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_ensureSync).call(this, `method '${objref[api_1.TOKEN_REF]}.${method}'`, (() => fn.apply(obj, __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_toSandboxValues).call(this, args, `method ${fqn ? `${fqn}#` : ""}${method}`, ti.parameters))));
+                const result = __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_fromSandbox).call(this, ret, (_b = ti.returns) !== null && _b !== void 0 ? _b : "void", `returned by method ${fqn ? `${fqn}#` : ""}${method}`);
+                __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_debug).call(this, "invoke result", result);
                 return {
                     result
                 };
@@ -9777,39 +9757,39 @@ var __webpack_modules__ = {
                 var _a, _b;
                 const {fqn, method} = req;
                 const args = (_a = req.args) !== null && _a !== void 0 ? _a : [];
-                this._debug("sinvoke", fqn, method, args);
-                const ti = this._typeInfoForMethod(method, fqn);
+                __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_debug).call(this, "sinvoke", fqn, method, args);
+                const ti = __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_typeInfoForMethod).call(this, method, fqn);
                 if (!ti.static) {
                     throw new JsiiFault(`${fqn}.${method} is not a static method`);
                 }
                 if (ti.async) {
                     throw new JsiiFault(`${method} is an async method, use "begin" instead`);
                 }
-                const prototype = this._findSymbol(fqn);
+                const prototype = __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_findSymbol).call(this, fqn);
                 const fn = prototype[method];
-                const ret = this._ensureSync(`method '${fqn}.${method}'`, (() => fn.apply(prototype, this._toSandboxValues(args, `static method ${fqn}.${method}`, ti.parameters))));
-                this._debug("method returned:", ret);
+                const ret = __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_ensureSync).call(this, `method '${fqn}.${method}'`, (() => fn.apply(prototype, __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_toSandboxValues).call(this, args, `static method ${fqn}.${method}`, ti.parameters))));
+                __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_debug).call(this, "method returned:", ret);
                 return {
-                    result: this._fromSandbox(ret, (_b = ti.returns) !== null && _b !== void 0 ? _b : "void", `returned by static method ${fqn}.${method}`)
+                    result: __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_fromSandbox).call(this, ret, (_b = ti.returns) !== null && _b !== void 0 ? _b : "void", `returned by static method ${fqn}.${method}`)
                 };
             }
             begin(req) {
                 var _a;
                 const {objref, method} = req;
                 const args = (_a = req.args) !== null && _a !== void 0 ? _a : [];
-                this._debug("begin", objref, method, args);
-                if (this.syncInProgress) {
-                    throw new JsiiFault(`Cannot invoke async method '${req.objref[api_1.TOKEN_REF]}.${req.method}' while sync ${this.syncInProgress} is being processed`);
+                __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_debug).call(this, "begin", objref, method, args);
+                if (__classPrivateFieldGet(this, _Kernel_syncInProgress, "f")) {
+                    throw new JsiiFault(`Cannot invoke async method '${req.objref[api_1.TOKEN_REF]}.${req.method}' while sync ${__classPrivateFieldGet(this, _Kernel_syncInProgress, "f")} is being processed`);
                 }
-                const {ti, obj, fn} = this._findInvokeTarget(objref, method, args);
+                const {ti, obj, fn} = __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_findInvokeTarget).call(this, objref, method, args);
                 if (!ti.async) {
                     throw new JsiiFault(`Method ${method} is expected to be an async method`);
                 }
-                const fqn = (0, objects_1.jsiiTypeFqn)(obj);
-                const promise = fn.apply(obj, this._toSandboxValues(args, `async method ${fqn ? `${fqn}#` : ""}${method}`, ti.parameters));
+                const fqn = (0, objects_1.jsiiTypeFqn)(obj, __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_isVisibleType).bind(this));
+                const promise = fn.apply(obj, __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_toSandboxValues).call(this, args, `async method ${fqn ? `${fqn}#` : ""}${method}`, ti.parameters));
                 promise.catch((_ => undefined));
-                const prid = this._makeprid();
-                this.promises.set(prid, {
+                const prid = __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_makeprid).call(this);
+                __classPrivateFieldGet(this, _Kernel_promises, "f").set(prid, {
                     promise,
                     method: ti
                 });
@@ -9820,8 +9800,8 @@ var __webpack_modules__ = {
             async end(req) {
                 var _a;
                 const {promiseid} = req;
-                this._debug("end", promiseid);
-                const storedPromise = this.promises.get(promiseid);
+                __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_debug).call(this, "end", promiseid);
+                const storedPromise = __classPrivateFieldGet(this, _Kernel_promises, "f").get(promiseid);
                 if (storedPromise == null) {
                     throw new JsiiFault(`Cannot find promise with ID: ${promiseid}`);
                 }
@@ -9829,9 +9809,9 @@ var __webpack_modules__ = {
                 let result;
                 try {
                     result = await promise;
-                    this._debug("promise result:", result);
+                    __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_debug).call(this, "promise result:", result);
                 } catch (e) {
-                    this._debug("promise error:", e);
+                    __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_debug).call(this, "promise error:", e);
                     if (e.name === "@jsii/kernel.Fault") {
                         if (e instanceof JsiiFault) {
                             throw e;
@@ -9844,14 +9824,14 @@ var __webpack_modules__ = {
                     throw new RuntimeError(e);
                 }
                 return {
-                    result: this._fromSandbox(result, (_a = method.returns) !== null && _a !== void 0 ? _a : "void", `returned by async method ${method.name}`)
+                    result: __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_fromSandbox).call(this, result, (_a = method.returns) !== null && _a !== void 0 ? _a : "void", `returned by async method ${method.name}`)
                 };
             }
             callbacks(_req) {
-                this._debug("callbacks");
-                const ret = Array.from(this.cbs.entries()).map((([cbid, cb]) => {
-                    this.waiting.set(cbid, cb);
-                    this.cbs.delete(cbid);
+                __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_debug).call(this, "callbacks");
+                const ret = Array.from(__classPrivateFieldGet(this, _Kernel_cbs, "f").entries()).map((([cbid, cb]) => {
+                    __classPrivateFieldGet(this, _Kernel_waiting, "f").set(cbid, cb);
+                    __classPrivateFieldGet(this, _Kernel_cbs, "f").delete(cbid);
                     const callback = {
                         cbid,
                         cookie: cb.override.cookie,
@@ -9870,28 +9850,28 @@ var __webpack_modules__ = {
             complete(req) {
                 var _a;
                 const {cbid, err, result, name} = req;
-                this._debug("complete", cbid, err, result);
-                const cb = this.waiting.get(cbid);
+                __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_debug).call(this, "complete", cbid, err, result);
+                const cb = __classPrivateFieldGet(this, _Kernel_waiting, "f").get(cbid);
                 if (!cb) {
                     throw new JsiiFault(`Callback ${cbid} not found`);
                 }
                 if (err) {
-                    this._debug("completed with error:", err);
+                    __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_debug).call(this, "completed with error:", err);
                     cb.fail(name === "@jsii/kernel.Fault" ? new JsiiFault(err) : new RuntimeError(err));
                 } else {
-                    const sandoxResult = this._toSandbox(result, (_a = cb.expectedReturnType) !== null && _a !== void 0 ? _a : "void", `returned by callback ${cb.toString()}`);
-                    this._debug("completed with result:", sandoxResult);
+                    const sandoxResult = __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_toSandbox).call(this, result, (_a = cb.expectedReturnType) !== null && _a !== void 0 ? _a : "void", `returned by callback ${cb.toString()}`);
+                    __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_debug).call(this, "completed with result:", sandoxResult);
                     cb.succeed(sandoxResult);
                 }
-                this.waiting.delete(cbid);
+                __classPrivateFieldGet(this, _Kernel_waiting, "f").delete(cbid);
                 return {
                     cbid
                 };
             }
             naming(req) {
                 const assemblyName = req.assembly;
-                this._debug("naming", assemblyName);
-                const assembly = this._assemblyFor(assemblyName);
+                __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_debug).call(this, "naming", assemblyName);
+                const assembly = __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_assemblyFor).call(this, assemblyName);
                 const targets = assembly.metadata.targets;
                 if (!targets) {
                     throw new JsiiFault(`Unexpected - "targets" for ${assemblyName} is missing!`);
@@ -9902,511 +9882,545 @@ var __webpack_modules__ = {
             }
             stats(_req) {
                 return {
-                    objectCount: this.objects.count
+                    objectCount: __classPrivateFieldGet(this, _Kernel_objects, "f").count
                 };
-            }
-            _addAssembly(assm) {
-                var _a;
-                this.assemblies.set(assm.metadata.name, assm);
-                for (const fqn of Object.keys((_a = assm.metadata.types) !== null && _a !== void 0 ? _a : {})) {
-                    const typedef = assm.metadata.types[fqn];
-                    switch (typedef.kind) {
-                      case spec.TypeKind.Interface:
-                        continue;
-
-                      case spec.TypeKind.Class:
-                      case spec.TypeKind.Enum:
-                        const constructor = this._findSymbol(fqn);
-                        (0, objects_1.tagJsiiConstructor)(constructor, fqn);
-                    }
-                }
-            }
-            _findCtor(fqn, args) {
-                if (fqn === wire.EMPTY_OBJECT_FQN) {
-                    return {
-                        ctor: Object
-                    };
-                }
-                const typeinfo = this._typeInfoForFqn(fqn);
-                switch (typeinfo.kind) {
-                  case spec.TypeKind.Class:
-                    const classType = typeinfo;
-                    this._validateMethodArguments(classType.initializer, args);
-                    return {
-                        ctor: this._findSymbol(fqn),
-                        parameters: classType.initializer && classType.initializer.parameters
-                    };
-
-                  case spec.TypeKind.Interface:
-                    throw new JsiiFault(`Cannot create an object with an FQN of an interface: ${fqn}`);
-
-                  default:
-                    throw new JsiiFault(`Unexpected FQN kind: ${fqn}`);
-                }
-            }
-            _getPackageDir(pkgname) {
-                if (!this.installDir) {
-                    this.installDir = fs.mkdtempSync(path.join(os.tmpdir(), "jsii-kernel-"));
-                    this.require = (0, module_1.createRequire)(this.installDir);
-                    fs.mkdirpSync(path.join(this.installDir, "node_modules"));
-                    this._debug("creating jsii-kernel modules workdir:", this.installDir);
-                    onExit.removeSync(this.installDir);
-                }
-                return path.join(this.installDir, "node_modules", pkgname);
-            }
-            _create(req) {
-                var _a, _b;
-                this._debug("create", req);
-                const {fqn, interfaces, overrides} = req;
-                const requestArgs = (_a = req.args) !== null && _a !== void 0 ? _a : [];
-                const ctorResult = this._findCtor(fqn, requestArgs);
-                const ctor = ctorResult.ctor;
-                const obj = new ctor(...this._toSandboxValues(requestArgs, `new ${fqn}`, ctorResult.parameters));
-                const objref = this.objects.registerObject(obj, fqn, (_b = req.interfaces) !== null && _b !== void 0 ? _b : []);
-                if (overrides) {
-                    this._debug("overrides", overrides);
-                    const overrideTypeErrorMessage = 'Override can either be "method" or "property"';
-                    const methods = new Set;
-                    const properties = new Set;
-                    for (const override of overrides) {
-                        if (api.isMethodOverride(override)) {
-                            if (api.isPropertyOverride(override)) {
-                                throw new JsiiFault(overrideTypeErrorMessage);
-                            }
-                            if (methods.has(override.method)) {
-                                throw new JsiiFault(`Duplicate override for method '${override.method}'`);
-                            }
-                            methods.add(override.method);
-                            this._applyMethodOverride(obj, objref, fqn, interfaces, override);
-                        } else if (api.isPropertyOverride(override)) {
-                            if (api.isMethodOverride(override)) {
-                                throw new JsiiFault(overrideTypeErrorMessage);
-                            }
-                            if (properties.has(override.property)) {
-                                throw new JsiiFault(`Duplicate override for property '${override.property}'`);
-                            }
-                            properties.add(override.property);
-                            this._applyPropertyOverride(obj, objref, fqn, interfaces, override);
-                        } else {
-                            throw new JsiiFault(overrideTypeErrorMessage);
-                        }
-                    }
-                }
-                return objref;
-            }
-            _getSuperPropertyName(name) {
-                return `$jsii$super$${name}$`;
-            }
-            _applyPropertyOverride(obj, objref, typeFqn, interfaces, override) {
-                if (this._tryTypeInfoForMethod(override.property, typeFqn, interfaces)) {
-                    throw new JsiiFault(`Trying to override method '${override.property}' as a property`);
-                }
-                let propInfo = this._tryTypeInfoForProperty(override.property, typeFqn, interfaces);
-                if (!propInfo && override.property in obj) {
-                    this._debug(`Skipping override of private property ${override.property}`);
-                    return;
-                }
-                if (!propInfo) {
-                    propInfo = {
-                        name: override.property,
-                        type: spec.CANONICAL_ANY
-                    };
-                }
-                this._defineOverridenProperty(obj, objref, override, propInfo);
-            }
-            _defineOverridenProperty(obj, objref, override, propInfo) {
-                var _a;
-                const propertyName = override.property;
-                this._debug("apply override", propertyName);
-                const prev = (_a = getPropertyDescriptor(obj, propertyName)) !== null && _a !== void 0 ? _a : {
-                    value: obj[propertyName],
-                    writable: true,
-                    enumerable: true,
-                    configurable: true
-                };
-                const prevEnumerable = prev.enumerable;
-                prev.enumerable = false;
-                Object.defineProperty(obj, this._getSuperPropertyName(propertyName), prev);
-                Object.defineProperty(obj, propertyName, {
-                    enumerable: prevEnumerable,
-                    configurable: prev.configurable,
-                    get: () => {
-                        this._debug("virtual get", objref, propertyName, {
-                            cookie: override.cookie
-                        });
-                        const result = this.callbackHandler({
-                            cookie: override.cookie,
-                            cbid: this._makecbid(),
-                            get: {
-                                objref,
-                                property: propertyName
-                            }
-                        });
-                        this._debug("callback returned", result);
-                        return this._toSandbox(result, propInfo, `returned by callback property ${propertyName}`);
-                    },
-                    set: value => {
-                        this._debug("virtual set", objref, propertyName, {
-                            cookie: override.cookie
-                        });
-                        this.callbackHandler({
-                            cookie: override.cookie,
-                            cbid: this._makecbid(),
-                            set: {
-                                objref,
-                                property: propertyName,
-                                value: this._fromSandbox(value, propInfo, `assigned to callback property ${propertyName}`)
-                            }
-                        });
-                    }
-                });
-                function getPropertyDescriptor(obj, propertyName) {
-                    const direct = Object.getOwnPropertyDescriptor(obj, propertyName);
-                    if (direct != null) {
-                        return direct;
-                    }
-                    const proto = Object.getPrototypeOf(obj);
-                    if (proto == null && proto !== Object.prototype) {
-                        return undefined;
-                    }
-                    return getPropertyDescriptor(proto, propertyName);
-                }
-            }
-            _applyMethodOverride(obj, objref, typeFqn, interfaces, override) {
-                if (this._tryTypeInfoForProperty(override.method, typeFqn, interfaces)) {
-                    throw new JsiiFault(`Trying to override property '${override.method}' as a method`);
-                }
-                let methodInfo = this._tryTypeInfoForMethod(override.method, typeFqn, interfaces);
-                if (!methodInfo && obj[override.method]) {
-                    this._debug(`Skipping override of private method ${override.method}`);
-                    return;
-                }
-                if (!methodInfo) {
-                    methodInfo = {
-                        name: override.method,
-                        returns: {
-                            type: spec.CANONICAL_ANY
-                        },
-                        parameters: [ {
-                            name: "args",
-                            type: spec.CANONICAL_ANY,
-                            variadic: true
-                        } ],
-                        variadic: true
-                    };
-                }
-                this._defineOverridenMethod(obj, objref, override, methodInfo);
-            }
-            _defineOverridenMethod(obj, objref, override, methodInfo) {
-                const methodName = override.method;
-                const fqn = (0, objects_1.jsiiTypeFqn)(obj);
-                const methodContext = `${methodInfo.async ? "async " : ""}method${fqn ? `${fqn}#` : methodName}`;
-                if (methodInfo.async) {
-                    Object.defineProperty(obj, methodName, {
-                        enumerable: false,
-                        configurable: false,
-                        writable: false,
-                        value: (...methodArgs) => {
-                            this._debug("invoke async method override", override);
-                            const args = this._toSandboxValues(methodArgs, methodContext, methodInfo.parameters);
-                            return new Promise(((succeed, fail) => {
-                                var _a;
-                                const cbid = this._makecbid();
-                                this._debug("adding callback to queue", cbid);
-                                this.cbs.set(cbid, {
-                                    objref,
-                                    override,
-                                    args,
-                                    expectedReturnType: (_a = methodInfo.returns) !== null && _a !== void 0 ? _a : "void",
-                                    succeed,
-                                    fail
-                                });
-                            }));
-                        }
-                    });
-                } else {
-                    Object.defineProperty(obj, methodName, {
-                        enumerable: false,
-                        configurable: false,
-                        writable: false,
-                        value: (...methodArgs) => {
-                            var _a;
-                            this._debug("invoke sync method override", override, "args", methodArgs);
-                            const result = this.callbackHandler({
-                                cookie: override.cookie,
-                                cbid: this._makecbid(),
-                                invoke: {
-                                    objref,
-                                    method: methodName,
-                                    args: this._fromSandboxValues(methodArgs, methodContext, methodInfo.parameters)
-                                }
-                            });
-                            this._debug("Result", result);
-                            return this._toSandbox(result, (_a = methodInfo.returns) !== null && _a !== void 0 ? _a : "void", `returned by callback method ${methodName}`);
-                        }
-                    });
-                }
-            }
-            _findInvokeTarget(objref, methodName, args) {
-                const {instance, fqn, interfaces} = this.objects.findObject(objref);
-                const ti = this._typeInfoForMethod(methodName, fqn, interfaces);
-                this._validateMethodArguments(ti, args);
-                let fn = instance.constructor.prototype[methodName];
-                if (!fn) {
-                    fn = instance[methodName];
-                    if (!fn) {
-                        throw new JsiiFault(`Cannot find ${methodName} on object`);
-                    }
-                }
-                return {
-                    ti,
-                    obj: instance,
-                    fn
-                };
-            }
-            _validateMethodArguments(method, args) {
-                var _a;
-                const params = (_a = method === null || method === void 0 ? void 0 : method.parameters) !== null && _a !== void 0 ? _a : [];
-                if (args.length > params.length && !(method && method.variadic)) {
-                    throw new JsiiFault(`Too many arguments (method accepts ${params.length} parameters, got ${args.length} arguments)`);
-                }
-                for (let i = 0; i < params.length; ++i) {
-                    const param = params[i];
-                    const arg = args[i];
-                    if (param.variadic) {
-                        if (params.length <= i) {
-                            return;
-                        }
-                        for (let j = i; j < params.length; j++) {
-                            if (!param.optional && params[j] === undefined) {
-                                throw new JsiiFault(`Unexpected 'undefined' value at index ${j - i} of variadic argument '${param.name}' of type '${spec.describeTypeReference(param.type)}'`);
-                            }
-                        }
-                    } else if (!param.optional && arg === undefined) {
-                        throw new JsiiFault(`Not enough arguments. Missing argument for the required parameter '${param.name}' of type '${spec.describeTypeReference(param.type)}'`);
-                    }
-                }
-            }
-            _assemblyFor(assemblyName) {
-                const assembly = this.assemblies.get(assemblyName);
-                if (!assembly) {
-                    throw new JsiiFault(`Could not find assembly: ${assemblyName}`);
-                }
-                return assembly;
-            }
-            _findSymbol(fqn) {
-                const [assemblyName, ...parts] = fqn.split(".");
-                const assembly = this._assemblyFor(assemblyName);
-                let curr = assembly.closure;
-                while (parts.length > 0) {
-                    const name = parts.shift();
-                    if (!name) {
-                        break;
-                    }
-                    curr = curr[name];
-                }
-                if (!curr) {
-                    throw new JsiiFault(`Could not find symbol ${fqn}`);
-                }
-                return curr;
-            }
-            _typeInfoForFqn(fqn) {
-                var _a;
-                const components = fqn.split(".");
-                const moduleName = components[0];
-                const assembly = this.assemblies.get(moduleName);
-                if (!assembly) {
-                    throw new JsiiFault(`Module '${moduleName}' not found`);
-                }
-                const types = (_a = assembly.metadata.types) !== null && _a !== void 0 ? _a : {};
-                const fqnInfo = types[fqn];
-                if (!fqnInfo) {
-                    throw new JsiiFault(`Type '${fqn}' not found`);
-                }
-                return fqnInfo;
-            }
-            _typeInfoForMethod(methodName, fqn, interfaces) {
-                const ti = this._tryTypeInfoForMethod(methodName, fqn, interfaces);
-                if (!ti) {
-                    const addendum = interfaces && interfaces.length > 0 ? ` or interface(s) ${interfaces.join(", ")}` : "";
-                    throw new JsiiFault(`Class ${fqn}${addendum} doesn't have a method '${methodName}'`);
-                }
-                return ti;
-            }
-            _tryTypeInfoForMethod(methodName, classFqn, interfaces = []) {
-                var _a, _b;
-                for (const fqn of [ classFqn, ...interfaces ]) {
-                    if (fqn === wire.EMPTY_OBJECT_FQN) {
-                        continue;
-                    }
-                    const typeinfo = this._typeInfoForFqn(fqn);
-                    const methods = (_a = typeinfo.methods) !== null && _a !== void 0 ? _a : [];
-                    for (const m of methods) {
-                        if (m.name === methodName) {
-                            return m;
-                        }
-                    }
-                    const bases = [ typeinfo.base, ...(_b = typeinfo.interfaces) !== null && _b !== void 0 ? _b : [] ];
-                    for (const base of bases) {
-                        if (!base) {
-                            continue;
-                        }
-                        const found = this._tryTypeInfoForMethod(methodName, base);
-                        if (found) {
-                            return found;
-                        }
-                    }
-                }
-                return undefined;
-            }
-            _tryTypeInfoForProperty(property, classFqn, interfaces = []) {
-                var _a;
-                for (const fqn of [ classFqn, ...interfaces ]) {
-                    if (fqn === wire.EMPTY_OBJECT_FQN) {
-                        continue;
-                    }
-                    const typeInfo = this._typeInfoForFqn(fqn);
-                    let properties;
-                    let bases;
-                    if (spec.isClassType(typeInfo)) {
-                        const classTypeInfo = typeInfo;
-                        properties = classTypeInfo.properties;
-                        bases = classTypeInfo.base ? [ classTypeInfo.base ] : [];
-                    } else if (spec.isInterfaceType(typeInfo)) {
-                        const interfaceTypeInfo = typeInfo;
-                        properties = interfaceTypeInfo.properties;
-                        bases = (_a = interfaceTypeInfo.interfaces) !== null && _a !== void 0 ? _a : [];
-                    } else {
-                        throw new JsiiFault(`Type of kind ${typeInfo.kind} does not have properties`);
-                    }
-                    for (const p of properties !== null && properties !== void 0 ? properties : []) {
-                        if (p.name === property) {
-                            return p;
-                        }
-                    }
-                    for (const baseFqn of bases) {
-                        const ret = this._tryTypeInfoForProperty(property, baseFqn);
-                        if (ret) {
-                            return ret;
-                        }
-                    }
-                }
-                return undefined;
-            }
-            _typeInfoForProperty(property, fqn, interfaces) {
-                const typeInfo = this._tryTypeInfoForProperty(property, fqn, interfaces);
-                if (!typeInfo) {
-                    const addendum = interfaces && interfaces.length > 0 ? ` or interface(s) ${interfaces.join(", ")}` : "";
-                    throw new JsiiFault(`Type ${fqn}${addendum} doesn't have a property '${property}'`);
-                }
-                return typeInfo;
-            }
-            _toSandbox(v, expectedType, context) {
-                return wire.process({
-                    objects: this.objects,
-                    debug: this._debug.bind(this),
-                    findSymbol: this._findSymbol.bind(this),
-                    lookupType: this._typeInfoForFqn.bind(this)
-                }, "deserialize", v, expectedType, context);
-            }
-            _fromSandbox(v, targetType, context) {
-                return wire.process({
-                    objects: this.objects,
-                    debug: this._debug.bind(this),
-                    findSymbol: this._findSymbol.bind(this),
-                    lookupType: this._typeInfoForFqn.bind(this)
-                }, "serialize", v, targetType, context);
-            }
-            _toSandboxValues(xs, methodContext, parameters) {
-                return this._boxUnboxParameters(xs, methodContext, parameters, this._toSandbox.bind(this));
-            }
-            _fromSandboxValues(xs, methodContext, parameters) {
-                return this._boxUnboxParameters(xs, methodContext, parameters, this._fromSandbox.bind(this));
-            }
-            _boxUnboxParameters(xs, methodContext, parameters = [], boxUnbox) {
-                const parametersCopy = [ ...parameters ];
-                const variadic = parametersCopy.length > 0 && !!parametersCopy[parametersCopy.length - 1].variadic;
-                while (variadic && parametersCopy.length < xs.length) {
-                    parametersCopy.push(parametersCopy[parametersCopy.length - 1]);
-                }
-                if (xs.length > parametersCopy.length) {
-                    throw new JsiiFault(`Argument list (${JSON.stringify(xs)}) not same size as expected argument list (length ${parametersCopy.length})`);
-                }
-                return xs.map(((x, i) => boxUnbox(x, parametersCopy[i], `passed to parameter ${parametersCopy[i].name} of ${methodContext}`)));
-            }
-            _debug(...args) {
-                if (this.traceEnabled) {
-                    console.error("[@jsii/kernel]", ...args);
-                }
-            }
-            _debugTime(cb, label) {
-                const fullLabel = `[@jsii/kernel:timing] ${label}`;
-                if (this.debugTimingEnabled) {
-                    console.time(fullLabel);
-                }
-                try {
-                    return cb();
-                } finally {
-                    if (this.debugTimingEnabled) {
-                        console.timeEnd(fullLabel);
-                    }
-                }
-            }
-            _ensureSync(desc, fn) {
-                this.syncInProgress = desc;
-                try {
-                    return fn();
-                } catch (e) {
-                    if (e.name === "@jsii/kernel.Fault") {
-                        if (e instanceof JsiiFault) {
-                            throw e;
-                        }
-                        throw new JsiiFault(e);
-                    }
-                    if (e instanceof RuntimeError) {
-                        throw e;
-                    }
-                    throw new RuntimeError(e);
-                } finally {
-                    delete this.syncInProgress;
-                }
-            }
-            _findPropertyTarget(obj, property) {
-                const superProp = this._getSuperPropertyName(property);
-                if (superProp in obj) {
-                    return superProp;
-                }
-                return property;
-            }
-            _getBinScriptCommand(req) {
-                var _a, _b;
-                const packageDir = this._getPackageDir(req.assembly);
-                if (fs.pathExistsSync(packageDir)) {
-                    const epkg = fs.readJsonSync(path.join(packageDir, "package.json"));
-                    const scriptPath = (_a = epkg.bin) === null || _a === void 0 ? void 0 : _a[req.script];
-                    if (!epkg.bin) {
-                        throw new JsiiFault(`Script with name ${req.script} was not defined.`);
-                    }
-                    return {
-                        command: path.join(packageDir, scriptPath),
-                        args: (_b = req.args) !== null && _b !== void 0 ? _b : [],
-                        env: {
-                            ...process.env,
-                            NODE_OPTIONS: process.execArgv.join(" "),
-                            PATH: `${path.dirname(process.execPath)}:${process.env.PATH}`
-                        }
-                    };
-                }
-                throw new JsiiFault(`Package with name ${req.assembly} was not loaded.`);
-            }
-            _makecbid() {
-                return `jsii::callback::${this.nextid++}`;
-            }
-            _makeprid() {
-                return `jsii::promise::${this.nextid++}`;
             }
         }
         exports.Kernel = Kernel;
+        _Kernel_assemblies = new WeakMap, _Kernel_objects = new WeakMap, _Kernel_cbs = new WeakMap, 
+        _Kernel_waiting = new WeakMap, _Kernel_promises = new WeakMap, _Kernel_serializerHost = new WeakMap, 
+        _Kernel_nextid = new WeakMap, _Kernel_syncInProgress = new WeakMap, _Kernel_installDir = new WeakMap, 
+        _Kernel_require = new WeakMap, _Kernel_instances = new WeakSet, _Kernel_load = function _Kernel_load(req) {
+            var _a, _b, _c;
+            __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_debug).call(this, "load", req);
+            if ("assembly" in req) {
+                throw new JsiiFault('`assembly` field is deprecated for "load", use `name`, `version` and `tarball` instead');
+            }
+            const pkgname = req.name;
+            const pkgver = req.version;
+            const packageDir = __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_getPackageDir).call(this, pkgname);
+            if (fs.pathExistsSync(packageDir)) {
+                const epkg = fs.readJsonSync(path.join(packageDir, "package.json"));
+                if (epkg.version !== pkgver) {
+                    throw new JsiiFault(`Multiple versions ${pkgver} and ${epkg.version} of the ` + `package '${pkgname}' cannot be loaded together since this is unsupported by ` + "some runtime environments");
+                }
+                __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_debug).call(this, "look up already-loaded assembly", pkgname);
+                const assm = __classPrivateFieldGet(this, _Kernel_assemblies, "f").get(pkgname);
+                return {
+                    assembly: assm.metadata.name,
+                    types: Object.keys((_a = assm.metadata.types) !== null && _a !== void 0 ? _a : {}).length
+                };
+            }
+            const originalUmask = process.umask(18);
+            try {
+                const {cache} = __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_debugTime).call(this, (() => tar.extract(req.tarball, packageDir, {
+                    strict: true,
+                    strip: 1,
+                    unlink: true
+                }, req.name, req.version)), `tar.extract(${req.tarball}) => ${packageDir}`);
+                if (cache != null) {
+                    __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_debug).call(this, `Package cache enabled, extraction resulted in a cache ${cache}`);
+                }
+            } finally {
+                process.umask(originalUmask);
+            }
+            let assmSpec;
+            try {
+                assmSpec = __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_debugTime).call(this, (() => spec.loadAssemblyFromPath(packageDir, this.validateAssemblies)), `loadAssemblyFromPath(${packageDir})`);
+            } catch (e) {
+                throw new JsiiFault(`Error for package tarball ${req.tarball}: ${e.message}`);
+            }
+            const entryPoint = __classPrivateFieldGet(this, _Kernel_require, "f").resolve(assmSpec.name, {
+                paths: [ __classPrivateFieldGet(this, _Kernel_installDir, "f") ]
+            });
+            const closure = __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_debugTime).call(this, (() => __classPrivateFieldGet(this, _Kernel_require, "f")(entryPoint)), `require(${entryPoint})`);
+            const assm = new Assembly(assmSpec, closure);
+            __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_debugTime).call(this, (() => __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_addAssembly).call(this, assm)), `registerAssembly({ name: ${assm.metadata.name}, types: ${Object.keys((_b = assm.metadata.types) !== null && _b !== void 0 ? _b : {}).length} })`);
+            return {
+                assembly: assmSpec.name,
+                types: Object.keys((_c = assmSpec.types) !== null && _c !== void 0 ? _c : {}).length
+            };
+        }, _Kernel_addAssembly = function _Kernel_addAssembly(assm) {
+            var _a;
+            __classPrivateFieldGet(this, _Kernel_assemblies, "f").set(assm.metadata.name, assm);
+            const jsiiVersion = assm.metadata.jsiiVersion.split(" ", 1)[0];
+            const [jsiiMajor, jsiiMinor, _jsiiPatch, ..._rest] = jsiiVersion.split(".").map((str => parseInt(str, 10)));
+            if (jsiiVersion === "0.0.0" || jsiiMajor > 1 || jsiiMajor === 1 && jsiiMinor >= 19) {
+                __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_debug).call(this, "Using compiler-woven runtime type information!");
+                return;
+            }
+            for (const fqn of Object.keys((_a = assm.metadata.types) !== null && _a !== void 0 ? _a : {})) {
+                const typedef = assm.metadata.types[fqn];
+                switch (typedef.kind) {
+                  case spec.TypeKind.Interface:
+                    continue;
+
+                  case spec.TypeKind.Class:
+                  case spec.TypeKind.Enum:
+                    const constructor = __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_findSymbol).call(this, fqn);
+                    (0, objects_1.tagJsiiConstructor)(constructor, fqn);
+                }
+            }
+        }, _Kernel_findCtor = function _Kernel_findCtor(fqn, args) {
+            if (fqn === wire.EMPTY_OBJECT_FQN) {
+                return {
+                    ctor: Object
+                };
+            }
+            const typeinfo = __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_typeInfoForFqn).call(this, fqn);
+            switch (typeinfo.kind) {
+              case spec.TypeKind.Class:
+                const classType = typeinfo;
+                __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_validateMethodArguments).call(this, classType.initializer, args);
+                return {
+                    ctor: __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_findSymbol).call(this, fqn),
+                    parameters: classType.initializer && classType.initializer.parameters
+                };
+
+              case spec.TypeKind.Interface:
+                throw new JsiiFault(`Cannot create an object with an FQN of an interface: ${fqn}`);
+
+              default:
+                throw new JsiiFault(`Unexpected FQN kind: ${fqn}`);
+            }
+        }, _Kernel_getPackageDir = function _Kernel_getPackageDir(pkgname) {
+            if (!__classPrivateFieldGet(this, _Kernel_installDir, "f")) {
+                __classPrivateFieldSet(this, _Kernel_installDir, fs.mkdtempSync(path.join(os.tmpdir(), "jsii-kernel-")), "f");
+                __classPrivateFieldSet(this, _Kernel_require, (0, module_1.createRequire)(__classPrivateFieldGet(this, _Kernel_installDir, "f")), "f");
+                fs.mkdirpSync(path.join(__classPrivateFieldGet(this, _Kernel_installDir, "f"), "node_modules"));
+                __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_debug).call(this, "creating jsii-kernel modules workdir:", __classPrivateFieldGet(this, _Kernel_installDir, "f"));
+                onExit.removeSync(__classPrivateFieldGet(this, _Kernel_installDir, "f"));
+            }
+            return path.join(__classPrivateFieldGet(this, _Kernel_installDir, "f"), "node_modules", pkgname);
+        }, _Kernel_create = function _Kernel_create(req) {
+            var _a, _b;
+            __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_debug).call(this, "create", req);
+            const {fqn, interfaces, overrides} = req;
+            const requestArgs = (_a = req.args) !== null && _a !== void 0 ? _a : [];
+            const ctorResult = __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_findCtor).call(this, fqn, requestArgs);
+            const ctor = ctorResult.ctor;
+            const obj = new ctor(...__classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_toSandboxValues).call(this, requestArgs, `new ${fqn}`, ctorResult.parameters));
+            const objref = __classPrivateFieldGet(this, _Kernel_objects, "f").registerObject(obj, fqn, (_b = req.interfaces) !== null && _b !== void 0 ? _b : []);
+            if (overrides) {
+                __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_debug).call(this, "overrides", overrides);
+                const overrideTypeErrorMessage = 'Override can either be "method" or "property"';
+                const methods = new Set;
+                const properties = new Set;
+                for (const override of overrides) {
+                    if (api.isMethodOverride(override)) {
+                        if (api.isPropertyOverride(override)) {
+                            throw new JsiiFault(overrideTypeErrorMessage);
+                        }
+                        if (methods.has(override.method)) {
+                            throw new JsiiFault(`Duplicate override for method '${override.method}'`);
+                        }
+                        methods.add(override.method);
+                        __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_applyMethodOverride).call(this, obj, objref, fqn, interfaces, override);
+                    } else if (api.isPropertyOverride(override)) {
+                        if (api.isMethodOverride(override)) {
+                            throw new JsiiFault(overrideTypeErrorMessage);
+                        }
+                        if (properties.has(override.property)) {
+                            throw new JsiiFault(`Duplicate override for property '${override.property}'`);
+                        }
+                        properties.add(override.property);
+                        __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_applyPropertyOverride).call(this, obj, objref, fqn, interfaces, override);
+                    } else {
+                        throw new JsiiFault(overrideTypeErrorMessage);
+                    }
+                }
+            }
+            return objref;
+        }, _Kernel_getSuperPropertyName = function _Kernel_getSuperPropertyName(name) {
+            return `$jsii$super$${name}$`;
+        }, _Kernel_applyPropertyOverride = function _Kernel_applyPropertyOverride(obj, objref, typeFqn, interfaces, override) {
+            if (__classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_tryTypeInfoForMethod).call(this, override.property, typeFqn, interfaces)) {
+                throw new JsiiFault(`Trying to override method '${override.property}' as a property`);
+            }
+            let propInfo = __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_tryTypeInfoForProperty).call(this, override.property, typeFqn, interfaces);
+            if (!propInfo && override.property in obj) {
+                __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_debug).call(this, `Skipping override of private property ${override.property}`);
+                return;
+            }
+            if (!propInfo) {
+                propInfo = {
+                    name: override.property,
+                    type: spec.CANONICAL_ANY
+                };
+            }
+            __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_defineOverridenProperty).call(this, obj, objref, override, propInfo);
+        }, _Kernel_defineOverridenProperty = function _Kernel_defineOverridenProperty(obj, objref, override, propInfo) {
+            var _a;
+            const propertyName = override.property;
+            __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_debug).call(this, "apply override", propertyName);
+            const prev = (_a = getPropertyDescriptor(obj, propertyName)) !== null && _a !== void 0 ? _a : {
+                value: obj[propertyName],
+                writable: true,
+                enumerable: true,
+                configurable: true
+            };
+            const prevEnumerable = prev.enumerable;
+            prev.enumerable = false;
+            Object.defineProperty(obj, __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_getSuperPropertyName).call(this, propertyName), prev);
+            Object.defineProperty(obj, propertyName, {
+                enumerable: prevEnumerable,
+                configurable: prev.configurable,
+                get: () => {
+                    __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_debug).call(this, "virtual get", objref, propertyName, {
+                        cookie: override.cookie
+                    });
+                    const result = this.callbackHandler({
+                        cookie: override.cookie,
+                        cbid: __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_makecbid).call(this),
+                        get: {
+                            objref,
+                            property: propertyName
+                        }
+                    });
+                    __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_debug).call(this, "callback returned", result);
+                    return __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_toSandbox).call(this, result, propInfo, `returned by callback property ${propertyName}`);
+                },
+                set: value => {
+                    __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_debug).call(this, "virtual set", objref, propertyName, {
+                        cookie: override.cookie
+                    });
+                    this.callbackHandler({
+                        cookie: override.cookie,
+                        cbid: __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_makecbid).call(this),
+                        set: {
+                            objref,
+                            property: propertyName,
+                            value: __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_fromSandbox).call(this, value, propInfo, `assigned to callback property ${propertyName}`)
+                        }
+                    });
+                }
+            });
+            function getPropertyDescriptor(obj, propertyName) {
+                const direct = Object.getOwnPropertyDescriptor(obj, propertyName);
+                if (direct != null) {
+                    return direct;
+                }
+                const proto = Object.getPrototypeOf(obj);
+                if (proto == null && proto !== Object.prototype) {
+                    return undefined;
+                }
+                return getPropertyDescriptor(proto, propertyName);
+            }
+        }, _Kernel_applyMethodOverride = function _Kernel_applyMethodOverride(obj, objref, typeFqn, interfaces, override) {
+            if (__classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_tryTypeInfoForProperty).call(this, override.method, typeFqn, interfaces)) {
+                throw new JsiiFault(`Trying to override property '${override.method}' as a method`);
+            }
+            let methodInfo = __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_tryTypeInfoForMethod).call(this, override.method, typeFqn, interfaces);
+            if (!methodInfo && obj[override.method]) {
+                __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_debug).call(this, `Skipping override of private method ${override.method}`);
+                return;
+            }
+            if (!methodInfo) {
+                methodInfo = {
+                    name: override.method,
+                    returns: {
+                        type: spec.CANONICAL_ANY
+                    },
+                    parameters: [ {
+                        name: "args",
+                        type: spec.CANONICAL_ANY,
+                        variadic: true
+                    } ],
+                    variadic: true
+                };
+            }
+            __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_defineOverridenMethod).call(this, obj, objref, override, methodInfo);
+        }, _Kernel_defineOverridenMethod = function _Kernel_defineOverridenMethod(obj, objref, override, methodInfo) {
+            const methodName = override.method;
+            const fqn = (0, objects_1.jsiiTypeFqn)(obj, __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_isVisibleType).bind(this));
+            const methodContext = `${methodInfo.async ? "async " : ""}method${fqn ? `${fqn}#` : methodName}`;
+            if (methodInfo.async) {
+                Object.defineProperty(obj, methodName, {
+                    enumerable: false,
+                    configurable: false,
+                    writable: false,
+                    value: (...methodArgs) => {
+                        __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_debug).call(this, "invoke async method override", override);
+                        const args = __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_toSandboxValues).call(this, methodArgs, methodContext, methodInfo.parameters);
+                        return new Promise(((succeed, fail) => {
+                            var _a;
+                            const cbid = __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_makecbid).call(this);
+                            __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_debug).call(this, "adding callback to queue", cbid);
+                            __classPrivateFieldGet(this, _Kernel_cbs, "f").set(cbid, {
+                                objref,
+                                override,
+                                args,
+                                expectedReturnType: (_a = methodInfo.returns) !== null && _a !== void 0 ? _a : "void",
+                                succeed,
+                                fail
+                            });
+                        }));
+                    }
+                });
+            } else {
+                Object.defineProperty(obj, methodName, {
+                    enumerable: false,
+                    configurable: false,
+                    writable: false,
+                    value: (...methodArgs) => {
+                        var _a;
+                        __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_debug).call(this, "invoke sync method override", override, "args", methodArgs);
+                        const result = this.callbackHandler({
+                            cookie: override.cookie,
+                            cbid: __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_makecbid).call(this),
+                            invoke: {
+                                objref,
+                                method: methodName,
+                                args: __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_fromSandboxValues).call(this, methodArgs, methodContext, methodInfo.parameters)
+                            }
+                        });
+                        __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_debug).call(this, "Result", result);
+                        return __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_toSandbox).call(this, result, (_a = methodInfo.returns) !== null && _a !== void 0 ? _a : "void", `returned by callback method ${methodName}`);
+                    }
+                });
+            }
+        }, _Kernel_findInvokeTarget = function _Kernel_findInvokeTarget(objref, methodName, args) {
+            const {instance, fqn, interfaces} = __classPrivateFieldGet(this, _Kernel_objects, "f").findObject(objref);
+            const ti = __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_typeInfoForMethod).call(this, methodName, fqn, interfaces);
+            __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_validateMethodArguments).call(this, ti, args);
+            let fn = instance.constructor.prototype[methodName];
+            if (!fn) {
+                fn = instance[methodName];
+                if (!fn) {
+                    throw new JsiiFault(`Cannot find ${methodName} on object`);
+                }
+            }
+            return {
+                ti,
+                obj: instance,
+                fn
+            };
+        }, _Kernel_validateMethodArguments = function _Kernel_validateMethodArguments(method, args) {
+            var _a;
+            const params = (_a = method === null || method === void 0 ? void 0 : method.parameters) !== null && _a !== void 0 ? _a : [];
+            if (args.length > params.length && !(method && method.variadic)) {
+                throw new JsiiFault(`Too many arguments (method accepts ${params.length} parameters, got ${args.length} arguments)`);
+            }
+            for (let i = 0; i < params.length; ++i) {
+                const param = params[i];
+                const arg = args[i];
+                if (param.variadic) {
+                    if (params.length <= i) {
+                        return;
+                    }
+                    for (let j = i; j < params.length; j++) {
+                        if (!param.optional && params[j] === undefined) {
+                            throw new JsiiFault(`Unexpected 'undefined' value at index ${j - i} of variadic argument '${param.name}' of type '${spec.describeTypeReference(param.type)}'`);
+                        }
+                    }
+                } else if (!param.optional && arg === undefined) {
+                    throw new JsiiFault(`Not enough arguments. Missing argument for the required parameter '${param.name}' of type '${spec.describeTypeReference(param.type)}'`);
+                }
+            }
+        }, _Kernel_assemblyFor = function _Kernel_assemblyFor(assemblyName) {
+            const assembly = __classPrivateFieldGet(this, _Kernel_assemblies, "f").get(assemblyName);
+            if (!assembly) {
+                throw new JsiiFault(`Could not find assembly: ${assemblyName}`);
+            }
+            return assembly;
+        }, _Kernel_findSymbol = function _Kernel_findSymbol(fqn) {
+            const [assemblyName, ...parts] = fqn.split(".");
+            const assembly = __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_assemblyFor).call(this, assemblyName);
+            let curr = assembly.closure;
+            while (parts.length > 0) {
+                const name = parts.shift();
+                if (!name) {
+                    break;
+                }
+                curr = curr[name];
+            }
+            if (!curr) {
+                throw new JsiiFault(`Could not find symbol ${fqn}`);
+            }
+            return curr;
+        }, _Kernel_typeInfoForFqn = function _Kernel_typeInfoForFqn(fqn) {
+            var _a;
+            const components = fqn.split(".");
+            const moduleName = components[0];
+            const assembly = __classPrivateFieldGet(this, _Kernel_assemblies, "f").get(moduleName);
+            if (!assembly) {
+                throw new JsiiFault(`Module '${moduleName}' not found`);
+            }
+            const types = (_a = assembly.metadata.types) !== null && _a !== void 0 ? _a : {};
+            const fqnInfo = types[fqn];
+            if (!fqnInfo) {
+                throw new JsiiFault(`Type '${fqn}' not found`);
+            }
+            return fqnInfo;
+        }, _Kernel_isVisibleType = function _Kernel_isVisibleType(fqn) {
+            try {
+                __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_typeInfoForFqn).call(this, fqn);
+                return true;
+            } catch (e) {
+                if (e instanceof JsiiFault) {
+                    return false;
+                }
+                throw e;
+            }
+        }, _Kernel_typeInfoForMethod = function _Kernel_typeInfoForMethod(methodName, fqn, interfaces) {
+            const ti = __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_tryTypeInfoForMethod).call(this, methodName, fqn, interfaces);
+            if (!ti) {
+                const addendum = interfaces && interfaces.length > 0 ? ` or interface(s) ${interfaces.join(", ")}` : "";
+                throw new JsiiFault(`Class ${fqn}${addendum} doesn't have a method '${methodName}'`);
+            }
+            return ti;
+        }, _Kernel_tryTypeInfoForMethod = function _Kernel_tryTypeInfoForMethod(methodName, classFqn, interfaces = []) {
+            var _a, _b;
+            for (const fqn of [ classFqn, ...interfaces ]) {
+                if (fqn === wire.EMPTY_OBJECT_FQN) {
+                    continue;
+                }
+                const typeinfo = __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_typeInfoForFqn).call(this, fqn);
+                const methods = (_a = typeinfo.methods) !== null && _a !== void 0 ? _a : [];
+                for (const m of methods) {
+                    if (m.name === methodName) {
+                        return m;
+                    }
+                }
+                const bases = [ typeinfo.base, ...(_b = typeinfo.interfaces) !== null && _b !== void 0 ? _b : [] ];
+                for (const base of bases) {
+                    if (!base) {
+                        continue;
+                    }
+                    const found = __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_tryTypeInfoForMethod).call(this, methodName, base);
+                    if (found) {
+                        return found;
+                    }
+                }
+            }
+            return undefined;
+        }, _Kernel_tryTypeInfoForProperty = function _Kernel_tryTypeInfoForProperty(property, classFqn, interfaces = []) {
+            var _a;
+            for (const fqn of [ classFqn, ...interfaces ]) {
+                if (fqn === wire.EMPTY_OBJECT_FQN) {
+                    continue;
+                }
+                const typeInfo = __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_typeInfoForFqn).call(this, fqn);
+                let properties;
+                let bases;
+                if (spec.isClassType(typeInfo)) {
+                    const classTypeInfo = typeInfo;
+                    properties = classTypeInfo.properties;
+                    bases = classTypeInfo.base ? [ classTypeInfo.base ] : [];
+                } else if (spec.isInterfaceType(typeInfo)) {
+                    const interfaceTypeInfo = typeInfo;
+                    properties = interfaceTypeInfo.properties;
+                    bases = (_a = interfaceTypeInfo.interfaces) !== null && _a !== void 0 ? _a : [];
+                } else {
+                    throw new JsiiFault(`Type of kind ${typeInfo.kind} does not have properties`);
+                }
+                for (const p of properties !== null && properties !== void 0 ? properties : []) {
+                    if (p.name === property) {
+                        return p;
+                    }
+                }
+                for (const baseFqn of bases) {
+                    const ret = __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_tryTypeInfoForProperty).call(this, property, baseFqn);
+                    if (ret) {
+                        return ret;
+                    }
+                }
+            }
+            return undefined;
+        }, _Kernel_typeInfoForProperty = function _Kernel_typeInfoForProperty(property, fqn, interfaces) {
+            const typeInfo = __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_tryTypeInfoForProperty).call(this, property, fqn, interfaces);
+            if (!typeInfo) {
+                const addendum = interfaces && interfaces.length > 0 ? ` or interface(s) ${interfaces.join(", ")}` : "";
+                throw new JsiiFault(`Type ${fqn}${addendum} doesn't have a property '${property}'`);
+            }
+            return typeInfo;
+        }, _Kernel_toSandbox = function _Kernel_toSandbox(v, expectedType, context) {
+            return wire.process(__classPrivateFieldGet(this, _Kernel_serializerHost, "f"), "deserialize", v, expectedType, context);
+        }, _Kernel_fromSandbox = function _Kernel_fromSandbox(v, targetType, context) {
+            return wire.process(__classPrivateFieldGet(this, _Kernel_serializerHost, "f"), "serialize", v, targetType, context);
+        }, _Kernel_toSandboxValues = function _Kernel_toSandboxValues(xs, methodContext, parameters) {
+            return __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_boxUnboxParameters).call(this, xs, methodContext, parameters, __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_toSandbox).bind(this));
+        }, _Kernel_fromSandboxValues = function _Kernel_fromSandboxValues(xs, methodContext, parameters) {
+            return __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_boxUnboxParameters).call(this, xs, methodContext, parameters, __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_fromSandbox).bind(this));
+        }, _Kernel_boxUnboxParameters = function _Kernel_boxUnboxParameters(xs, methodContext, parameters = [], boxUnbox) {
+            const parametersCopy = [ ...parameters ];
+            const variadic = parametersCopy.length > 0 && !!parametersCopy[parametersCopy.length - 1].variadic;
+            while (variadic && parametersCopy.length < xs.length) {
+                parametersCopy.push(parametersCopy[parametersCopy.length - 1]);
+            }
+            if (xs.length > parametersCopy.length) {
+                throw new JsiiFault(`Argument list (${JSON.stringify(xs)}) not same size as expected argument list (length ${parametersCopy.length})`);
+            }
+            return xs.map(((x, i) => boxUnbox(x, parametersCopy[i], `passed to parameter ${parametersCopy[i].name} of ${methodContext}`)));
+        }, _Kernel_debug = function _Kernel_debug(...args) {
+            if (this.traceEnabled) {
+                console.error("[@jsii/kernel]", ...args);
+            }
+        }, _Kernel_debugTime = function _Kernel_debugTime(cb, label) {
+            const fullLabel = `[@jsii/kernel:timing] ${label}`;
+            if (this.debugTimingEnabled) {
+                console.time(fullLabel);
+            }
+            try {
+                return cb();
+            } finally {
+                if (this.debugTimingEnabled) {
+                    console.timeEnd(fullLabel);
+                }
+            }
+        }, _Kernel_ensureSync = function _Kernel_ensureSync(desc, fn) {
+            __classPrivateFieldSet(this, _Kernel_syncInProgress, desc, "f");
+            try {
+                return fn();
+            } catch (e) {
+                if (e.name === "@jsii/kernel.Fault") {
+                    if (e instanceof JsiiFault) {
+                        throw e;
+                    }
+                    throw new JsiiFault(e);
+                }
+                if (e instanceof RuntimeError) {
+                    throw e;
+                }
+                throw new RuntimeError(e);
+            } finally {
+                __classPrivateFieldSet(this, _Kernel_syncInProgress, undefined, "f");
+            }
+        }, _Kernel_findPropertyTarget = function _Kernel_findPropertyTarget(obj, property) {
+            const superProp = __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_getSuperPropertyName).call(this, property);
+            if (superProp in obj) {
+                return superProp;
+            }
+            return property;
+        }, _Kernel_getBinScriptCommand = function _Kernel_getBinScriptCommand(req) {
+            var _a, _b;
+            const packageDir = __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_getPackageDir).call(this, req.assembly);
+            if (fs.pathExistsSync(packageDir)) {
+                const epkg = fs.readJsonSync(path.join(packageDir, "package.json"));
+                const scriptPath = (_a = epkg.bin) === null || _a === void 0 ? void 0 : _a[req.script];
+                if (!epkg.bin) {
+                    throw new JsiiFault(`Script with name ${req.script} was not defined.`);
+                }
+                return {
+                    command: path.join(packageDir, scriptPath),
+                    args: (_b = req.args) !== null && _b !== void 0 ? _b : [],
+                    env: {
+                        ...process.env,
+                        NODE_OPTIONS: process.execArgv.join(" "),
+                        PATH: `${path.dirname(process.execPath)}:${process.env.PATH}`
+                    }
+                };
+            }
+            throw new JsiiFault(`Package with name ${req.assembly} was not loaded.`);
+        }, _Kernel_makecbid = function _Kernel_makecbid() {
+            var _a, _b;
+            return `jsii::callback::${__classPrivateFieldSet(this, _Kernel_nextid, (_b = __classPrivateFieldGet(this, _Kernel_nextid, "f"), 
+            _a = _b++, _b), "f"), _a}`;
+        }, _Kernel_makeprid = function _Kernel_makeprid() {
+            var _a, _b;
+            return `jsii::promise::${__classPrivateFieldSet(this, _Kernel_nextid, (_b = __classPrivateFieldGet(this, _Kernel_nextid, "f"), 
+            _a = _b++, _b), "f"), _a}`;
+        };
         class Assembly {
             constructor(metadata, closure) {
                 this.metadata = metadata;
@@ -10422,7 +10436,15 @@ var __webpack_modules__ = {
         exports.link = void 0;
         const fs_1 = __webpack_require__(7147);
         const path_1 = __webpack_require__(4822);
+        const PRESERVE_SYMLINKS = process.execArgv.includes("--preserve-symlinks");
         function link(existing, destination) {
+            if (PRESERVE_SYMLINKS) {
+                (0, fs_1.mkdirSync)((0, path_1.dirname)(destination), {
+                    recursive: true
+                });
+                (0, fs_1.symlinkSync)(existing, destination);
+                return;
+            }
             const stat = (0, fs_1.statSync)(existing);
             if (!stat.isDirectory()) {
                 try {
@@ -10441,8 +10463,21 @@ var __webpack_modules__ = {
         }
         exports.link = link;
     },
-    2309: (__unused_webpack_module, exports, __webpack_require__) => {
+    2309: function(__unused_webpack_module, exports, __webpack_require__) {
         "use strict";
+        var __classPrivateFieldSet = this && this.__classPrivateFieldSet || function(receiver, state, value, kind, f) {
+            if (kind === "m") throw new TypeError("Private method is not writable");
+            if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a setter");
+            if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot write private member to an object whose class did not declare it");
+            return kind === "a" ? f.call(receiver, value) : f ? f.value = value : state.set(receiver, value), 
+            value;
+        };
+        var __classPrivateFieldGet = this && this.__classPrivateFieldGet || function(receiver, state, kind, f) {
+            if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a getter");
+            if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
+            return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
+        };
+        var _ObjectTable_instances, _ObjectTable_resolveType, _ObjectTable_objects, _ObjectTable_nextid, _ObjectTable_makeId, _ObjectTable_removeRedundant, _InterfaceCollection_resolveType, _InterfaceCollection_interfaces;
         Object.defineProperty(exports, "__esModule", {
             value: true
         });
@@ -10455,8 +10490,24 @@ var __webpack_modules__ = {
         const OBJID_SYMBOL = Symbol.for("$__jsii__objid__$");
         const IFACES_SYMBOL = Symbol.for("$__jsii__interfaces__$");
         const JSII_TYPE_FQN_SYMBOL = Symbol("$__jsii__fqn__$");
-        function jsiiTypeFqn(obj) {
-            return obj.constructor[JSII_TYPE_FQN_SYMBOL];
+        const JSII_RTTI_SYMBOL = Symbol.for("jsii.rtti");
+        function jsiiTypeFqn(obj, isVisibleType) {
+            var _a;
+            const ctor = obj.constructor;
+            if (ctor[JSII_TYPE_FQN_SYMBOL] != null) {
+                return ctor[JSII_TYPE_FQN_SYMBOL];
+            }
+            let curr = ctor;
+            while ((_a = curr[JSII_RTTI_SYMBOL]) === null || _a === void 0 ? void 0 : _a.fqn) {
+                if (isVisibleType(curr[JSII_RTTI_SYMBOL].fqn)) {
+                    const fqn = curr[JSII_RTTI_SYMBOL].fqn;
+                    tagJsiiConstructor(curr, fqn);
+                    tagJsiiConstructor(ctor, fqn);
+                    return fqn;
+                }
+                curr = Object.getPrototypeOf(curr);
+            }
+            return undefined;
         }
         exports.jsiiTypeFqn = jsiiTypeFqn;
         function objectReference(obj) {
@@ -10489,7 +10540,7 @@ var __webpack_modules__ = {
         }
         function tagJsiiConstructor(constructor, fqn) {
             if (Object.prototype.hasOwnProperty.call(constructor, JSII_TYPE_FQN_SYMBOL)) {
-                return assert(constructor[JSII_TYPE_FQN_SYMBOL] === fqn, `Unable to register ${constructor.name} as ${fqn}: it is already registerd with FQN ${constructor[JSII_TYPE_FQN_SYMBOL]}`);
+                return assert.strictEqual(constructor[JSII_TYPE_FQN_SYMBOL], fqn, `Unable to register ${constructor.name} as ${fqn}: it is already registerd with FQN ${constructor[JSII_TYPE_FQN_SYMBOL]}`);
             }
             Object.defineProperty(constructor, JSII_TYPE_FQN_SYMBOL, {
                 configurable: false,
@@ -10501,9 +10552,11 @@ var __webpack_modules__ = {
         exports.tagJsiiConstructor = tagJsiiConstructor;
         class ObjectTable {
             constructor(resolveType) {
-                this.resolveType = resolveType;
-                this.objects = new Map;
-                this.nextid = 1e4;
+                _ObjectTable_instances.add(this);
+                _ObjectTable_resolveType.set(this, void 0);
+                _ObjectTable_objects.set(this, new Map);
+                _ObjectTable_nextid.set(this, 1e4);
+                __classPrivateFieldSet(this, _ObjectTable_resolveType, resolveType, "f");
             }
             registerObject(obj, fqn, interfaces) {
                 var _a;
@@ -10520,13 +10573,13 @@ var __webpack_modules__ = {
                         if (!Object.prototype.hasOwnProperty.call(obj, IFACES_SYMBOL)) {
                             console.error(`[jsii/kernel] WARNING: referenced object ${existingRef[api.TOKEN_REF]} does not have the ${String(IFACES_SYMBOL)} property!`);
                         }
-                        this.objects.get(existingRef[api.TOKEN_REF]).interfaces = obj[IFACES_SYMBOL] = existingRef[api.TOKEN_INTERFACES] = interfaces = this.removeRedundant(Array.from(allIfaces), fqn);
+                        __classPrivateFieldGet(this, _ObjectTable_objects, "f").get(existingRef[api.TOKEN_REF]).interfaces = obj[IFACES_SYMBOL] = existingRef[api.TOKEN_INTERFACES] = interfaces = __classPrivateFieldGet(this, _ObjectTable_instances, "m", _ObjectTable_removeRedundant).call(this, Array.from(allIfaces), fqn);
                     }
                     return existingRef;
                 }
-                interfaces = this.removeRedundant(interfaces, fqn);
-                const objid = this.makeId(fqn);
-                this.objects.set(objid, {
+                interfaces = __classPrivateFieldGet(this, _ObjectTable_instances, "m", _ObjectTable_removeRedundant).call(this, interfaces, fqn);
+                const objid = __classPrivateFieldGet(this, _ObjectTable_instances, "m", _ObjectTable_makeId).call(this, fqn);
+                __classPrivateFieldGet(this, _ObjectTable_objects, "f").set(objid, {
                     instance: obj,
                     fqn,
                     interfaces
@@ -10543,7 +10596,7 @@ var __webpack_modules__ = {
                     throw new kernel_1.JsiiFault(`Malformed object reference: ${JSON.stringify(objref)}`);
                 }
                 const objid = objref[api.TOKEN_REF];
-                const obj = this.objects.get(objid);
+                const obj = __classPrivateFieldGet(this, _ObjectTable_objects, "f").get(objid);
                 if (!obj) {
                     throw new kernel_1.JsiiFault(`Object ${objid} not found`);
                 }
@@ -10557,40 +10610,43 @@ var __webpack_modules__ = {
                 return obj;
             }
             deleteObject({[api.TOKEN_REF]: objid}) {
-                if (!this.objects.delete(objid)) {
+                if (!__classPrivateFieldGet(this, _ObjectTable_objects, "f").delete(objid)) {
                     throw new kernel_1.JsiiFault(`Object ${objid} not found`);
                 }
             }
             get count() {
-                return this.objects.size;
-            }
-            makeId(fqn) {
-                return `${fqn}@${this.nextid++}`;
-            }
-            removeRedundant(interfaces, fqn) {
-                if (!interfaces || interfaces.length === 0) {
-                    return undefined;
-                }
-                const result = new Set(interfaces);
-                const builtIn = new InterfaceCollection(this.resolveType);
-                if (fqn !== serialization_1.EMPTY_OBJECT_FQN) {
-                    builtIn.addFromClass(fqn);
-                }
-                interfaces.forEach(builtIn.addFromInterface.bind(builtIn));
-                for (const iface of builtIn) {
-                    result.delete(iface);
-                }
-                return result.size > 0 ? Array.from(result).sort() : undefined;
+                return __classPrivateFieldGet(this, _ObjectTable_objects, "f").size;
             }
         }
         exports.ObjectTable = ObjectTable;
+        _ObjectTable_resolveType = new WeakMap, _ObjectTable_objects = new WeakMap, _ObjectTable_nextid = new WeakMap, 
+        _ObjectTable_instances = new WeakSet, _ObjectTable_makeId = function _ObjectTable_makeId(fqn) {
+            var _a, _b;
+            return `${fqn}@${__classPrivateFieldSet(this, _ObjectTable_nextid, (_b = __classPrivateFieldGet(this, _ObjectTable_nextid, "f"), 
+            _a = _b++, _b), "f"), _a}`;
+        }, _ObjectTable_removeRedundant = function _ObjectTable_removeRedundant(interfaces, fqn) {
+            if (!interfaces || interfaces.length === 0) {
+                return undefined;
+            }
+            const result = new Set(interfaces);
+            const builtIn = new InterfaceCollection(__classPrivateFieldGet(this, _ObjectTable_resolveType, "f"));
+            if (fqn !== serialization_1.EMPTY_OBJECT_FQN) {
+                builtIn.addFromClass(fqn);
+            }
+            interfaces.forEach(builtIn.addFromInterface.bind(builtIn));
+            for (const iface of builtIn) {
+                result.delete(iface);
+            }
+            return result.size > 0 ? Array.from(result).sort() : undefined;
+        };
         class InterfaceCollection {
             constructor(resolveType) {
-                this.resolveType = resolveType;
-                this.interfaces = new Set;
+                _InterfaceCollection_resolveType.set(this, void 0);
+                _InterfaceCollection_interfaces.set(this, new Set);
+                __classPrivateFieldSet(this, _InterfaceCollection_resolveType, resolveType, "f");
             }
             addFromClass(fqn) {
-                const ti = this.resolveType(fqn);
+                const ti = __classPrivateFieldGet(this, _InterfaceCollection_resolveType, "f").call(this, fqn);
                 if (!spec.isClassType(ti)) {
                     throw new kernel_1.JsiiFault(`Expected a class, but received ${spec.describeTypeReference(ti)}`);
                 }
@@ -10599,16 +10655,16 @@ var __webpack_modules__ = {
                 }
                 if (ti.interfaces) {
                     for (const iface of ti.interfaces) {
-                        if (this.interfaces.has(iface)) {
+                        if (__classPrivateFieldGet(this, _InterfaceCollection_interfaces, "f").has(iface)) {
                             continue;
                         }
-                        this.interfaces.add(iface);
+                        __classPrivateFieldGet(this, _InterfaceCollection_interfaces, "f").add(iface);
                         this.addFromInterface(iface);
                     }
                 }
             }
             addFromInterface(fqn) {
-                const ti = this.resolveType(fqn);
+                const ti = __classPrivateFieldGet(this, _InterfaceCollection_resolveType, "f").call(this, fqn);
                 if (!spec.isInterfaceType(ti)) {
                     throw new kernel_1.JsiiFault(`Expected an interface, but received ${spec.describeTypeReference(ti)}`);
                 }
@@ -10616,15 +10672,16 @@ var __webpack_modules__ = {
                     return;
                 }
                 for (const iface of ti.interfaces) {
-                    if (this.interfaces.has(iface)) {
+                    if (__classPrivateFieldGet(this, _InterfaceCollection_interfaces, "f").has(iface)) {
                         continue;
                     }
-                    this.interfaces.add(iface);
+                    __classPrivateFieldGet(this, _InterfaceCollection_interfaces, "f").add(iface);
                     this.addFromInterface(iface);
                 }
             }
-            [Symbol.iterator]() {
-                return this.interfaces[Symbol.iterator]();
+            [(_InterfaceCollection_resolveType = new WeakMap, _InterfaceCollection_interfaces = new WeakMap, 
+            Symbol.iterator)]() {
+                return __classPrivateFieldGet(this, _InterfaceCollection_interfaces, "f")[Symbol.iterator]();
             }
         }
     },
@@ -10689,65 +10746,65 @@ var __webpack_modules__ = {
                 }
             },
             ["Date"]: {
-                serialize(value, optionalValue) {
-                    if (nullAndOk(value, optionalValue)) {
+                serialize(value, optionalValue, host) {
+                    if (nullAndOk(value, optionalValue, host)) {
                         return undefined;
                     }
                     assert(optionalValue !== VOID, "Encountered unexpected void type!");
                     if (!isDate(value)) {
-                        throw new SerializationError(`Value is not an instance of Date`, value);
+                        throw new SerializationError(`Value is not an instance of Date`, value, host);
                     }
                     return serializeDate(value);
                 },
-                deserialize(value, optionalValue) {
-                    if (nullAndOk(value, optionalValue)) {
+                deserialize(value, optionalValue, host) {
+                    if (nullAndOk(value, optionalValue, host)) {
                         return undefined;
                     }
                     if (!(0, api_1.isWireDate)(value)) {
-                        throw new SerializationError(`Value does not have the "${api_1.TOKEN_DATE}" key`, value);
+                        throw new SerializationError(`Value does not have the "${api_1.TOKEN_DATE}" key`, value, host);
                     }
                     return deserializeDate(value);
                 }
             },
             ["Scalar"]: {
-                serialize(value, optionalValue) {
-                    if (nullAndOk(value, optionalValue)) {
+                serialize(value, optionalValue, host) {
+                    if (nullAndOk(value, optionalValue, host)) {
                         return undefined;
                     }
                     assert(optionalValue !== VOID, "Encountered unexpected void type!");
                     const primitiveType = optionalValue.type;
                     if (!isScalar(value)) {
-                        throw new SerializationError(`Value is not a ${spec.describeTypeReference(optionalValue.type)}`, value);
+                        throw new SerializationError(`Value is not a ${spec.describeTypeReference(optionalValue.type)}`, value, host);
                     }
                     if (typeof value !== primitiveType.primitive) {
-                        throw new SerializationError(`Value is not a ${spec.describeTypeReference(optionalValue.type)}`, value);
+                        throw new SerializationError(`Value is not a ${spec.describeTypeReference(optionalValue.type)}`, value, host);
                     }
                     return value;
                 },
-                deserialize(value, optionalValue) {
-                    if (nullAndOk(value, optionalValue)) {
+                deserialize(value, optionalValue, host) {
+                    if (nullAndOk(value, optionalValue, host)) {
                         return undefined;
                     }
                     assert(optionalValue !== VOID, "Encountered unexpected void type!");
                     const primitiveType = optionalValue.type;
                     if (!isScalar(value)) {
-                        throw new SerializationError(`Value is not a ${spec.describeTypeReference(optionalValue.type)}`, value);
+                        throw new SerializationError(`Value is not a ${spec.describeTypeReference(optionalValue.type)}`, value, host);
                     }
                     if (typeof value !== primitiveType.primitive) {
-                        throw new SerializationError(`Value is not a ${spec.describeTypeReference(optionalValue.type)}`, value);
+                        throw new SerializationError(`Value is not a ${spec.describeTypeReference(optionalValue.type)}`, value, host);
                     }
                     return value;
                 }
             },
             ["Json"]: {
-                serialize(value, optionalValue) {
-                    if (nullAndOk(value, optionalValue)) {
+                serialize(value, optionalValue, host) {
+                    if (nullAndOk(value, optionalValue, host)) {
                         return undefined;
                     }
                     return value;
                 },
                 deserialize(value, optionalValue, host) {
-                    if (nullAndOk(value, optionalValue)) {
+                    if (nullAndOk(value, optionalValue, host)) {
                         return undefined;
                     }
                     if ((0, api_1.isWireMap)(value)) {
@@ -10770,7 +10827,7 @@ var __webpack_modules__ = {
                     if (Array.isArray(value)) {
                         return value.map(mapJsonValue);
                     }
-                    return mapValues(value, mapJsonValue);
+                    return mapValues(value, mapJsonValue, host);
                     function mapJsonValue(toMap, key) {
                         if (toMap == null) {
                             return toMap;
@@ -10785,42 +10842,42 @@ var __webpack_modules__ = {
             },
             ["Enum"]: {
                 serialize(value, optionalValue, host) {
-                    if (nullAndOk(value, optionalValue)) {
+                    if (nullAndOk(value, optionalValue, host)) {
                         return undefined;
                     }
                     assert(optionalValue !== VOID, "Encountered unexpected void type!");
                     if (typeof value !== "string" && typeof value !== "number") {
-                        throw new SerializationError(`Value is not a string or number`, value);
+                        throw new SerializationError(`Value is not a string or number`, value, host);
                     }
                     host.debug("Serializing enum");
                     const enumType = optionalValue.type;
                     const enumMap = host.findSymbol(enumType.fqn);
                     const enumEntry = Object.entries(enumMap).find((([, v]) => v === value));
                     if (!enumEntry) {
-                        throw new SerializationError(`Value is not present in enum ${spec.describeTypeReference(enumType)}`, value);
+                        throw new SerializationError(`Value is not present in enum ${spec.describeTypeReference(enumType)}`, value, host);
                     }
                     return {
                         [api_1.TOKEN_ENUM]: `${enumType.fqn}/${enumEntry[0]}`
                     };
                 },
                 deserialize(value, optionalValue, host) {
-                    if (nullAndOk(value, optionalValue)) {
+                    if (nullAndOk(value, optionalValue, host)) {
                         return undefined;
                     }
                     if (!(0, api_1.isWireEnum)(value)) {
-                        throw new SerializationError(`Value does not have the "${api_1.TOKEN_ENUM}" key`, value);
+                        throw new SerializationError(`Value does not have the "${api_1.TOKEN_ENUM}" key`, value, host);
                     }
-                    return deserializeEnum(value, host.findSymbol);
+                    return deserializeEnum(value, host);
                 }
             },
             ["Array"]: {
                 serialize(value, optionalValue, host) {
-                    if (nullAndOk(value, optionalValue)) {
+                    if (nullAndOk(value, optionalValue, host)) {
                         return undefined;
                     }
                     assert(optionalValue !== VOID, "Encountered unexpected void type!");
                     if (!Array.isArray(value)) {
-                        throw new SerializationError(`Value is not an array`, value);
+                        throw new SerializationError(`Value is not an array`, value, host);
                     }
                     const arrayType = optionalValue.type;
                     return value.map(((x, idx) => process(host, "serialize", x, {
@@ -10828,12 +10885,12 @@ var __webpack_modules__ = {
                     }, `index ${(0, util_1.inspect)(idx)}`)));
                 },
                 deserialize(value, optionalValue, host) {
-                    if (nullAndOk(value, optionalValue)) {
+                    if (nullAndOk(value, optionalValue, host)) {
                         return undefined;
                     }
                     assert(optionalValue !== VOID, "Encountered unexpected void type!");
                     if (!Array.isArray(value)) {
-                        throw new SerializationError(`Value is not an array`, value);
+                        throw new SerializationError(`Value is not an array`, value, host);
                     }
                     const arrayType = optionalValue.type;
                     return value.map(((x, idx) => process(host, "deserialize", x, {
@@ -10843,7 +10900,7 @@ var __webpack_modules__ = {
             },
             ["Map"]: {
                 serialize(value, optionalValue, host) {
-                    if (nullAndOk(value, optionalValue)) {
+                    if (nullAndOk(value, optionalValue, host)) {
                         return undefined;
                     }
                     assert(optionalValue !== VOID, "Encountered unexpected void type!");
@@ -10851,11 +10908,11 @@ var __webpack_modules__ = {
                     return {
                         [api_1.TOKEN_MAP]: mapValues(value, ((v, key) => process(host, "serialize", v, {
                             type: mapType.collection.elementtype
-                        }, `key ${(0, util_1.inspect)(key)}`)))
+                        }, `key ${(0, util_1.inspect)(key)}`)), host)
                     };
                 },
                 deserialize(value, optionalValue, host, {allowNullishMapValue = false} = {}) {
-                    if (nullAndOk(value, optionalValue)) {
+                    if (nullAndOk(value, optionalValue, host)) {
                         return undefined;
                     }
                     assert(optionalValue !== VOID, "Encountered unexpected void type!");
@@ -10864,12 +10921,12 @@ var __webpack_modules__ = {
                         return mapValues(value, ((v, key) => process(host, "deserialize", v, {
                             optional: allowNullishMapValue,
                             type: mapType.collection.elementtype
-                        }, `key ${(0, util_1.inspect)(key)}`)));
+                        }, `key ${(0, util_1.inspect)(key)}`)), host);
                     }
                     const result = mapValues(value[api_1.TOKEN_MAP], ((v, key) => process(host, "deserialize", v, {
                         optional: allowNullishMapValue,
                         type: mapType.collection.elementtype
-                    }, `key ${(0, util_1.inspect)(key)}`)));
+                    }, `key ${(0, util_1.inspect)(key)}`)), host);
                     Object.defineProperty(result, exports.SYMBOL_WIRE_TYPE, {
                         configurable: false,
                         enumerable: false,
@@ -10881,15 +10938,15 @@ var __webpack_modules__ = {
             },
             ["Struct"]: {
                 serialize(value, optionalValue, host) {
-                    if (nullAndOk(value, optionalValue)) {
+                    if (nullAndOk(value, optionalValue, host)) {
                         return undefined;
                     }
                     assert(optionalValue !== VOID, "Encountered unexpected void type!");
                     if (typeof value !== "object" || value == null || value instanceof Date) {
-                        throw new SerializationError(`Value is not an object`, value);
+                        throw new SerializationError(`Value is not an object`, value, host);
                     }
                     if (Array.isArray(value)) {
-                        throw new SerializationError(`Value is an array`, value);
+                        throw new SerializationError(`Value is an array`, value, host);
                     }
                     host.debug("Returning value type by reference");
                     return host.objects.registerObject(value, exports.EMPTY_OBJECT_FQN, [ optionalValue.type.fqn ]);
@@ -10898,66 +10955,66 @@ var __webpack_modules__ = {
                     if (typeof value === "object" && Object.keys(value !== null && value !== void 0 ? value : {}).length === 0) {
                         value = undefined;
                     }
-                    if (nullAndOk(value, optionalValue)) {
+                    if (nullAndOk(value, optionalValue, host)) {
                         return undefined;
                     }
                     assert(optionalValue !== VOID, "Encountered unexpected void type!");
                     if (typeof value !== "object" || value == null) {
-                        throw new SerializationError(`Value is not an object`, value);
+                        throw new SerializationError(`Value is not an object`, value, host);
                     }
                     const namedType = host.lookupType(optionalValue.type.fqn);
                     const props = propertiesOf(namedType, host.lookupType);
                     if (Array.isArray(value)) {
-                        throw new SerializationError("Value is an array (varargs may have been incorrectly supplied)", value);
+                        throw new SerializationError("Value is an array (varargs may have been incorrectly supplied)", value, host);
                     }
                     if ((0, api_1.isObjRef)(value)) {
                         host.debug("Expected value type but got reference type, accepting for now (awslabs/jsii#400)");
-                        return validateRequiredProps(host.objects.findObject(value).instance, namedType.fqn, props);
+                        return validateRequiredProps(host.objects.findObject(value).instance, namedType.fqn, props, host);
                     }
                     if (_1.api.isWireStruct(value)) {
                         const {fqn, data} = value[_1.api.TOKEN_STRUCT];
                         if (!isAssignable(fqn, namedType, host.lookupType)) {
-                            throw new SerializationError(`Wired struct has type '${fqn}', which does not match expected type`, value);
+                            throw new SerializationError(`Wired struct has type '${fqn}', which does not match expected type`, value, host);
                         }
                         value = data;
                     }
                     if (_1.api.isWireMap(value)) {
                         value = value[_1.api.TOKEN_MAP];
                     }
-                    value = validateRequiredProps(value, namedType.fqn, props);
+                    value = validateRequiredProps(value, namedType.fqn, props, host);
                     return mapValues(value, ((v, key) => {
                         if (!props[key]) {
                             return undefined;
                         }
                         return process(host, "deserialize", v, props[key], `key ${(0, util_1.inspect)(key)}`);
-                    }));
+                    }), host);
                 }
             },
             ["RefType"]: {
                 serialize(value, optionalValue, host) {
                     var _a;
-                    if (nullAndOk(value, optionalValue)) {
+                    if (nullAndOk(value, optionalValue, host)) {
                         return undefined;
                     }
                     assert(optionalValue !== VOID, "Encountered unexpected void type!");
                     if (typeof value !== "object" || value == null || Array.isArray(value)) {
-                        throw new SerializationError(`Value is not an object`, value);
+                        throw new SerializationError(`Value is not an object`, value, host);
                     }
                     if (value instanceof Date) {
-                        throw new SerializationError(`Value is a Date`, value);
+                        throw new SerializationError(`Value is a Date`, value, host);
                     }
                     const expectedType = host.lookupType(optionalValue.type.fqn);
                     const interfaces = spec.isInterfaceType(expectedType) ? [ expectedType.fqn ] : undefined;
-                    const jsiiType = (_a = (0, objects_1.jsiiTypeFqn)(value)) !== null && _a !== void 0 ? _a : spec.isClassType(expectedType) ? expectedType.fqn : exports.EMPTY_OBJECT_FQN;
+                    const jsiiType = (_a = (0, objects_1.jsiiTypeFqn)(value, host.isVisibleType)) !== null && _a !== void 0 ? _a : spec.isClassType(expectedType) ? expectedType.fqn : exports.EMPTY_OBJECT_FQN;
                     return host.objects.registerObject(value, jsiiType, interfaces);
                 },
                 deserialize(value, optionalValue, host) {
-                    if (nullAndOk(value, optionalValue)) {
+                    if (nullAndOk(value, optionalValue, host)) {
                         return undefined;
                     }
                     assert(optionalValue !== VOID, "Encountered unexpected void type!");
                     if (!(0, api_1.isObjRef)(value)) {
-                        throw new SerializationError(`Value does not have the "${api_1.TOKEN_REF}" key`, value);
+                        throw new SerializationError(`Value does not have the "${api_1.TOKEN_REF}" key`, value, host);
                     }
                     const {instance, fqn} = host.objects.findObject(value);
                     const namedTypeRef = optionalValue.type;
@@ -10965,7 +11022,7 @@ var __webpack_modules__ = {
                         const namedType = host.lookupType(namedTypeRef.fqn);
                         const declaredType = optionalValue.type;
                         if (spec.isClassType(namedType) && !isAssignable(fqn, declaredType, host.lookupType)) {
-                            throw new SerializationError(`Object of type '${fqn}' is not convertible to ${spec.describeTypeReference(declaredType)}`, value);
+                            throw new SerializationError(`Object of type '${fqn}' is not convertible to ${spec.describeTypeReference(declaredType)}`, value, host);
                         }
                     }
                     return instance;
@@ -10989,10 +11046,10 @@ var __webpack_modules__ = {
                         }, `index ${(0, util_1.inspect)(idx)}`)));
                     }
                     if (typeof value === "function") {
-                        throw new SerializationError("Functions cannot be passed across language boundaries", value);
+                        throw new SerializationError("Functions cannot be passed across language boundaries", value, host);
                     }
                     if (typeof value !== "object" || value == null) {
-                        throw new SerializationError(`A jsii kernel assumption was violated: value is not an object`, value);
+                        throw new SerializationError(`A jsii kernel assumption was violated: value is not an object`, value, host);
                     }
                     if (exports.SYMBOL_WIRE_TYPE in value && value[exports.SYMBOL_WIRE_TYPE] === api_1.TOKEN_MAP) {
                         return exports.SERIALIZERS["Map"].serialize(value, {
@@ -11005,19 +11062,19 @@ var __webpack_modules__ = {
                         }, host);
                     }
                     if (value instanceof Set || value instanceof Map) {
-                        throw new SerializationError("Set and Map instances cannot be sent across the language boundary", value);
+                        throw new SerializationError("Set and Map instances cannot be sent across the language boundary", value, host);
                     }
                     const prevRef = (0, objects_1.objectReference)(value);
                     if (prevRef) {
                         return prevRef;
                     }
-                    const jsiiType = (_a = (0, objects_1.jsiiTypeFqn)(value)) !== null && _a !== void 0 ? _a : isByReferenceOnly(value) ? exports.EMPTY_OBJECT_FQN : undefined;
+                    const jsiiType = (_a = (0, objects_1.jsiiTypeFqn)(value, host.isVisibleType)) !== null && _a !== void 0 ? _a : isByReferenceOnly(value) ? exports.EMPTY_OBJECT_FQN : undefined;
                     if (jsiiType) {
                         return host.objects.registerObject(value, jsiiType);
                     }
                     return mapValues(value, ((v, key) => process(host, "serialize", v, {
                         type: spec.CANONICAL_ANY
-                    }, `key ${(0, util_1.inspect)(key)}`)));
+                    }, `key ${(0, util_1.inspect)(key)}`)), host);
                 },
                 deserialize(value, _type, host) {
                     if (value == null) {
@@ -11039,7 +11096,7 @@ var __webpack_modules__ = {
                     }
                     if ((0, api_1.isWireEnum)(value)) {
                         host.debug("ANY is an Enum");
-                        return deserializeEnum(value, host.findSymbol);
+                        return deserializeEnum(value, host);
                     }
                     if ((0, api_1.isWireMap)(value)) {
                         host.debug("ANY is a Map");
@@ -11069,7 +11126,7 @@ var __webpack_modules__ = {
                     host.debug("ANY is a Map");
                     return mapValues(value, ((v, key) => process(host, "deserialize", v, {
                         type: spec.CANONICAL_ANY
-                    }, `key ${(0, util_1.inspect)(key)}`)));
+                    }, `key ${(0, util_1.inspect)(key)}`)), host);
                 }
             }
         };
@@ -11081,17 +11138,17 @@ var __webpack_modules__ = {
         function deserializeDate(value) {
             return new Date(value[api_1.TOKEN_DATE]);
         }
-        function deserializeEnum(value, lookup) {
+        function deserializeEnum(value, host) {
             const enumLocator = value[api_1.TOKEN_ENUM];
             const sep = enumLocator.lastIndexOf("/");
             if (sep === -1) {
-                throw new SerializationError(`Invalid enum token value ${(0, util_1.inspect)(enumLocator)}`, value);
+                throw new SerializationError(`Invalid enum token value ${(0, util_1.inspect)(enumLocator)}`, value, host);
             }
             const typeName = enumLocator.slice(0, sep);
             const valueName = enumLocator.slice(sep + 1);
-            const enumValue = lookup(typeName)[valueName];
+            const enumValue = host.findSymbol(typeName)[valueName];
             if (enumValue === undefined) {
-                throw new SerializationError(`No such enum member: ${(0, util_1.inspect)(valueName)}`, value);
+                throw new SerializationError(`No such enum member: ${(0, util_1.inspect)(valueName)}`, value, host);
             }
             return enumValue;
         }
@@ -11169,12 +11226,12 @@ var __webpack_modules__ = {
             } ];
         }
         exports.serializationType = serializationType;
-        function nullAndOk(x, type) {
+        function nullAndOk(x, type, host) {
             if (x != null) {
                 return false;
             }
             if (type !== "void" && !type.optional) {
-                throw new SerializationError(`A value is required (type is non-optional)`, x);
+                throw new SerializationError(`A value is required (type is non-optional)`, x, host);
             }
             return true;
         }
@@ -11191,12 +11248,12 @@ var __webpack_modules__ = {
             }
             return ret;
         }
-        function mapValues(value, fn) {
+        function mapValues(value, fn, host) {
             if (typeof value !== "object" || value == null) {
-                throw new SerializationError(`Value is not an object`, value);
+                throw new SerializationError(`Value is not an object`, value, host);
             }
             if (Array.isArray(value)) {
-                throw new SerializationError(`Value is an array`, value);
+                throw new SerializationError(`Value is an array`, value, host);
             }
             const out = {};
             for (const [k, v] of Object.entries(value)) {
@@ -11251,11 +11308,11 @@ var __webpack_modules__ = {
             }
             return false;
         }
-        function validateRequiredProps(actualProps, typeName, specProps) {
+        function validateRequiredProps(actualProps, typeName, specProps, host) {
             const missingRequiredProps = Object.keys(specProps).filter((name => !specProps[name].optional)).filter((name => !(name in actualProps)));
             if (missingRequiredProps.length > 0) {
                 throw new SerializationError(`Missing required properties for ${typeName}: ${missingRequiredProps.map((p => (0, 
-                util_1.inspect)(p))).join(", ")}`, actualProps);
+                util_1.inspect)(p))).join(", ")}`, actualProps, host);
             }
             return actualProps;
         }
@@ -11292,7 +11349,7 @@ var __webpack_modules__ = {
             }
             const typeDescr = type === VOID ? type : spec.describeTypeReference(type.type);
             const optionalTypeDescr = type !== VOID && type.optional ? `${typeDescr} | undefined` : typeDescr;
-            throw new SerializationError(`${titleize(context)}: Unable to ${serde} value as ${optionalTypeDescr}`, value, errors, {
+            throw new SerializationError(`${titleize(context)}: Unable to ${serde} value as ${optionalTypeDescr}`, value, host, errors, {
                 renderValue: true
             });
             function titleize(text) {
@@ -11306,8 +11363,8 @@ var __webpack_modules__ = {
         }
         exports.process = process;
         class SerializationError extends Error {
-            constructor(message, value, causes = [], {renderValue = false} = {}) {
-                super([ message, ...renderValue ? [ `${causes.length > 0 ? "├" : "╰"}── 🛑 Failing value is ${describeTypeOf(value)}`, ...value == null ? [] : (0, 
+            constructor(message, value, {isVisibleType}, causes = [], {renderValue = false} = {}) {
+                super([ message, ...renderValue ? [ `${causes.length > 0 ? "├" : "╰"}── 🛑 Failing value is ${describeTypeOf(value, isVisibleType)}`, ...value == null ? [] : (0, 
                 util_1.inspect)(value, false, 0).split("\n").map((l => `${causes.length > 0 ? "│" : " "}      ${l}`)) ] : [], ...causes.length > 0 ? [ "╰── 🔍 Failure reason(s):", ...causes.map(((cause, idx) => {
                     var _a;
                     return `    ${idx < causes.length - 1 ? "├" : "╰"}─${causes.length > 1 ? ` [${(_a = cause.context) !== null && _a !== void 0 ? _a : (0, 
@@ -11319,7 +11376,7 @@ var __webpack_modules__ = {
             }
         }
         exports.SerializationError = SerializationError;
-        function describeTypeOf(value) {
+        function describeTypeOf(value, isVisibleType) {
             const type = typeof value;
             switch (type) {
               case "object":
@@ -11329,7 +11386,7 @@ var __webpack_modules__ = {
                 if (Array.isArray(value)) {
                     return "an array";
                 }
-                const fqn = (0, objects_1.jsiiTypeFqn)(value);
+                const fqn = (0, objects_1.jsiiTypeFqn)(value, isVisibleType);
                 if (fqn != null && fqn !== exports.EMPTY_OBJECT_FQN) {
                     return `an instance of ${fqn}`;
                 }
@@ -11381,7 +11438,7 @@ var __webpack_modules__ = {
     },
     4383: (__unused_webpack_module, exports, __webpack_require__) => {
         "use strict";
-        var _a;
+        var _a, _b;
         Object.defineProperty(exports, "__esModule", {
             value: true
         });
@@ -11391,11 +11448,8 @@ var __webpack_modules__ = {
         const disk_cache_1 = __webpack_require__(7202);
         const link_1 = __webpack_require__(328);
         const default_cache_root_1 = __webpack_require__(4964);
-        let packageCacheEnabled = ((_a = process.env.JSII_RUNTIME_PACKAGE_CACHE) === null || _a === void 0 ? void 0 : _a.toLocaleLowerCase()) === "enabled";
+        let packageCacheEnabled = ((_b = (_a = process.env.JSII_RUNTIME_PACKAGE_CACHE) === null || _a === void 0 ? void 0 : _a.toLocaleLowerCase()) !== null && _b !== void 0 ? _b : "enabled") === "enabled";
         function extract(file, outDir, options, ...comments) {
-            (0, fs_1.mkdirSync)(outDir, {
-                recursive: true
-            });
             try {
                 return (packageCacheEnabled ? extractViaCache : extractToOutDir)(file, outDir, options, ...comments);
             } catch (err) {
@@ -11446,6 +11500,9 @@ var __webpack_modules__ = {
             };
         }
         function extractToOutDir(file, cwd, options = {}) {
+            (0, fs_1.mkdirSync)(cwd, {
+                recursive: true
+            });
             untarInto({
                 ...options,
                 cwd,
@@ -11486,13 +11543,14 @@ var __webpack_modules__ = {
         const events_1 = __webpack_require__(2361);
         class KernelHost {
             constructor(inout, opts = {}) {
-                var _a, _b;
+                var _a, _b, _c;
                 this.inout = inout;
                 this.opts = opts;
                 this.kernel = new kernel_1.Kernel(this.callbackHandler.bind(this));
                 this.eventEmitter = new events_1.EventEmitter;
                 this.kernel.traceEnabled = (_a = opts.debug) !== null && _a !== void 0 ? _a : false;
                 this.kernel.debugTimingEnabled = (_b = opts.debugTiming) !== null && _b !== void 0 ? _b : false;
+                this.kernel.validateAssemblies = (_c = opts.validateAssemblies) !== null && _c !== void 0 ? _c : false;
             }
             run() {
                 var _a;
@@ -17312,7 +17370,7 @@ var __webpack_modules__ = {
     },
     4147: module => {
         "use strict";
-        module.exports = JSON.parse('{"name":"@jsii/runtime","version":"1.85.0","description":"jsii runtime kernel process","license":"Apache-2.0","author":{"name":"Amazon Web Services","url":"https://aws.amazon.com"},"homepage":"https://github.com/aws/jsii","bugs":{"url":"https://github.com/aws/jsii/issues"},"repository":{"type":"git","url":"https://github.com/aws/jsii.git","directory":"packages/@jsii/runtime"},"engines":{"node":">= 14.17.0"},"main":"lib/index.js","types":"lib/index.d.ts","bin":{"jsii-runtime":"bin/jsii-runtime"},"scripts":{"build":"tsc --build && chmod +x bin/jsii-runtime && npx webpack-cli && npm run lint","watch":"tsc --build -w","lint":"eslint . --ext .js,.ts --ignore-path=.gitignore --ignore-pattern=webpack.config.js","lint:fix":"yarn lint --fix","test":"jest","test:update":"jest -u","package":"package-js"},"dependencies":{"@jsii/kernel":"^1.85.0","@jsii/check-node":"1.85.0","@jsii/spec":"^1.85.0"},"devDependencies":{"@scope/jsii-calc-base":"^1.85.0","@scope/jsii-calc-lib":"^1.85.0","jsii-build-tools":"^1.85.0","jsii-calc":"^3.20.120","source-map-loader":"^4.0.1","webpack":"^5.87.0","webpack-cli":"^5.1.4"}}');
+        module.exports = JSON.parse('{"name":"@jsii/runtime","version":"1.86.0","description":"jsii runtime kernel process","license":"Apache-2.0","author":{"name":"Amazon Web Services","url":"https://aws.amazon.com"},"homepage":"https://github.com/aws/jsii","bugs":{"url":"https://github.com/aws/jsii/issues"},"repository":{"type":"git","url":"https://github.com/aws/jsii.git","directory":"packages/@jsii/runtime"},"engines":{"node":">= 14.17.0"},"main":"lib/index.js","types":"lib/index.d.ts","bin":{"jsii-runtime":"bin/jsii-runtime"},"scripts":{"build":"tsc --build && chmod +x bin/jsii-runtime && npx webpack-cli && npm run lint","watch":"tsc --build -w","lint":"eslint . --ext .js,.ts --ignore-path=.gitignore --ignore-pattern=webpack.config.js","lint:fix":"yarn lint --fix","test":"jest","test:update":"jest -u","package":"package-js"},"dependencies":{"@jsii/kernel":"^1.86.0","@jsii/check-node":"1.86.0","@jsii/spec":"^1.86.0"},"devDependencies":{"@scope/jsii-calc-base":"^1.86.0","@scope/jsii-calc-lib":"^1.86.0","jsii-build-tools":"^1.86.0","jsii-calc":"^3.20.120","source-map-loader":"^4.0.1","webpack":"^5.88.2","webpack-cli":"^5.1.4"}}');
     },
     5277: module => {
         "use strict";
@@ -17365,6 +17423,7 @@ var __webpack_exports__ = {};
     const noStack = !!process.env.JSII_NOSTACK;
     const debug = !!process.env.JSII_DEBUG;
     const debugTiming = !!process.env.JSII_DEBUG_TIMING;
+    const validateAssemblies = !!process.env.JSII_VALIDATE_ASSEMBLIES;
     const stdio = new sync_stdio_1.SyncStdio({
         errorFD: (_a = process.stderr.fd) !== null && _a !== void 0 ? _a : 2,
         readFD: 3,
@@ -17374,7 +17433,8 @@ var __webpack_exports__ = {};
     const host = new host_1.KernelHost(inout, {
         debug,
         noStack,
-        debugTiming
+        debugTiming,
+        validateAssemblies
     });
     host.once("exit", process.exit.bind(process));
     inout.write({

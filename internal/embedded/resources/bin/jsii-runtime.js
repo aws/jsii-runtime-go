@@ -1577,7 +1577,7 @@ var __webpack_modules__ = {
                 this.loose = !!options.loose;
                 this.includePrerelease = !!options.includePrerelease;
                 this.raw = range.trim().split(/\s+/).join(" ");
-                this.set = this.raw.split("||").map((r => this.parseRange(r))).filter((c => c.length));
+                this.set = this.raw.split("||").map((r => this.parseRange(r.trim()))).filter((c => c.length));
                 if (!this.set.length) {
                     throw new TypeError(`Invalid SemVer Range: ${this.raw}`);
                 }
@@ -1618,7 +1618,9 @@ var __webpack_modules__ = {
                 range = range.replace(re[t.COMPARATORTRIM], comparatorTrimReplace);
                 debug("comparator trim", range);
                 range = range.replace(re[t.TILDETRIM], tildeTrimReplace);
+                debug("tilde trim", range);
                 range = range.replace(re[t.CARETTRIM], caretTrimReplace);
+                debug("caret trim", range);
                 let rangeList = range.split(" ").map((comp => parseComparator(comp, this.options))).join(" ").split(/\s+/).map((comp => replaceGTE0(comp, this.options)));
                 if (loose) {
                     rangeList = rangeList.filter((comp => {
@@ -2502,10 +2504,12 @@ var __webpack_modules__ = {
         const MAX_LENGTH = 256;
         const MAX_SAFE_INTEGER = Number.MAX_SAFE_INTEGER || 9007199254740991;
         const MAX_SAFE_COMPONENT_LENGTH = 16;
+        const MAX_SAFE_BUILD_LENGTH = MAX_LENGTH - 6;
         const RELEASE_TYPES = [ "major", "premajor", "minor", "preminor", "patch", "prepatch", "prerelease" ];
         module.exports = {
             MAX_LENGTH,
             MAX_SAFE_COMPONENT_LENGTH,
+            MAX_SAFE_BUILD_LENGTH,
             MAX_SAFE_INTEGER,
             RELEASE_TYPES,
             SEMVER_SPEC_VERSION,
@@ -2551,7 +2555,7 @@ var __webpack_modules__ = {
         module.exports = parseOptions;
     },
     9541: (module, exports, __webpack_require__) => {
-        const {MAX_SAFE_COMPONENT_LENGTH} = __webpack_require__(9041);
+        const {MAX_SAFE_COMPONENT_LENGTH, MAX_SAFE_BUILD_LENGTH, MAX_LENGTH} = __webpack_require__(9041);
         const debug = __webpack_require__(5432);
         exports = module.exports = {};
         const re = exports.re = [];
@@ -2559,8 +2563,16 @@ var __webpack_modules__ = {
         const src = exports.src = [];
         const t = exports.t = {};
         let R = 0;
+        const LETTERDASHNUMBER = "[a-zA-Z0-9-]";
+        const safeRegexReplacements = [ [ "\\s", 1 ], [ "\\d", MAX_LENGTH ], [ LETTERDASHNUMBER, MAX_SAFE_BUILD_LENGTH ] ];
+        const makeSafeRegex = value => {
+            for (const [token, max] of safeRegexReplacements) {
+                value = value.split(`${token}*`).join(`${token}{0,${max}}`).split(`${token}+`).join(`${token}{1,${max}}`);
+            }
+            return value;
+        };
         const createToken = (name, value, isGlobal) => {
-            const safe = value.split("\\s*").join("\\s{0,1}").split("\\s+").join("\\s");
+            const safe = makeSafeRegex(value);
             const index = R++;
             debug(name, index, value);
             t[name] = index;
@@ -2569,15 +2581,15 @@ var __webpack_modules__ = {
             safeRe[index] = new RegExp(safe, isGlobal ? "g" : undefined);
         };
         createToken("NUMERICIDENTIFIER", "0|[1-9]\\d*");
-        createToken("NUMERICIDENTIFIERLOOSE", "[0-9]+");
-        createToken("NONNUMERICIDENTIFIER", "\\d*[a-zA-Z-][a-zA-Z0-9-]*");
+        createToken("NUMERICIDENTIFIERLOOSE", "\\d+");
+        createToken("NONNUMERICIDENTIFIER", `\\d*[a-zA-Z-]${LETTERDASHNUMBER}*`);
         createToken("MAINVERSION", `(${src[t.NUMERICIDENTIFIER]})\\.` + `(${src[t.NUMERICIDENTIFIER]})\\.` + `(${src[t.NUMERICIDENTIFIER]})`);
         createToken("MAINVERSIONLOOSE", `(${src[t.NUMERICIDENTIFIERLOOSE]})\\.` + `(${src[t.NUMERICIDENTIFIERLOOSE]})\\.` + `(${src[t.NUMERICIDENTIFIERLOOSE]})`);
         createToken("PRERELEASEIDENTIFIER", `(?:${src[t.NUMERICIDENTIFIER]}|${src[t.NONNUMERICIDENTIFIER]})`);
         createToken("PRERELEASEIDENTIFIERLOOSE", `(?:${src[t.NUMERICIDENTIFIERLOOSE]}|${src[t.NONNUMERICIDENTIFIER]})`);
         createToken("PRERELEASE", `(?:-(${src[t.PRERELEASEIDENTIFIER]}(?:\\.${src[t.PRERELEASEIDENTIFIER]})*))`);
         createToken("PRERELEASELOOSE", `(?:-?(${src[t.PRERELEASEIDENTIFIERLOOSE]}(?:\\.${src[t.PRERELEASEIDENTIFIERLOOSE]})*))`);
-        createToken("BUILDIDENTIFIER", "[0-9A-Za-z-]+");
+        createToken("BUILDIDENTIFIER", `${LETTERDASHNUMBER}+`);
         createToken("BUILD", `(?:\\+(${src[t.BUILDIDENTIFIER]}(?:\\.${src[t.BUILDIDENTIFIER]})*))`);
         createToken("FULLPLAIN", `v?${src[t.MAINVERSION]}${src[t.PRERELEASE]}?${src[t.BUILD]}?`);
         createToken("FULL", `^${src[t.FULLPLAIN]}$`);
@@ -3936,7 +3948,7 @@ var __webpack_exports__ = {};
     const console_1 = __webpack_require__(6206);
     const os_1 = __webpack_require__(2037);
     const path_1 = __webpack_require__(4822);
-    const child = (0, child_process_1.spawn)(process.execPath, [ ...process.execArgv, (0, 
+    const child = (0, child_process_1.spawn)(process.execPath, [ ...process.execArgv, "--preserve-symlinks", (0, 
     path_1.resolve)(__dirname, "..", "lib", "program.js") ], {
         stdio: [ "ignore", "pipe", "pipe", "pipe" ]
     });
