@@ -10489,13 +10489,13 @@ var __webpack_modules__ = {
         const serialization_1 = __webpack_require__(8614);
         const OBJID_SYMBOL = Symbol.for("$__jsii__objid__$");
         const IFACES_SYMBOL = Symbol.for("$__jsii__interfaces__$");
-        const JSII_TYPE_FQN_SYMBOL = Symbol("$__jsii__fqn__$");
         const JSII_RTTI_SYMBOL = Symbol.for("jsii.rtti");
+        const RESOLVED_TYPE_FQN = new WeakMap;
         function jsiiTypeFqn(obj, isVisibleType) {
             var _a;
             const ctor = obj.constructor;
-            if (ctor[JSII_TYPE_FQN_SYMBOL] != null) {
-                return ctor[JSII_TYPE_FQN_SYMBOL];
+            if (RESOLVED_TYPE_FQN.has(ctor)) {
+                return RESOLVED_TYPE_FQN.get(ctor);
             }
             let curr = ctor;
             while ((_a = curr[JSII_RTTI_SYMBOL]) === null || _a === void 0 ? void 0 : _a.fqn) {
@@ -10539,15 +10539,11 @@ var __webpack_modules__ = {
             });
         }
         function tagJsiiConstructor(constructor, fqn) {
-            if (Object.prototype.hasOwnProperty.call(constructor, JSII_TYPE_FQN_SYMBOL)) {
-                return assert.strictEqual(constructor[JSII_TYPE_FQN_SYMBOL], fqn, `Unable to register ${constructor.name} as ${fqn}: it is already registerd with FQN ${constructor[JSII_TYPE_FQN_SYMBOL]}`);
+            const existing = RESOLVED_TYPE_FQN.get(constructor);
+            if (existing != null) {
+                return assert.strictEqual(existing, fqn, `Unable to register ${constructor.name} as ${fqn}: it is already registerd with FQN ${existing}`);
             }
-            Object.defineProperty(constructor, JSII_TYPE_FQN_SYMBOL, {
-                configurable: false,
-                enumerable: false,
-                writable: false,
-                value: fqn
-            });
+            RESOLVED_TYPE_FQN.set(constructor, fqn);
         }
         exports.tagJsiiConstructor = tagJsiiConstructor;
         class ObjectTable {
@@ -17370,7 +17366,7 @@ var __webpack_modules__ = {
     },
     4147: module => {
         "use strict";
-        module.exports = JSON.parse('{"name":"@jsii/runtime","version":"1.86.0","description":"jsii runtime kernel process","license":"Apache-2.0","author":{"name":"Amazon Web Services","url":"https://aws.amazon.com"},"homepage":"https://github.com/aws/jsii","bugs":{"url":"https://github.com/aws/jsii/issues"},"repository":{"type":"git","url":"https://github.com/aws/jsii.git","directory":"packages/@jsii/runtime"},"engines":{"node":">= 14.17.0"},"main":"lib/index.js","types":"lib/index.d.ts","bin":{"jsii-runtime":"bin/jsii-runtime"},"scripts":{"build":"tsc --build && chmod +x bin/jsii-runtime && npx webpack-cli && npm run lint","watch":"tsc --build -w","lint":"eslint . --ext .js,.ts --ignore-path=.gitignore --ignore-pattern=webpack.config.js","lint:fix":"yarn lint --fix","test":"jest","test:update":"jest -u","package":"package-js"},"dependencies":{"@jsii/kernel":"^1.86.0","@jsii/check-node":"1.86.0","@jsii/spec":"^1.86.0"},"devDependencies":{"@scope/jsii-calc-base":"^1.86.0","@scope/jsii-calc-lib":"^1.86.0","jsii-build-tools":"^1.86.0","jsii-calc":"^3.20.120","source-map-loader":"^4.0.1","webpack":"^5.88.2","webpack-cli":"^5.1.4"}}');
+        module.exports = JSON.parse('{"name":"@jsii/runtime","version":"1.86.1","description":"jsii runtime kernel process","license":"Apache-2.0","author":{"name":"Amazon Web Services","url":"https://aws.amazon.com"},"homepage":"https://github.com/aws/jsii","bugs":{"url":"https://github.com/aws/jsii/issues"},"repository":{"type":"git","url":"https://github.com/aws/jsii.git","directory":"packages/@jsii/runtime"},"engines":{"node":">= 14.17.0"},"main":"lib/index.js","types":"lib/index.d.ts","bin":{"jsii-runtime":"bin/jsii-runtime"},"scripts":{"build":"tsc --build && chmod +x bin/jsii-runtime && npx webpack-cli && npm run lint","watch":"tsc --build -w","lint":"eslint . --ext .js,.ts --ignore-path=.gitignore --ignore-pattern=webpack.config.js","lint:fix":"yarn lint --fix","test":"jest","test:update":"jest -u","package":"package-js"},"dependencies":{"@jsii/kernel":"^1.86.1","@jsii/check-node":"1.86.1","@jsii/spec":"^1.86.1"},"devDependencies":{"@scope/jsii-calc-base":"^1.86.1","@scope/jsii-calc-lib":"^1.86.1","jsii-build-tools":"^1.86.1","jsii-calc":"^3.20.120","source-map-loader":"^4.0.1","webpack":"^5.88.2","webpack-cli":"^5.1.4"}}');
     },
     5277: module => {
         "use strict";
