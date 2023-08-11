@@ -9328,7 +9328,7 @@ var __webpack_modules__ = {
             if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
             return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
         };
-        var _DiskCache_instances, _a, _DiskCache_CACHE, _DiskCache_root, _DiskCache_entries, _Entry_instances, _Entry_lockFile_get, _Entry_markerFile_get;
+        var _DiskCache_instances, _a, _DiskCache_CACHE, _DiskCache_root, _DiskCache_entries, _Entry_instances, _Entry_lockFile_get, _Entry_markerFile_get, _Entry_touchMarkerFile;
         Object.defineProperty(exports, "__esModule", {
             value: true
         });
@@ -9440,13 +9440,49 @@ var __webpack_modules__ = {
             get pathExists() {
                 return (0, fs_1.existsSync)(this.path);
             }
+            get isComplete() {
+                return (0, fs_1.existsSync)(__classPrivateFieldGet(this, _Entry_instances, "a", _Entry_markerFile_get));
+            }
+            retrieve(cb) {
+                if (this.isComplete) {
+                    __classPrivateFieldGet(this, _Entry_instances, "m", _Entry_touchMarkerFile).call(this);
+                    return {
+                        path: this.path,
+                        cache: "hit"
+                    };
+                }
+                let cache = "miss";
+                this.lock((lock => {
+                    if (this.isComplete) {
+                        cache = "hit";
+                        return;
+                    }
+                    (0, fs_1.mkdirSync)(this.path, {
+                        recursive: true
+                    });
+                    try {
+                        cb(this.path);
+                    } catch (error) {
+                        (0, fs_1.rmSync)(this.path, {
+                            force: true,
+                            recursive: true
+                        });
+                        throw error;
+                    }
+                    lock.markComplete();
+                }));
+                return {
+                    path: this.path,
+                    cache
+                };
+            }
             lock(cb) {
                 (0, fs_1.mkdirSync)((0, path_1.dirname)(this.path), {
                     recursive: true
                 });
-                (0, lockfile_1.lockSync)(__classPrivateFieldGet(this, _Entry_instances, "a", _Entry_lockFile_get), {
+                lockSyncWithWait(__classPrivateFieldGet(this, _Entry_instances, "a", _Entry_lockFile_get), {
                     retries: 12,
-                    stale: 5e3
+                    stale: 1e4
                 });
                 let disposed = false;
                 try {
@@ -9469,18 +9505,11 @@ var __webpack_modules__ = {
                             });
                             (0, fs_1.writeFileSync)((0, path_1.join)(this.path, name), content);
                         },
-                        touch: () => {
+                        markComplete: () => {
                             if (disposed) {
                                 throw new Error(`Cannot touch ${this.path} once the lock block was returned!`);
                             }
-                            if (this.pathExists) {
-                                if ((0, fs_1.existsSync)(__classPrivateFieldGet(this, _Entry_instances, "a", _Entry_markerFile_get))) {
-                                    const now = new Date;
-                                    (0, fs_1.utimesSync)(__classPrivateFieldGet(this, _Entry_instances, "a", _Entry_markerFile_get), now, now);
-                                } else {
-                                    (0, fs_1.writeFileSync)(__classPrivateFieldGet(this, _Entry_instances, "a", _Entry_markerFile_get), "");
-                                }
-                            }
+                            __classPrivateFieldGet(this, _Entry_instances, "m", _Entry_touchMarkerFile).call(this);
                         }
                     });
                 } finally {
@@ -9504,6 +9533,18 @@ var __webpack_modules__ = {
             return `${this.path}.lock`;
         }, _Entry_markerFile_get = function _Entry_markerFile_get() {
             return (0, path_1.join)(this.path, MARKER_FILE_NAME);
+        }, _Entry_touchMarkerFile = function _Entry_touchMarkerFile() {
+            if (this.pathExists) {
+                try {
+                    const now = new Date;
+                    (0, fs_1.utimesSync)(__classPrivateFieldGet(this, _Entry_instances, "a", _Entry_markerFile_get), now, now);
+                } catch (e) {
+                    if (e.code !== "ENOENT") {
+                        throw e;
+                    }
+                    (0, fs_1.writeFileSync)(__classPrivateFieldGet(this, _Entry_instances, "a", _Entry_markerFile_get), "");
+                }
+            }
         };
         function* directoriesUnder(root, recursive = false, ignoreErrors = true) {
             for (const file of (0, fs_1.readdirSync)(root)) {
@@ -9522,6 +9563,34 @@ var __webpack_modules__ = {
                     }
                 }
             }
+        }
+        function lockSyncWithWait(path, options) {
+            var _b;
+            let retries = (_b = options.retries) !== null && _b !== void 0 ? _b : 0;
+            let sleep = 100;
+            while (true) {
+                try {
+                    (0, lockfile_1.lockSync)(path, {
+                        retries: 0,
+                        stale: options.stale
+                    });
+                    return;
+                } catch (e) {
+                    if (retries === 0) {
+                        throw e;
+                    }
+                    retries--;
+                    if (e.code === "EEXIST") {
+                        sleepSync(Math.floor(Math.random() * sleep));
+                        sleep *= 1.5;
+                    } else {
+                        sleepSync(5);
+                    }
+                }
+            }
+        }
+        function sleepSync(ms) {
+            Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
         }
     },
     7202: function(__unused_webpack_module, exports, __webpack_require__) {
@@ -10435,30 +10504,41 @@ var __webpack_modules__ = {
         });
         exports.link = void 0;
         const fs_1 = __webpack_require__(7147);
+        const os = __webpack_require__(2037);
         const path_1 = __webpack_require__(4822);
         const PRESERVE_SYMLINKS = process.execArgv.includes("--preserve-symlinks");
-        function link(existing, destination) {
-            if (PRESERVE_SYMLINKS) {
-                (0, fs_1.mkdirSync)((0, path_1.dirname)(destination), {
-                    recursive: true
-                });
-                (0, fs_1.symlinkSync)(existing, destination);
-                return;
-            }
-            const stat = (0, fs_1.statSync)(existing);
-            if (!stat.isDirectory()) {
-                try {
-                    (0, fs_1.linkSync)(existing, destination);
-                } catch {
-                    (0, fs_1.copyFileSync)(existing, destination);
-                }
-                return;
-            }
-            (0, fs_1.mkdirSync)(destination, {
+        function link(existingRoot, destinationRoot) {
+            (0, fs_1.mkdirSync)((0, path_1.dirname)(destinationRoot), {
                 recursive: true
             });
-            for (const file of (0, fs_1.readdirSync)(existing)) {
-                link((0, path_1.join)(existing, file), (0, path_1.join)(destination, file));
+            if (PRESERVE_SYMLINKS) {
+                try {
+                    (0, fs_1.symlinkSync)(existingRoot, destinationRoot);
+                    return;
+                } catch (e) {
+                    const winNoSymlink = e.code === "EPERM" && os.platform() === "win32";
+                    if (!winNoSymlink) {
+                        throw e;
+                    }
+                }
+            }
+            recurse(existingRoot, destinationRoot);
+            function recurse(existing, destination) {
+                const stat = (0, fs_1.statSync)(existing);
+                if (!stat.isDirectory()) {
+                    try {
+                        (0, fs_1.linkSync)(existing, destination);
+                    } catch {
+                        (0, fs_1.copyFileSync)(existing, destination);
+                    }
+                    return;
+                }
+                (0, fs_1.mkdirSync)(destination, {
+                    recursive: true
+                });
+                for (const file of (0, fs_1.readdirSync)(existing)) {
+                    recurse((0, path_1.join)(existing, file), (0, path_1.join)(destination, file));
+                }
             }
         }
         exports.link = link;
@@ -11463,32 +11543,12 @@ var __webpack_modules__ = {
             default_cache_root_1.defaultCacheRoot)();
             const dirCache = disk_cache_1.DiskCache.inDirectory(cacheRoot);
             const entry = dirCache.entryFor(file, ...comments);
-            const {path, cache} = entry.lock((lock => {
-                let cache = "hit";
-                if (!entry.pathExists) {
-                    (0, fs_1.mkdirSync)(entry.path, {
-                        recursive: true
-                    });
-                    try {
-                        untarInto({
-                            ...options,
-                            cwd: entry.path,
-                            file
-                        });
-                    } catch (error) {
-                        (0, fs_1.rmSync)(entry.path, {
-                            force: true,
-                            recursive: true
-                        });
-                        throw error;
-                    }
-                    cache = "miss";
-                }
-                lock.touch();
-                return {
-                    path: entry.path,
-                    cache
-                };
+            const {path, cache} = entry.retrieve((path => {
+                untarInto({
+                    ...options,
+                    cwd: path,
+                    file
+                });
             }));
             (0, link_1.link)(path, outDir);
             return {
@@ -17366,7 +17426,7 @@ var __webpack_modules__ = {
     },
     4147: module => {
         "use strict";
-        module.exports = JSON.parse('{"name":"@jsii/runtime","version":"1.86.1","description":"jsii runtime kernel process","license":"Apache-2.0","author":{"name":"Amazon Web Services","url":"https://aws.amazon.com"},"homepage":"https://github.com/aws/jsii","bugs":{"url":"https://github.com/aws/jsii/issues"},"repository":{"type":"git","url":"https://github.com/aws/jsii.git","directory":"packages/@jsii/runtime"},"engines":{"node":">= 14.17.0"},"main":"lib/index.js","types":"lib/index.d.ts","bin":{"jsii-runtime":"bin/jsii-runtime"},"scripts":{"build":"tsc --build && chmod +x bin/jsii-runtime && npx webpack-cli && npm run lint","watch":"tsc --build -w","lint":"eslint . --ext .js,.ts --ignore-path=.gitignore --ignore-pattern=webpack.config.js","lint:fix":"yarn lint --fix","test":"jest","test:update":"jest -u","package":"package-js"},"dependencies":{"@jsii/kernel":"^1.86.1","@jsii/check-node":"1.86.1","@jsii/spec":"^1.86.1"},"devDependencies":{"@scope/jsii-calc-base":"^1.86.1","@scope/jsii-calc-lib":"^1.86.1","jsii-build-tools":"^1.86.1","jsii-calc":"^3.20.120","source-map-loader":"^4.0.1","webpack":"^5.88.2","webpack-cli":"^5.1.4"}}');
+        module.exports = JSON.parse('{"name":"@jsii/runtime","version":"1.87.0","description":"jsii runtime kernel process","license":"Apache-2.0","author":{"name":"Amazon Web Services","url":"https://aws.amazon.com"},"homepage":"https://github.com/aws/jsii","bugs":{"url":"https://github.com/aws/jsii/issues"},"repository":{"type":"git","url":"https://github.com/aws/jsii.git","directory":"packages/@jsii/runtime"},"engines":{"node":">= 14.17.0"},"main":"lib/index.js","types":"lib/index.d.ts","bin":{"jsii-runtime":"bin/jsii-runtime"},"scripts":{"build":"tsc --build && chmod +x bin/jsii-runtime && npx webpack-cli && npm run lint","watch":"tsc --build -w","lint":"eslint . --ext .js,.ts --ignore-path=.gitignore --ignore-pattern=webpack.config.js","lint:fix":"yarn lint --fix","test":"jest","test:update":"jest -u","package":"package-js"},"dependencies":{"@jsii/kernel":"^1.87.0","@jsii/check-node":"1.87.0","@jsii/spec":"^1.87.0"},"devDependencies":{"@scope/jsii-calc-base":"^1.87.0","@scope/jsii-calc-lib":"^1.87.0","jsii-build-tools":"^1.87.0","jsii-calc":"^3.20.120","source-map-loader":"^4.0.1","webpack":"^5.88.2","webpack-cli":"^5.1.4"}}');
     },
     5277: module => {
         "use strict";
