@@ -4940,14 +4940,25 @@ var __webpack_modules__ = {
                 }
                 this.portable = !!opt.portable;
                 this.zip = null;
-                if (opt.gzip) {
-                    if (typeof opt.gzip !== "object") {
-                        opt.gzip = {};
+                if (opt.gzip || opt.brotli) {
+                    if (opt.gzip && opt.brotli) {
+                        throw new TypeError("gzip and brotli are mutually exclusive");
                     }
-                    if (this.portable) {
-                        opt.gzip.portable = true;
+                    if (opt.gzip) {
+                        if (typeof opt.gzip !== "object") {
+                            opt.gzip = {};
+                        }
+                        if (this.portable) {
+                            opt.gzip.portable = true;
+                        }
+                        this.zip = new zlib.Gzip(opt.gzip);
                     }
-                    this.zip = new zlib.Gzip(opt.gzip);
+                    if (opt.brotli) {
+                        if (typeof opt.brotli !== "object") {
+                            opt.brotli = {};
+                        }
+                        this.zip = new zlib.BrotliCompress(opt.brotli);
+                    }
                     this.zip.on("data", (chunk => super.write(chunk)));
                     this.zip.on("end", (_ => super.end()));
                     this.zip.on("drain", (_ => this[ONDRAIN]()));
@@ -5288,6 +5299,8 @@ var __webpack_modules__ = {
                 this.strict = !!opt.strict;
                 this.maxMetaEntrySize = opt.maxMetaEntrySize || maxMetaEntrySize;
                 this.filter = typeof opt.filter === "function" ? opt.filter : noop;
+                const isTBR = opt.file && (opt.file.endsWith(".tar.br") || opt.file.endsWith(".tbr"));
+                this.brotli = !opt.gzip && opt.brotli !== undefined ? opt.brotli : isTBR ? undefined : false;
                 this.writable = true;
                 this.readable = false;
                 this[QUEUE] = new Yallist;
@@ -5502,7 +5515,8 @@ var __webpack_modules__ = {
                 if (this[ABORTED]) {
                     return;
                 }
-                if (this[UNZIP] === null && chunk) {
+                const needSniff = this[UNZIP] === null || this.brotli === undefined && this[UNZIP] === false;
+                if (needSniff && chunk) {
                     if (this[BUFFER]) {
                         chunk = Buffer.concat([ this[BUFFER], chunk ]);
                         this[BUFFER] = null;
@@ -5516,10 +5530,28 @@ var __webpack_modules__ = {
                             this[UNZIP] = false;
                         }
                     }
-                    if (this[UNZIP] === null) {
+                    const maybeBrotli = this.brotli === undefined;
+                    if (this[UNZIP] === false && maybeBrotli) {
+                        if (chunk.length < 512) {
+                            if (this[ENDED]) {
+                                this.brotli = true;
+                            } else {
+                                this[BUFFER] = chunk;
+                                return true;
+                            }
+                        } else {
+                            try {
+                                new Header(chunk.slice(0, 512));
+                                this.brotli = false;
+                            } catch (_) {
+                                this.brotli = true;
+                            }
+                        }
+                    }
+                    if (this[UNZIP] === null || this[UNZIP] === false && this.brotli) {
                         const ended = this[ENDED];
                         this[ENDED] = false;
-                        this[UNZIP] = new zlib.Unzip;
+                        this[UNZIP] = this[UNZIP] === null ? new zlib.Unzip : new zlib.BrotliDecompress;
                         this[UNZIP].on("data", (chunk => this[CONSUMECHUNK](chunk)));
                         this[UNZIP].on("error", (er => this.abort(er)));
                         this[UNZIP].on("end", (_ => {
@@ -5631,6 +5663,7 @@ var __webpack_modules__ = {
                         this[UNZIP].end(chunk);
                     } else {
                         this[ENDED] = true;
+                        if (this.brotli === undefined) chunk = chunk || Buffer.alloc(0);
                         this.write(chunk);
                     }
                 }
@@ -5949,7 +5982,7 @@ var __webpack_modules__ = {
             if (!opt.file) {
                 throw new TypeError("file is required");
             }
-            if (opt.gzip) {
+            if (opt.gzip || opt.brotli || opt.file.endsWith(".br") || opt.file.endsWith(".tbr")) {
                 throw new TypeError("cannot append to compressed archives");
             }
             if (!files || !Array.isArray(files) || !files.length) {
@@ -6840,7 +6873,7 @@ var __webpack_modules__ = {
             if (!opt.file) {
                 throw new TypeError("file is required");
             }
-            if (opt.gzip) {
+            if (opt.gzip || opt.brotli || opt.file.endsWith(".br") || opt.file.endsWith(".tbr")) {
                 throw new TypeError("cannot append to compressed archives");
             }
             if (!files || !Array.isArray(files) || !files.length) {
@@ -17426,7 +17459,7 @@ var __webpack_modules__ = {
     },
     4147: module => {
         "use strict";
-        module.exports = JSON.parse('{"name":"@jsii/runtime","version":"1.88.0","description":"jsii runtime kernel process","license":"Apache-2.0","author":{"name":"Amazon Web Services","url":"https://aws.amazon.com"},"homepage":"https://github.com/aws/jsii","bugs":{"url":"https://github.com/aws/jsii/issues"},"repository":{"type":"git","url":"https://github.com/aws/jsii.git","directory":"packages/@jsii/runtime"},"engines":{"node":">= 14.17.0"},"main":"lib/index.js","types":"lib/index.d.ts","bin":{"jsii-runtime":"bin/jsii-runtime"},"scripts":{"build":"tsc --build && chmod +x bin/jsii-runtime && npx webpack-cli && npm run lint","watch":"tsc --build -w","lint":"eslint . --ext .js,.ts --ignore-path=.gitignore --ignore-pattern=webpack.config.js","lint:fix":"yarn lint --fix","test":"jest","test:update":"jest -u","package":"package-js"},"dependencies":{"@jsii/kernel":"^1.88.0","@jsii/check-node":"1.88.0","@jsii/spec":"^1.88.0"},"devDependencies":{"@scope/jsii-calc-base":"^1.88.0","@scope/jsii-calc-lib":"^1.88.0","jsii-build-tools":"^1.88.0","jsii-calc":"^3.20.120","source-map-loader":"^4.0.1","webpack":"^5.88.2","webpack-cli":"^5.1.4"}}');
+        module.exports = JSON.parse('{"name":"@jsii/runtime","version":"1.89.0","description":"jsii runtime kernel process","license":"Apache-2.0","author":{"name":"Amazon Web Services","url":"https://aws.amazon.com"},"homepage":"https://github.com/aws/jsii","bugs":{"url":"https://github.com/aws/jsii/issues"},"repository":{"type":"git","url":"https://github.com/aws/jsii.git","directory":"packages/@jsii/runtime"},"engines":{"node":">= 14.17.0"},"main":"lib/index.js","types":"lib/index.d.ts","bin":{"jsii-runtime":"bin/jsii-runtime"},"scripts":{"build":"tsc --build && chmod +x bin/jsii-runtime && npx webpack-cli && npm run lint","watch":"tsc --build -w","lint":"eslint . --ext .js,.ts --ignore-path=.gitignore --ignore-pattern=webpack.config.js","lint:fix":"yarn lint --fix","test":"jest","test:update":"jest -u","package":"package-js"},"dependencies":{"@jsii/kernel":"^1.89.0","@jsii/check-node":"1.89.0","@jsii/spec":"^1.89.0"},"devDependencies":{"@scope/jsii-calc-base":"^1.89.0","@scope/jsii-calc-lib":"^1.89.0","jsii-build-tools":"^1.89.0","jsii-calc":"^3.20.120","source-map-loader":"^4.0.1","webpack":"^5.88.2","webpack-cli":"^5.1.4"}}');
     },
     5277: module => {
         "use strict";
