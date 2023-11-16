@@ -7895,7 +7895,8 @@ var __webpack_modules__ = {
             return Object.defineProperty((function(...args) {
                 if (typeof args[args.length - 1] === "function") fn.apply(this, args); else {
                     return new Promise(((resolve, reject) => {
-                        fn.call(this, ...args, ((err, res) => err != null ? reject(err) : resolve(res)));
+                        args.push(((err, res) => err != null ? reject(err) : resolve(res)));
+                        fn.apply(this, args);
                     }));
                 }
             }), "name", {
@@ -7905,7 +7906,10 @@ var __webpack_modules__ = {
         exports.fromPromise = function(fn) {
             return Object.defineProperty((function(...args) {
                 const cb = args[args.length - 1];
-                if (typeof cb !== "function") return fn.apply(this, args); else fn.apply(this, args.slice(0, -1)).then((r => cb(null, r)), cb);
+                if (typeof cb !== "function") return fn.apply(this, args); else {
+                    args.pop();
+                    fn.apply(this, args).then((r => cb(null, r)), cb);
+                }
             }), "name", {
                 value: fn.name
             });
@@ -10503,12 +10507,16 @@ var __webpack_modules__ = {
                 if (!epkg.bin) {
                     throw new JsiiFault(`Script with name ${req.script} was not defined.`);
                 }
+                const nodeOptions = [ ...process.execArgv ];
+                if (nodeOptions.includes("--preserve-symlinks")) {
+                    nodeOptions.push("--preserve-symlinks-main");
+                }
                 return {
                     command: path.join(packageDir, scriptPath),
                     args: (_b = req.args) !== null && _b !== void 0 ? _b : [],
                     env: {
                         ...process.env,
-                        NODE_OPTIONS: process.execArgv.join(" "),
+                        NODE_OPTIONS: nodeOptions.join(" "),
                         PATH: `${path.dirname(process.execPath)}:${process.env.PATH}`
                     }
                 };
@@ -17459,7 +17467,7 @@ var __webpack_modules__ = {
     },
     4147: module => {
         "use strict";
-        module.exports = JSON.parse('{"name":"@jsii/runtime","version":"1.91.0","description":"jsii runtime kernel process","license":"Apache-2.0","author":{"name":"Amazon Web Services","url":"https://aws.amazon.com"},"homepage":"https://github.com/aws/jsii","bugs":{"url":"https://github.com/aws/jsii/issues"},"repository":{"type":"git","url":"https://github.com/aws/jsii.git","directory":"packages/@jsii/runtime"},"engines":{"node":">= 14.17.0"},"main":"lib/index.js","types":"lib/index.d.ts","bin":{"jsii-runtime":"bin/jsii-runtime"},"scripts":{"build":"tsc --build && chmod +x bin/jsii-runtime && npx webpack-cli && npm run lint","watch":"tsc --build -w","lint":"eslint . --ext .js,.ts --ignore-path=.gitignore --ignore-pattern=webpack.config.js","lint:fix":"yarn lint --fix","test":"jest","test:update":"jest -u","package":"package-js"},"dependencies":{"@jsii/kernel":"^1.91.0","@jsii/check-node":"1.91.0","@jsii/spec":"^1.91.0"},"devDependencies":{"@scope/jsii-calc-base":"^1.91.0","@scope/jsii-calc-lib":"^1.91.0","jsii-build-tools":"^1.91.0","jsii-calc":"^3.20.120","source-map-loader":"^4.0.1","webpack":"^5.89.0","webpack-cli":"^5.1.4"}}');
+        module.exports = JSON.parse('{"name":"@jsii/runtime","version":"1.92.0","description":"jsii runtime kernel process","license":"Apache-2.0","author":{"name":"Amazon Web Services","url":"https://aws.amazon.com"},"homepage":"https://github.com/aws/jsii","bugs":{"url":"https://github.com/aws/jsii/issues"},"repository":{"type":"git","url":"https://github.com/aws/jsii.git","directory":"packages/@jsii/runtime"},"engines":{"node":">= 14.17.0"},"main":"lib/index.js","types":"lib/index.d.ts","bin":{"jsii-runtime":"bin/jsii-runtime"},"scripts":{"build":"tsc --build && chmod +x bin/jsii-runtime && npx webpack-cli && npm run lint","watch":"tsc --build -w","lint":"eslint . --ext .js,.ts --ignore-path=.gitignore --ignore-pattern=webpack.config.js","lint:fix":"yarn lint --fix","test":"jest","test:update":"jest -u","package":"package-js"},"dependencies":{"@jsii/kernel":"^1.92.0","@jsii/check-node":"1.92.0","@jsii/spec":"^1.92.0"},"devDependencies":{"@scope/jsii-calc-base":"^1.92.0","@scope/jsii-calc-lib":"^1.92.0","jsii-build-tools":"^1.92.0","jsii-calc":"^3.20.120","source-map-loader":"^4.0.1","webpack":"^5.89.0","webpack-cli":"^5.1.4"}}');
     },
     5277: module => {
         "use strict";

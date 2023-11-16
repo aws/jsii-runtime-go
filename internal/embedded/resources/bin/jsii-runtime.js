@@ -3804,18 +3804,20 @@ var __webpack_modules__ = {
         }), new NodeRelease(12, {
             endOfLife: new Date("2022-04-30"),
             supportedRange: "^12.7.0"
-        }), new NodeRelease(19, {
-            endOfLife: new Date("2023-06-01")
         }), new NodeRelease(16, {
             endOfLife: new Date("2023-09-11"),
             supportedRange: "^16.3.0"
         }), new NodeRelease(17, {
             endOfLife: new Date("2022-06-01"),
             supportedRange: "^17.3.0"
+        }), new NodeRelease(19, {
+            endOfLife: new Date("2023-06-01")
         }), new NodeRelease(18, {
             endOfLife: new Date("2025-04-30")
         }), new NodeRelease(20, {
             endOfLife: new Date("2026-04-30")
+        }), new NodeRelease(21, {
+            endOfLife: new Date("2024-06-01")
         }) ];
     },
     7962: (__unused_webpack_module, exports, __webpack_require__) => {
@@ -3836,13 +3838,14 @@ var __webpack_modules__ = {
             }
         });
         function checkNode(envPrefix = "JSII") {
+            var _a;
             const {nodeRelease, knownBroken} = constants_1.NodeRelease.forThisRuntime();
             const defaultCallToAction = "Should you encounter odd runtime issues, please try using one of the supported release before filing a bug report.";
             if (nodeRelease === null || nodeRelease === void 0 ? void 0 : nodeRelease.endOfLife) {
                 const silenceVariable = `${envPrefix}_SILENCE_WARNING_END_OF_LIFE_NODE_VERSION`;
-                const acknowledgeNodeEol = "Node14 is now end of life (EOL) as of April 30, 2023. Support of EOL runtimes are only guaranteed for 30 days after EOL. By silencing this warning you acknowledge that you are using an EOL version of Node and will upgrade to a supported version as soon as possible.";
+                const silencedVersions = ((_a = process.env[silenceVariable]) !== null && _a !== void 0 ? _a : "").split(",").map((v => v.trim()));
                 const qualifier = nodeRelease.endOfLifeDate ? ` on ${nodeRelease.endOfLifeDate.toISOString().slice(0, 10)}` : "";
-                if (!(process.env[silenceVariable] === acknowledgeNodeEol)) veryVisibleMessage(chalk_1.bgRed.white.bold, `Node ${nodeRelease.majorVersion} has reached end-of-life${qualifier} and is not supported.`, `Please upgrade to a supported node version as soon as possible.`);
+                if (!silencedVersions.includes(nodeRelease.majorVersion.toString())) veryVisibleMessage(chalk_1.bgRed.white.bold, `Node ${nodeRelease.majorVersion} has reached end-of-life${qualifier} and is not supported.`, `Please upgrade to a supported node version as soon as possible.`);
             } else if (knownBroken) {
                 const silenceVariable = `${envPrefix}_SILENCE_WARNING_KNOWN_BROKEN_NODE_VERSION`;
                 if (!process.env[silenceVariable]) veryVisibleMessage(chalk_1.bgRed.white.bold, `Node ${process_1.version} is unsupported and has known compatibility issues with this software.`, defaultCallToAction, silenceVariable);
