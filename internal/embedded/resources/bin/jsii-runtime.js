@@ -3794,30 +3794,35 @@ var __webpack_modules__ = {
         NodeRelease.DEPRECATION_WINDOW_MS = 30 * ONE_DAY_IN_MILLISECONDS;
         NodeRelease.ALL_RELEASES = [ ...[ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 ].map((majorVersion => new NodeRelease(majorVersion, {
             endOfLife: true
-        }))), new NodeRelease(13, {
-            endOfLife: new Date("2020-06-01")
+        }))), new NodeRelease(12, {
+            endOfLife: new Date("2022-04-30"),
+            supportedRange: "^12.7.0"
+        }), new NodeRelease(13, {
+            endOfLife: new Date("2020-06-01"),
+            untested: true
         }), new NodeRelease(14, {
             endOfLife: new Date("2023-04-30"),
             supportedRange: "^14.17.0"
         }), new NodeRelease(15, {
-            endOfLife: new Date("2021-06-01")
-        }), new NodeRelease(12, {
-            endOfLife: new Date("2022-04-30"),
-            supportedRange: "^12.7.0"
+            endOfLife: new Date("2021-06-01"),
+            untested: true
         }), new NodeRelease(16, {
             endOfLife: new Date("2023-09-11"),
             supportedRange: "^16.3.0"
         }), new NodeRelease(17, {
             endOfLife: new Date("2022-06-01"),
-            supportedRange: "^17.3.0"
+            supportedRange: "^17.3.0",
+            untested: true
         }), new NodeRelease(19, {
-            endOfLife: new Date("2023-06-01")
+            endOfLife: new Date("2023-06-01"),
+            untested: true
         }), new NodeRelease(18, {
             endOfLife: new Date("2025-04-30")
         }), new NodeRelease(20, {
             endOfLife: new Date("2026-04-30")
         }), new NodeRelease(21, {
-            endOfLife: new Date("2024-06-01")
+            endOfLife: new Date("2024-06-01"),
+            untested: true
         }) ];
     },
     7962: (__unused_webpack_module, exports, __webpack_require__) => {
