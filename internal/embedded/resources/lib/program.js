@@ -6238,6 +6238,7 @@ var __webpack_modules__ = {
         const getFlag = __webpack_require__(8512);
         const platform = process.env.TESTING_TAR_FAKE_PLATFORM || process.platform;
         const isWindows = platform === "win32";
+        const DEFAULT_MAX_DEPTH = 1024;
         const unlinkFile = (path, cb) => {
             if (!isWindows) {
                 return fs.unlink(path, cb);
@@ -6314,6 +6315,7 @@ var __webpack_modules__ = {
                 }
                 this.processUid = (this.preserveOwner || this.setOwner) && process.getuid ? process.getuid() : null;
                 this.processGid = (this.preserveOwner || this.setOwner) && process.getgid ? process.getgid() : null;
+                this.maxDepth = typeof opt.maxDepth === "number" ? opt.maxDepth : DEFAULT_MAX_DEPTH;
                 this.forceChown = opt.forceChown === true;
                 this.win32 = !!opt.win32 || isWindows;
                 this.newer = !!opt.newer;
@@ -6343,12 +6345,12 @@ var __webpack_modules__ = {
                 }
             }
             [CHECKPATH](entry) {
+                const p = normPath(entry.path);
+                const parts = p.split("/");
                 if (this.strip) {
-                    const parts = normPath(entry.path).split("/");
                     if (parts.length < this.strip) {
                         return false;
                     }
-                    entry.path = parts.slice(this.strip).join("/");
                     if (entry.type === "Link") {
                         const linkparts = normPath(entry.linkpath).split("/");
                         if (linkparts.length >= this.strip) {
@@ -6357,10 +6359,19 @@ var __webpack_modules__ = {
                             return false;
                         }
                     }
+                    parts.splice(0, this.strip);
+                    entry.path = parts.join("/");
+                }
+                if (isFinite(this.maxDepth) && parts.length > this.maxDepth) {
+                    this.warn("TAR_ENTRY_ERROR", "path excessively deep", {
+                        entry,
+                        path: p,
+                        depth: parts.length,
+                        maxDepth: this.maxDepth
+                    });
+                    return false;
                 }
                 if (!this.preservePaths) {
-                    const p = normPath(entry.path);
-                    const parts = p.split("/");
                     if (parts.includes("..") || isWindows && /^[a-z]:\.\.$/i.test(parts[0])) {
                         this.warn("TAR_ENTRY_ERROR", `path contains '..'`, {
                             entry,
@@ -17464,7 +17475,7 @@ var __webpack_modules__ = {
     },
     4147: module => {
         "use strict";
-        module.exports = JSON.parse('{"name":"@jsii/runtime","version":"1.97.0","description":"jsii runtime kernel process","license":"Apache-2.0","author":{"name":"Amazon Web Services","url":"https://aws.amazon.com"},"homepage":"https://github.com/aws/jsii","bugs":{"url":"https://github.com/aws/jsii/issues"},"repository":{"type":"git","url":"https://github.com/aws/jsii.git","directory":"packages/@jsii/runtime"},"engines":{"node":">= 14.17.0"},"main":"lib/index.js","types":"lib/index.d.ts","bin":{"jsii-runtime":"bin/jsii-runtime"},"scripts":{"build":"tsc --build && chmod +x bin/jsii-runtime && npx webpack-cli && npm run lint","watch":"tsc --build -w","lint":"eslint . --ext .js,.ts --ignore-path=.gitignore --ignore-pattern=webpack.config.js","lint:fix":"yarn lint --fix","test":"jest","test:update":"jest -u","package":"package-js"},"dependencies":{"@jsii/kernel":"^1.97.0","@jsii/check-node":"1.97.0","@jsii/spec":"^1.97.0"},"devDependencies":{"@scope/jsii-calc-base":"^1.97.0","@scope/jsii-calc-lib":"^1.97.0","jsii-build-tools":"^1.97.0","jsii-calc":"^3.20.120","source-map-loader":"^4.0.1","webpack":"^5.89.0","webpack-cli":"^5.1.4"}}');
+        module.exports = JSON.parse('{"name":"@jsii/runtime","version":"1.98.0","description":"jsii runtime kernel process","license":"Apache-2.0","author":{"name":"Amazon Web Services","url":"https://aws.amazon.com"},"homepage":"https://github.com/aws/jsii","bugs":{"url":"https://github.com/aws/jsii/issues"},"repository":{"type":"git","url":"https://github.com/aws/jsii.git","directory":"packages/@jsii/runtime"},"engines":{"node":">= 14.17.0"},"main":"lib/index.js","types":"lib/index.d.ts","bin":{"jsii-runtime":"bin/jsii-runtime"},"scripts":{"build":"tsc --build && chmod +x bin/jsii-runtime && npx webpack-cli && npm run lint","watch":"tsc --build -w","lint":"eslint . --ext .js,.ts --ignore-path=.gitignore --ignore-pattern=webpack.config.js","lint:fix":"yarn lint --fix","test":"jest","test:update":"jest -u","package":"package-js"},"dependencies":{"@jsii/kernel":"^1.98.0","@jsii/check-node":"1.98.0","@jsii/spec":"^1.98.0"},"devDependencies":{"@scope/jsii-calc-base":"^1.98.0","@scope/jsii-calc-lib":"^1.98.0","jsii-build-tools":"^1.98.0","jsii-calc":"^3.20.120","source-map-loader":"^4.0.1","webpack":"^5.89.0","webpack-cli":"^5.1.4"}}');
     },
     5277: module => {
         "use strict";

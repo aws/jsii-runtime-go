@@ -3823,6 +3823,8 @@ var __webpack_modules__ = {
         }), new NodeRelease(21, {
             endOfLife: new Date("2024-06-01"),
             untested: true
+        }), new NodeRelease(22, {
+            endOfLife: new Date("2027-04-30")
         }) ];
     },
     7962: (__unused_webpack_module, exports, __webpack_require__) => {
