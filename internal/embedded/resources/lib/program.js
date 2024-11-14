@@ -16620,8 +16620,7 @@ var __webpack_modules__ = {
                 }
             }
             if (options.reference !== "suffix" && components.scheme) {
-                uriTokens.push(components.scheme);
-                uriTokens.push(":");
+                uriTokens.push(components.scheme, ":");
             }
             const authority = recomposeAuthority(components, options);
             if (authority !== undefined) {
@@ -16644,12 +16643,10 @@ var __webpack_modules__ = {
                 uriTokens.push(s);
             }
             if (components.query !== undefined) {
-                uriTokens.push("?");
-                uriTokens.push(components.query);
+                uriTokens.push("?", components.query);
             }
             if (components.fragment !== undefined) {
-                uriTokens.push("#");
-                uriTokens.push(components.fragment);
+                uriTokens.push("#", components.fragment);
             }
             return uriTokens.join("");
         }
@@ -16731,9 +16728,6 @@ var __webpack_modules__ = {
                 if (!schemeHandler || schemeHandler && !schemeHandler.skipNormalize) {
                     if (gotEncoding && parsed.scheme !== undefined) {
                         parsed.scheme = unescape(parsed.scheme);
-                    }
-                    if (gotEncoding && parsed.userinfo !== undefined) {
-                        parsed.userinfo = unescape(parsed.userinfo);
                     }
                     if (gotEncoding && parsed.host !== undefined) {
                         parsed.host = unescape(parsed.host);
@@ -17191,7 +17185,7 @@ var __webpack_modules__ = {
     },
     8330: module => {
         "use strict";
-        module.exports = JSON.parse('{"name":"@jsii/runtime","version":"1.104.0","description":"jsii runtime kernel process","license":"Apache-2.0","author":{"name":"Amazon Web Services","url":"https://aws.amazon.com"},"homepage":"https://github.com/aws/jsii","bugs":{"url":"https://github.com/aws/jsii/issues"},"repository":{"type":"git","url":"https://github.com/aws/jsii.git","directory":"packages/@jsii/runtime"},"engines":{"node":">= 14.17.0"},"main":"lib/index.js","types":"lib/index.d.ts","bin":{"jsii-runtime":"bin/jsii-runtime"},"scripts":{"build":"tsc --build && chmod +x bin/jsii-runtime && npx webpack-cli && npm run lint","watch":"tsc --build -w","lint":"ESLINT_USE_FLAT_CONFIG=false eslint . --ext .js,.ts --ignore-path=.gitignore --ignore-pattern=webpack.config.js","lint:fix":"yarn lint --fix","test":"jest","test:update":"jest -u","package":"package-js"},"dependencies":{"@jsii/kernel":"^1.104.0","@jsii/check-node":"1.104.0","@jsii/spec":"^1.104.0"},"devDependencies":{"@scope/jsii-calc-base":"^1.104.0","@scope/jsii-calc-lib":"^1.104.0","jsii-build-tools":"^1.104.0","jsii-calc":"^3.20.120","source-map-loader":"^5.0.0","webpack":"^5.94.0","webpack-cli":"^5.1.4"}}');
+        module.exports = JSON.parse('{"name":"@jsii/runtime","version":"1.105.0","description":"jsii runtime kernel process","license":"Apache-2.0","author":{"name":"Amazon Web Services","url":"https://aws.amazon.com"},"homepage":"https://github.com/aws/jsii","bugs":{"url":"https://github.com/aws/jsii/issues"},"repository":{"type":"git","url":"https://github.com/aws/jsii.git","directory":"packages/@jsii/runtime"},"engines":{"node":">= 14.17.0"},"main":"lib/index.js","types":"lib/index.d.ts","bin":{"jsii-runtime":"bin/jsii-runtime"},"scripts":{"build":"tsc --build && chmod +x bin/jsii-runtime && npx webpack-cli && npm run lint","watch":"tsc --build -w","lint":"ESLINT_USE_FLAT_CONFIG=false eslint . --ext .js,.ts --ignore-path=.gitignore --ignore-pattern=webpack.config.js","lint:fix":"yarn lint --fix","test":"jest","test:update":"jest -u","package":"package-js"},"dependencies":{"@jsii/kernel":"^1.105.0","@jsii/check-node":"1.105.0","@jsii/spec":"^1.105.0"},"devDependencies":{"@scope/jsii-calc-base":"^1.105.0","@scope/jsii-calc-lib":"^1.105.0","jsii-build-tools":"^1.105.0","jsii-calc":"^3.20.120","source-map-loader":"^5.0.0","webpack":"^5.96.1","webpack-cli":"^5.1.4"}}');
     },
     9453: module => {
         "use strict";
@@ -17230,38 +17224,38 @@ var __webpack_exports__ = {};
 (() => {
     "use strict";
     var exports = __webpack_exports__;
-    var __webpack_unused_export__;
-    var _a;
-    __webpack_unused_export__ = {
+    var program_webpack_unused_export_;
+    var program_a;
+    program_webpack_unused_export_ = {
         value: true
     };
-    const packageInfo = __webpack_require__(8330);
-    const host_1 = __webpack_require__(8623);
-    const in_out_1 = __webpack_require__(6663);
-    const sync_stdio_1 = __webpack_require__(7614);
-    const name = packageInfo.name;
-    const version = packageInfo.version;
-    const noStack = !!process.env.JSII_NOSTACK;
-    const debug = !!process.env.JSII_DEBUG;
-    const debugTiming = !!process.env.JSII_DEBUG_TIMING;
-    const validateAssemblies = !!process.env.JSII_VALIDATE_ASSEMBLIES;
-    const stdio = new sync_stdio_1.SyncStdio({
-        errorFD: (_a = process.stderr.fd) !== null && _a !== void 0 ? _a : 2,
+    const program_packageInfo = __webpack_require__(8330);
+    const program_host_1 = __webpack_require__(8623);
+    const program_in_out_1 = __webpack_require__(6663);
+    const program_sync_stdio_1 = __webpack_require__(7614);
+    const program_name = program_packageInfo.name;
+    const program_version = program_packageInfo.version;
+    const program_noStack = !!process.env.JSII_NOSTACK;
+    const program_debug = !!process.env.JSII_DEBUG;
+    const program_debugTiming = !!process.env.JSII_DEBUG_TIMING;
+    const program_validateAssemblies = !!process.env.JSII_VALIDATE_ASSEMBLIES;
+    const program_stdio = new program_sync_stdio_1.SyncStdio({
+        errorFD: (program_a = process.stderr.fd) !== null && program_a !== void 0 ? program_a : 2,
         readFD: 3,
         writeFD: 3
     });
-    const inout = new in_out_1.InputOutput(stdio);
-    const host = new host_1.KernelHost(inout, {
-        debug,
-        noStack,
-        debugTiming,
-        validateAssemblies
+    const program_inout = new program_in_out_1.InputOutput(program_stdio);
+    const program_host = new program_host_1.KernelHost(program_inout, {
+        debug: program_debug,
+        noStack: program_noStack,
+        debugTiming: program_debugTiming,
+        validateAssemblies: program_validateAssemblies
     });
-    host.once("exit", process.exit.bind(process));
-    inout.write({
-        hello: `${name}@${version}`
+    program_host.once("exit", process.exit.bind(process));
+    program_inout.write({
+        hello: `${program_name}@${program_version}`
     });
-    inout.debug = debug;
-    host.run();
+    program_inout.debug = program_debug;
+    program_host.run();
 })();
 //# sourceMappingURL=program.js.map
