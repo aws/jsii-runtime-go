@@ -3436,7 +3436,7 @@ var __webpack_exports__ = {};
     }
     function makeHandler(tag) {
         return chunk => {
-            const buffer = Buffer.from(chunk);
+            const buffer = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
             (0, console_1.error)(JSON.stringify({
                 [tag]: buffer.toString("base64")
             }));
