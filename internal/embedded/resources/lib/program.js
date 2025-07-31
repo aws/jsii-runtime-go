@@ -24,7 +24,7 @@ var __webpack_modules__ = {
                 if (it.opts.unevaluated && allProps.length && it.props !== true) {
                     it.props = util_1.mergeEvaluated.props(gen, (0, util_1.toHash)(allProps), it.props);
                 }
-                const properties = allProps.filter((p => !(0, util_1.alwaysValidSchema)(it, schema[p])));
+                const properties = allProps.filter(p => !(0, util_1.alwaysValidSchema)(it, schema[p]));
                 if (properties.length === 0) return;
                 const valid = gen.name("valid");
                 for (const prop of properties) {
@@ -70,7 +70,7 @@ var __webpack_modules__ = {
                 const {gen, schema, data, parentSchema, it} = cxt;
                 const {opts} = it;
                 const patterns = (0, code_1.allSchemaProperties)(schema);
-                const alwaysValidPatterns = patterns.filter((p => (0, util_1.alwaysValidSchema)(it, schema[p])));
+                const alwaysValidPatterns = patterns.filter(p => (0, util_1.alwaysValidSchema)(it, schema[p]));
                 if (patterns.length === 0 || alwaysValidPatterns.length === patterns.length && (!it.opts.unevaluated || it.props === true)) {
                     return;
                 }
@@ -101,8 +101,8 @@ var __webpack_modules__ = {
                     }
                 }
                 function validateProperties(pat) {
-                    gen.forIn("key", data, (key => {
-                        gen.if((0, codegen_1._)`${(0, code_1.usePattern)(cxt, pat)}.test(${key})`, (() => {
+                    gen.forIn("key", data, key => {
+                        gen.if((0, codegen_1._)`${(0, code_1.usePattern)(cxt, pat)}.test(${key})`, () => {
                             const alwaysValid = alwaysValidPatterns.includes(pat);
                             if (!alwaysValid) {
                                 cxt.subschema({
@@ -115,10 +115,10 @@ var __webpack_modules__ = {
                             if (it.opts.unevaluated && props !== true) {
                                 gen.assign((0, codegen_1._)`${props}[${key}]`, true);
                             } else if (!alwaysValid && !it.allErrors) {
-                                gen.if((0, codegen_1.not)(valid), (() => gen.break()));
+                                gen.if((0, codegen_1.not)(valid), () => gen.break());
                             }
-                        }));
-                    }));
+                        });
+                    });
                 }
             }
         };
@@ -171,8 +171,8 @@ var __webpack_modules__ = {
         exports.RuntimeError = RuntimeError;
         class Kernel {
             constructor(callbackHandler) {
-                this.callbackHandler = callbackHandler;
                 _Kernel_instances.add(this);
+                this.callbackHandler = callbackHandler;
                 this.traceEnabled = false;
                 this.debugTimingEnabled = false;
                 this.validateAssemblies = false;
@@ -195,7 +195,7 @@ var __webpack_modules__ = {
                 }, "f");
             }
             load(req) {
-                return __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_debugTime).call(this, (() => __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_load).call(this, req)), `load(${JSON.stringify(req, null, 2)})`);
+                return __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_debugTime).call(this, () => __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_load).call(this, req), `load(${JSON.stringify(req, null, 2)})`);
             }
             getBinScriptCommand(req) {
                 return __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_getBinScriptCommand).call(this, req);
@@ -232,7 +232,7 @@ var __webpack_modules__ = {
                     throw new JsiiFault(`property ${symbol} is not static`);
                 }
                 const prototype = __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_findSymbol).call(this, fqn);
-                const value = __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_ensureSync).call(this, `property ${property}`, (() => prototype[property]));
+                const value = __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_ensureSync).call(this, `property ${property}`, () => prototype[property]);
                 __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_debug).call(this, "value:", value);
                 const ret = __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_fromSandbox).call(this, value, ti, `of static property ${symbol}`);
                 __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_debug).call(this, "ret", ret);
@@ -252,7 +252,7 @@ var __webpack_modules__ = {
                     throw new JsiiFault(`static property ${symbol} is readonly`);
                 }
                 const prototype = __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_findSymbol).call(this, fqn);
-                __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_ensureSync).call(this, `property ${property}`, (() => prototype[property] = __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_toSandbox).call(this, value, ti, `assigned to static property ${symbol}`)));
+                __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_ensureSync).call(this, `property ${property}`, () => prototype[property] = __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_toSandbox).call(this, value, ti, `assigned to static property ${symbol}`));
                 return {};
             }
             get(req) {
@@ -261,7 +261,7 @@ var __webpack_modules__ = {
                 const {instance, fqn, interfaces} = __classPrivateFieldGet(this, _Kernel_objects, "f").findObject(objref);
                 const ti = __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_typeInfoForProperty).call(this, property, fqn, interfaces);
                 const propertyToGet = __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_findPropertyTarget).call(this, instance, property);
-                const value = __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_ensureSync).call(this, `property '${objref[api_1.TOKEN_REF]}.${propertyToGet}'`, (() => instance[propertyToGet]));
+                const value = __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_ensureSync).call(this, `property '${objref[api_1.TOKEN_REF]}.${propertyToGet}'`, () => instance[propertyToGet]);
                 __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_debug).call(this, "value:", value);
                 const ret = __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_fromSandbox).call(this, value, ti, `of property ${fqn}.${property}`);
                 __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_debug).call(this, "ret:", ret);
@@ -278,7 +278,7 @@ var __webpack_modules__ = {
                     throw new JsiiFault(`Cannot set value of immutable property ${req.property} to ${req.value}`);
                 }
                 const propertyToSet = __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_findPropertyTarget).call(this, instance, property);
-                __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_ensureSync).call(this, `property '${objref[api_1.TOKEN_REF]}.${propertyToSet}'`, (() => instance[propertyToSet] = __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_toSandbox).call(this, value, propInfo, `assigned to property ${fqn}.${property}`)));
+                __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_ensureSync).call(this, `property '${objref[api_1.TOKEN_REF]}.${propertyToSet}'`, () => instance[propertyToSet] = __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_toSandbox).call(this, value, propInfo, `assigned to property ${fqn}.${property}`));
                 return {};
             }
             invoke(req) {
@@ -291,7 +291,7 @@ var __webpack_modules__ = {
                     throw new JsiiFault(`${method} is an async method, use "begin" instead`);
                 }
                 const fqn = (0, objects_1.jsiiTypeFqn)(obj, __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_isVisibleType).bind(this));
-                const ret = __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_ensureSync).call(this, `method '${objref[api_1.TOKEN_REF]}.${method}'`, (() => fn.apply(obj, __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_toSandboxValues).call(this, args, `method ${fqn ? `${fqn}#` : ""}${method}`, ti.parameters))));
+                const ret = __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_ensureSync).call(this, `method '${objref[api_1.TOKEN_REF]}.${method}'`, () => fn.apply(obj, __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_toSandboxValues).call(this, args, `method ${fqn ? `${fqn}#` : ""}${method}`, ti.parameters)));
                 const result = __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_fromSandbox).call(this, ret, (_b = ti.returns) !== null && _b !== void 0 ? _b : "void", `returned by method ${fqn ? `${fqn}#` : ""}${method}`);
                 __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_debug).call(this, "invoke result", result);
                 return {
@@ -312,7 +312,7 @@ var __webpack_modules__ = {
                 }
                 const prototype = __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_findSymbol).call(this, fqn);
                 const fn = prototype[method];
-                const ret = __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_ensureSync).call(this, `method '${fqn}.${method}'`, (() => fn.apply(prototype, __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_toSandboxValues).call(this, args, `static method ${fqn}.${method}`, ti.parameters))));
+                const ret = __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_ensureSync).call(this, `method '${fqn}.${method}'`, () => fn.apply(prototype, __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_toSandboxValues).call(this, args, `static method ${fqn}.${method}`, ti.parameters)));
                 __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_debug).call(this, "method returned:", ret);
                 return {
                     result: __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_fromSandbox).call(this, ret, (_b = ti.returns) !== null && _b !== void 0 ? _b : "void", `returned by static method ${fqn}.${method}`)
@@ -332,7 +332,7 @@ var __webpack_modules__ = {
                 }
                 const fqn = (0, objects_1.jsiiTypeFqn)(obj, __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_isVisibleType).bind(this));
                 const promise = fn.apply(obj, __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_toSandboxValues).call(this, args, `async method ${fqn ? `${fqn}#` : ""}${method}`, ti.parameters));
-                promise.catch((_ => undefined));
+                promise.catch(_ => undefined);
                 const prid = __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_makeprid).call(this);
                 __classPrivateFieldGet(this, _Kernel_promises, "f").set(prid, {
                     promise,
@@ -374,7 +374,7 @@ var __webpack_modules__ = {
             }
             callbacks(_req) {
                 __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_debug).call(this, "callbacks");
-                const ret = Array.from(__classPrivateFieldGet(this, _Kernel_cbs, "f").entries()).map((([cbid, cb]) => {
+                const ret = Array.from(__classPrivateFieldGet(this, _Kernel_cbs, "f").entries()).map(([cbid, cb]) => {
                     __classPrivateFieldGet(this, _Kernel_waiting, "f").set(cbid, cb);
                     __classPrivateFieldGet(this, _Kernel_cbs, "f").delete(cbid);
                     const callback = {
@@ -387,7 +387,7 @@ var __webpack_modules__ = {
                         }
                     };
                     return callback;
-                }));
+                });
                 return {
                     callbacks: ret
                 };
@@ -458,11 +458,11 @@ var __webpack_modules__ = {
             }
             const originalUmask = process.umask(18);
             try {
-                const {cache} = __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_debugTime).call(this, (() => tar.extract(req.tarball, packageDir, {
+                const {cache} = __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_debugTime).call(this, () => tar.extract(req.tarball, packageDir, {
                     strict: true,
                     strip: 1,
                     unlink: true
-                }, req.name, req.version)), `tar.extract(${req.tarball}) => ${packageDir}`);
+                }, req.name, req.version), `tar.extract(${req.tarball}) => ${packageDir}`);
                 if (cache != null) {
                     __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_debug).call(this, `Package cache enabled, extraction resulted in a cache ${cache}`);
                 }
@@ -471,16 +471,16 @@ var __webpack_modules__ = {
             }
             let assmSpec;
             try {
-                assmSpec = __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_debugTime).call(this, (() => spec.loadAssemblyFromPath(packageDir, this.validateAssemblies)), `loadAssemblyFromPath(${packageDir})`);
+                assmSpec = __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_debugTime).call(this, () => spec.loadAssemblyFromPath(packageDir, this.validateAssemblies), `loadAssemblyFromPath(${packageDir})`);
             } catch (e) {
                 throw new JsiiFault(`Error for package tarball ${req.tarball}: ${e.message}`);
             }
             const entryPoint = __classPrivateFieldGet(this, _Kernel_require, "f").resolve(assmSpec.name, {
                 paths: [ __classPrivateFieldGet(this, _Kernel_installDir, "f") ]
             });
-            const closure = __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_debugTime).call(this, (() => __classPrivateFieldGet(this, _Kernel_require, "f")(entryPoint)), `require(${entryPoint})`);
+            const closure = __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_debugTime).call(this, () => __classPrivateFieldGet(this, _Kernel_require, "f")(entryPoint), `require(${entryPoint})`);
             const assm = new Assembly(assmSpec, closure);
-            __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_debugTime).call(this, (() => __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_addAssembly).call(this, assm)), `registerAssembly({ name: ${assm.metadata.name}, types: ${Object.keys((_b = assm.metadata.types) !== null && _b !== void 0 ? _b : {}).length} })`);
+            __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_debugTime).call(this, () => __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_addAssembly).call(this, assm), `registerAssembly({ name: ${assm.metadata.name}, types: ${Object.keys((_b = assm.metadata.types) !== null && _b !== void 0 ? _b : {}).length} })`);
             return {
                 assembly: assmSpec.name,
                 types: Object.keys((_c = assmSpec.types) !== null && _c !== void 0 ? _c : {}).length
@@ -489,7 +489,7 @@ var __webpack_modules__ = {
             var _a;
             __classPrivateFieldGet(this, _Kernel_assemblies, "f").set(assm.metadata.name, assm);
             const jsiiVersion = assm.metadata.jsiiVersion.split(" ", 1)[0];
-            const [jsiiMajor, jsiiMinor, _jsiiPatch, ..._rest] = jsiiVersion.split(".").map((str => parseInt(str, 10)));
+            const [jsiiMajor, jsiiMinor, _jsiiPatch, ..._rest] = jsiiVersion.split(".").map(str => parseInt(str, 10));
             if (jsiiVersion === "0.0.0" || jsiiMajor > 1 || jsiiMajor === 1 && jsiiMinor >= 19) {
                 __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_debug).call(this, "Using compiler-woven runtime type information!");
                 return;
@@ -684,7 +684,7 @@ var __webpack_modules__ = {
                     value: (...methodArgs) => {
                         __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_debug).call(this, "invoke async method override", override);
                         const args = __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_toSandboxValues).call(this, methodArgs, methodContext, methodInfo.parameters);
-                        return new Promise(((succeed, fail) => {
+                        return new Promise((succeed, fail) => {
                             var _a;
                             const cbid = __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_makecbid).call(this);
                             __classPrivateFieldGet(this, _Kernel_instances, "m", _Kernel_debug).call(this, "adding callback to queue", cbid);
@@ -696,7 +696,7 @@ var __webpack_modules__ = {
                                 succeed,
                                 fail
                             });
-                        }));
+                        });
                     }
                 });
             } else {
@@ -893,7 +893,7 @@ var __webpack_modules__ = {
             if (xs.length > parametersCopy.length) {
                 throw new JsiiFault(`Argument list (${JSON.stringify(xs)}) not same size as expected argument list (length ${parametersCopy.length})`);
             }
-            return xs.map(((x, i) => boxUnbox(x, parametersCopy[i], `passed to parameter ${parametersCopy[i].name} of ${methodContext}`)));
+            return xs.map((x, i) => boxUnbox(x, parametersCopy[i], `passed to parameter ${parametersCopy[i].name} of ${methodContext}`));
         }, _Kernel_debug = function _Kernel_debug(...args) {
             if (this.traceEnabled) {
                 console.error("[@jsii/kernel]", ...args);
@@ -1014,7 +1014,7 @@ var __webpack_modules__ = {
                 } else {
                     gen.if((0, codegen_1.not)(schValid), validateClause("else"));
                 }
-                cxt.pass(valid, (() => cxt.error(true)));
+                cxt.pass(valid, () => cxt.error(true));
                 function validateIf() {
                     const schCxt = cxt.subschema({
                         keyword: "if",
@@ -1078,35 +1078,35 @@ var __webpack_modules__ = {
                         j
                     });
                     gen.assign(valid, true);
-                    gen.if((0, codegen_1._)`${i} > 1`, (() => (canOptimize() ? loopN : loopN2)(i, j)));
+                    gen.if((0, codegen_1._)`${i} > 1`, () => (canOptimize() ? loopN : loopN2)(i, j));
                 }
                 function canOptimize() {
-                    return itemTypes.length > 0 && !itemTypes.some((t => t === "object" || t === "array"));
+                    return itemTypes.length > 0 && !itemTypes.some(t => t === "object" || t === "array");
                 }
                 function loopN(i, j) {
                     const item = gen.name("item");
                     const wrongType = (0, dataType_1.checkDataTypes)(itemTypes, item, it.opts.strictNumbers, dataType_1.DataType.Wrong);
                     const indices = gen.const("indices", (0, codegen_1._)`{}`);
-                    gen.for((0, codegen_1._)`;${i}--;`, (() => {
+                    gen.for((0, codegen_1._)`;${i}--;`, () => {
                         gen.let(item, (0, codegen_1._)`${data}[${i}]`);
                         gen.if(wrongType, (0, codegen_1._)`continue`);
                         if (itemTypes.length > 1) gen.if((0, codegen_1._)`typeof ${item} == "string"`, (0, 
                         codegen_1._)`${item} += "_"`);
-                        gen.if((0, codegen_1._)`typeof ${indices}[${item}] == "number"`, (() => {
+                        gen.if((0, codegen_1._)`typeof ${indices}[${item}] == "number"`, () => {
                             gen.assign(j, (0, codegen_1._)`${indices}[${item}]`);
                             cxt.error();
                             gen.assign(valid, false).break();
-                        })).code((0, codegen_1._)`${indices}[${item}] = ${i}`);
-                    }));
+                        }).code((0, codegen_1._)`${indices}[${item}] = ${i}`);
+                    });
                 }
                 function loopN2(i, j) {
                     const eql = (0, util_1.useFunc)(gen, equal_1.default);
                     const outer = gen.name("outer");
-                    gen.label(outer).for((0, codegen_1._)`;${i}--;`, (() => gen.for((0, codegen_1._)`${j} = ${i}; ${j}--;`, (() => gen.if((0, 
-                    codegen_1._)`${eql}(${data}[${i}], ${data}[${j}])`, (() => {
+                    gen.label(outer).for((0, codegen_1._)`;${i}--;`, () => gen.for((0, codegen_1._)`${j} = ${i}; ${j}--;`, () => gen.if((0, 
+                    codegen_1._)`${eql}(${data}[${i}], ${data}[${j}])`, () => {
                         cxt.error();
                         gen.assign(valid, false).break(outer);
-                    }))))));
+                    })));
                 }
             }
         };
@@ -1144,15 +1144,15 @@ var __webpack_modules__ = {
         });
         exports.NameTree = void 0;
         class NameTree {
-            constructor() {
-                this._children = {};
-            }
             static of(assm) {
                 const nameTree = new NameTree;
                 for (const type of Object.values(assm.types ?? {})) {
                     nameTree.register(type.fqn);
                 }
                 return nameTree;
+            }
+            constructor() {
+                this._children = {};
             }
             get children() {
                 return this._children;
@@ -1410,7 +1410,7 @@ var __webpack_modules__ = {
                 this.nodes = nodes;
             }
             render(opts) {
-                return this.nodes.reduce(((code, n) => code + n.render(opts)), "");
+                return this.nodes.reduce((code, n) => code + n.render(opts), "");
             }
             optimizeNodes() {
                 const {nodes} = this;
@@ -1433,7 +1433,7 @@ var __webpack_modules__ = {
                 return nodes.length > 0 ? this : undefined;
             }
             get names() {
-                return this.nodes.reduce(((names, n) => addNames(names, n.names)), {});
+                return this.nodes.reduce((names, n) => addNames(names, n.names), {});
             }
         }
         class BlockNode extends ParentNode {
@@ -1713,25 +1713,25 @@ var __webpack_modules__ = {
             }
             forRange(nameOrPrefix, from, to, forBody, varKind = (this.opts.es5 ? scope_1.varKinds.var : scope_1.varKinds.let)) {
                 const name = this._scope.toName(nameOrPrefix);
-                return this._for(new ForRange(varKind, name, from, to), (() => forBody(name)));
+                return this._for(new ForRange(varKind, name, from, to), () => forBody(name));
             }
             forOf(nameOrPrefix, iterable, forBody, varKind = scope_1.varKinds.const) {
                 const name = this._scope.toName(nameOrPrefix);
                 if (this.opts.es5) {
                     const arr = iterable instanceof code_1.Name ? iterable : this.var("_arr", iterable);
-                    return this.forRange("_i", 0, (0, code_1._)`${arr}.length`, (i => {
+                    return this.forRange("_i", 0, (0, code_1._)`${arr}.length`, i => {
                         this.var(name, (0, code_1._)`${arr}[${i}]`);
                         forBody(name);
-                    }));
+                    });
                 }
-                return this._for(new ForIter("of", varKind, name, iterable), (() => forBody(name)));
+                return this._for(new ForIter("of", varKind, name, iterable), () => forBody(name));
             }
             forIn(nameOrPrefix, obj, forBody, varKind = (this.opts.es5 ? scope_1.varKinds.var : scope_1.varKinds.const)) {
                 if (this.opts.ownProperties) {
                     return this.forOf(nameOrPrefix, (0, code_1._)`Object.keys(${obj})`, forBody);
                 }
                 const name = this._scope.toName(nameOrPrefix);
-                return this._for(new ForIter("in", varKind, name, obj), (() => forBody(name)));
+                return this._for(new ForIter("in", varKind, name, obj), () => forBody(name));
             }
             endFor() {
                 return this._endBlockNode(For);
@@ -1844,11 +1844,11 @@ var __webpack_modules__ = {
         function optimizeExpr(expr, names, constants) {
             if (expr instanceof code_1.Name) return replaceName(expr);
             if (!canOptimize(expr)) return expr;
-            return new code_1._Code(expr._items.reduce(((items, c) => {
+            return new code_1._Code(expr._items.reduce((items, c) => {
                 if (c instanceof code_1.Name) c = replaceName(c);
                 if (c instanceof code_1._Code) items.push(...c._items); else items.push(c);
                 return items;
-            }), []));
+            }, []));
             function replaceName(n) {
                 const c = constants[n.str];
                 if (c === undefined || names[n.str] !== 1) return n;
@@ -1856,7 +1856,7 @@ var __webpack_modules__ = {
                 return c;
             }
             function canOptimize(e) {
-                return e instanceof code_1._Code && e._items.some((c => c instanceof code_1.Name && names[c.str] === 1 && constants[c.str] !== undefined));
+                return e instanceof code_1._Code && e._items.some(c => c instanceof code_1.Name && names[c.str] === 1 && constants[c.str] !== undefined);
             }
         }
         function subtractNames(names, from) {
@@ -1890,11 +1890,11 @@ var __webpack_modules__ = {
             callback = typeof type === "function" ? type : callback;
             type = typeof type === "function" ? false : type;
             if (type) return callback(null, type);
-            fs.lstat(srcpath, ((err, stats) => {
+            fs.lstat(srcpath, (err, stats) => {
                 if (err) return callback(null, "file");
                 type = stats && stats.isDirectory() ? "dir" : "file";
                 callback(null, type);
-            }));
+            });
         }
         function symlinkTypeSync(srcpath, type) {
             let stats;
@@ -1935,14 +1935,14 @@ var __webpack_modules__ = {
         "use strict";
         const fs = __webpack_require__(9333);
         function utimesMillis(path, atime, mtime, callback) {
-            fs.open(path, "r+", ((err, fd) => {
+            fs.open(path, "r+", (err, fd) => {
                 if (err) return callback(err);
-                fs.futimes(fd, atime, mtime, (futimesErr => {
-                    fs.close(fd, (closeErr => {
+                fs.futimes(fd, atime, mtime, futimesErr => {
+                    fs.close(fd, closeErr => {
                         if (callback) callback(futimesErr || closeErr);
-                    }));
-                }));
-            }));
+                    });
+                });
+            });
         }
         function utimesMillisSync(path, atime, mtime) {
             const fd = fs.openSync(path, "r+");
@@ -1961,7 +1961,7 @@ var __webpack_modules__ = {
         const pathExists = __webpack_require__(9270).pathExists;
         function symlinkPaths(srcpath, dstpath, callback) {
             if (path.isAbsolute(srcpath)) {
-                return fs.lstat(srcpath, (err => {
+                return fs.lstat(srcpath, err => {
                     if (err) {
                         err.message = err.message.replace("lstat", "ensureSymlink");
                         return callback(err);
@@ -1970,11 +1970,11 @@ var __webpack_modules__ = {
                         toCwd: srcpath,
                         toDst: srcpath
                     });
-                }));
+                });
             } else {
                 const dstdir = path.dirname(dstpath);
                 const relativeToDst = path.join(dstdir, srcpath);
-                return pathExists(relativeToDst, ((err, exists) => {
+                return pathExists(relativeToDst, (err, exists) => {
                     if (err) return callback(err);
                     if (exists) {
                         return callback(null, {
@@ -1982,7 +1982,7 @@ var __webpack_modules__ = {
                             toDst: srcpath
                         });
                     } else {
-                        return fs.lstat(srcpath, (err => {
+                        return fs.lstat(srcpath, err => {
                             if (err) {
                                 err.message = err.message.replace("lstat", "ensureSymlink");
                                 return callback(err);
@@ -1991,9 +1991,9 @@ var __webpack_modules__ = {
                                 toCwd: srcpath,
                                 toDst: path.relative(dstdir, srcpath)
                             });
-                        }));
+                        });
                     }
-                }));
+                });
             }
         }
         function symlinkPathsSync(srcpath, dstpath) {
@@ -2127,7 +2127,7 @@ var __webpack_modules__ = {
                     const missing = gen.let("missing");
                     if (useLoop || $data) {
                         const valid = gen.let("valid", true);
-                        cxt.block$data(valid, (() => loopUntilMissing(missing, valid)));
+                        cxt.block$data(valid, () => loopUntilMissing(missing, valid));
                         cxt.ok(valid);
                     } else {
                         gen.if((0, code_1.checkMissingProp)(cxt, schema, missing));
@@ -2136,24 +2136,24 @@ var __webpack_modules__ = {
                     }
                 }
                 function loopAllRequired() {
-                    gen.forOf("prop", schemaCode, (prop => {
+                    gen.forOf("prop", schemaCode, prop => {
                         cxt.setParams({
                             missingProperty: prop
                         });
-                        gen.if((0, code_1.noPropertyInData)(gen, data, prop, opts.ownProperties), (() => cxt.error()));
-                    }));
+                        gen.if((0, code_1.noPropertyInData)(gen, data, prop, opts.ownProperties), () => cxt.error());
+                    });
                 }
                 function loopUntilMissing(missing, valid) {
                     cxt.setParams({
                         missingProperty: missing
                     });
-                    gen.forOf(missing, schemaCode, (() => {
+                    gen.forOf(missing, schemaCode, () => {
                         gen.assign(valid, (0, code_1.propertyInData)(gen, data, missing, opts.ownProperties));
-                        gen.if((0, codegen_1.not)(valid), (() => {
+                        gen.if((0, codegen_1.not)(valid), () => {
                             cxt.error();
                             gen.break();
-                        }));
-                    }), codegen_1.nil);
+                        });
+                    }, codegen_1.nil);
                 }
             }
         };
@@ -2187,9 +2187,9 @@ var __webpack_modules__ = {
                     passing
                 });
                 gen.block(validateOneOf);
-                cxt.result(valid, (() => cxt.reset()), (() => cxt.error(true)));
+                cxt.result(valid, () => cxt.reset(), () => cxt.error(true));
                 function validateOneOf() {
-                    schArr.forEach(((sch, i) => {
+                    schArr.forEach((sch, i) => {
                         let schCxt;
                         if ((0, util_1.alwaysValidSchema)(it, sch)) {
                             gen.var(schValid, true);
@@ -2204,12 +2204,12 @@ var __webpack_modules__ = {
                             gen.if((0, codegen_1._)`${schValid} && ${valid}`).assign(valid, false).assign(passing, (0, 
                             codegen_1._)`[${passing}, ${i}]`).else();
                         }
-                        gen.if(schValid, (() => {
+                        gen.if(schValid, () => {
                             gen.assign(valid, true);
                             gen.assign(passing, i);
                             if (schCxt) cxt.mergeEvaluated(schCxt, codegen_1.Name);
-                        }));
-                    }));
+                        });
+                    });
                 }
             }
         };
@@ -2252,22 +2252,22 @@ var __webpack_modules__ = {
         let readdirSync = (path, options) => fs.readdirSync(path, options);
         if (/^v4\./.test(nodeVersion)) readdir = (path, options, cb) => fs.readdir(path, cb);
         const chown = (cpath, uid, gid, cb) => {
-            fs[LCHOWN](cpath, uid, gid, handleEISDIR(cpath, uid, gid, (er => {
+            fs[LCHOWN](cpath, uid, gid, handleEISDIR(cpath, uid, gid, er => {
                 cb(er && er.code !== "ENOENT" ? er : null);
-            })));
+            }));
         };
         const chownrKid = (p, child, uid, gid, cb) => {
-            if (typeof child === "string") return fs.lstat(path.resolve(p, child), ((er, stats) => {
+            if (typeof child === "string") return fs.lstat(path.resolve(p, child), (er, stats) => {
                 if (er) return cb(er.code !== "ENOENT" ? er : null);
                 stats.name = child;
                 chownrKid(p, stats, uid, gid, cb);
-            }));
+            });
             if (child.isDirectory()) {
-                chownr(path.resolve(p, child.name), uid, gid, (er => {
+                chownr(path.resolve(p, child.name), uid, gid, er => {
                     if (er) return cb(er);
                     const cpath = path.resolve(p, child.name);
                     chown(cpath, uid, gid, cb);
-                }));
+                });
             } else {
                 const cpath = path.resolve(p, child.name);
                 chown(cpath, uid, gid, cb);
@@ -2276,7 +2276,7 @@ var __webpack_modules__ = {
         const chownr = (p, uid, gid, cb) => {
             readdir(p, {
                 withFileTypes: true
-            }, ((er, children) => {
+            }, (er, children) => {
                 if (er) {
                     if (er.code === "ENOENT") return cb(); else if (er.code !== "ENOTDIR" && er.code !== "ENOTSUP") return cb(er);
                 }
@@ -2288,8 +2288,8 @@ var __webpack_modules__ = {
                     if (er) return cb(errState = er);
                     if (--len === 0) return chown(p, uid, gid, cb);
                 };
-                children.forEach((child => chownrKid(p, child, uid, gid, then)));
-            }));
+                children.forEach(child => chownrKid(p, child, uid, gid, then));
+            });
         };
         const chownrKidSync = (p, child, uid, gid) => {
             if (typeof child === "string") {
@@ -2313,7 +2313,7 @@ var __webpack_modules__ = {
             } catch (er) {
                 if (er.code === "ENOENT") return; else if (er.code === "ENOTDIR" || er.code === "ENOTSUP") return handleEISDirSync(p, uid, gid); else throw er;
             }
-            if (children && children.length) children.forEach((child => chownrKidSync(p, child, uid, gid)));
+            if (children && children.length) children.forEach(child => chownrKidSync(p, child, uid, gid));
             return handleEISDirSync(p, uid, gid);
         };
         module.exports = chownr;
@@ -2348,9 +2348,9 @@ var __webpack_modules__ = {
                     const fDef = gen.const("fDef", (0, codegen_1._)`${fmts}[${schemaCode}]`);
                     const fType = gen.let("fType");
                     const format = gen.let("format");
-                    gen.if((0, codegen_1._)`typeof ${fDef} == "object" && !(${fDef} instanceof RegExp)`, (() => gen.assign(fType, (0, 
-                    codegen_1._)`${fDef}.type || "string"`).assign(format, (0, codegen_1._)`${fDef}.validate`)), (() => gen.assign(fType, (0, 
-                    codegen_1._)`"string"`).assign(format, fDef)));
+                    gen.if((0, codegen_1._)`typeof ${fDef} == "object" && !(${fDef} instanceof RegExp)`, () => gen.assign(fType, (0, 
+                    codegen_1._)`${fDef}.type || "string"`).assign(format, (0, codegen_1._)`${fDef}.validate`), () => gen.assign(fType, (0, 
+                    codegen_1._)`"string"`).assign(format, fDef));
                     cxt.fail$data((0, codegen_1.or)(unknownFmt(), invalidFmt()));
                     function unknownFmt() {
                         if (opts.strictSchema === false) return codegen_1.nil;
@@ -2438,12 +2438,12 @@ var __webpack_modules__ = {
         const cGet = (cache, key) => cache.get(normPath(key));
         const cSet = (cache, key, val) => cache.set(normPath(key), val);
         const checkCwd = (dir, cb) => {
-            fs.stat(dir, ((er, st) => {
+            fs.stat(dir, (er, st) => {
                 if (er || !st.isDirectory()) {
                     er = new CwdError(dir, er && er.code || "ENOTDIR");
                 }
                 cb(er);
-            }));
+            });
         };
         module.exports = (dir, opt, cb) => {
             dir = normPath(dir);
@@ -2463,7 +2463,7 @@ var __webpack_modules__ = {
                 } else {
                     cSet(cache, dir, true);
                     if (created && doChown) {
-                        chownr(created, uid, gid, (er => done(er)));
+                        chownr(created, uid, gid, er => done(er));
                     } else if (needChmod) {
                         fs.chmod(dir, mode, cb);
                     } else {
@@ -2480,7 +2480,7 @@ var __webpack_modules__ = {
             if (preserve) {
                 return mkdirp(dir, {
                     mode
-                }).then((made => done(null, made)), done);
+                }).then(made => done(null, made), done);
             }
             const sub = normPath(path.relative(cwd, dir));
             const parts = sub.split("/");
@@ -2499,25 +2499,25 @@ var __webpack_modules__ = {
         };
         const onmkdir = (part, parts, mode, cache, unlink, cwd, created, cb) => er => {
             if (er) {
-                fs.lstat(part, ((statEr, st) => {
+                fs.lstat(part, (statEr, st) => {
                     if (statEr) {
                         statEr.path = statEr.path && normPath(statEr.path);
                         cb(statEr);
                     } else if (st.isDirectory()) {
                         mkdir_(part, parts, mode, cache, unlink, cwd, created, cb);
                     } else if (unlink) {
-                        fs.unlink(part, (er => {
+                        fs.unlink(part, er => {
                             if (er) {
                                 return cb(er);
                             }
                             fs.mkdir(part, mode, onmkdir(part, parts, mode, cache, unlink, cwd, created, cb));
-                        }));
+                        });
                     } else if (st.isSymbolicLink()) {
                         return cb(new SymlinkError(part, part + "/" + parts.join("/")));
                     } else {
                         cb(er);
                     }
-                }));
+                });
             } else {
                 created = created || part;
                 mkdir_(part, parts, mode, cache, unlink, cwd, created, cb);
@@ -2633,7 +2633,7 @@ var __webpack_modules__ = {
             return opt.file && opt.sync ? extractFileSync(opt) : opt.file ? extractFile(opt, cb) : opt.sync ? extractSync(opt) : extract(opt);
         };
         const filesFilter = (opt, files) => {
-            const map = new Map(files.map((f => [ stripSlash(f), true ])));
+            const map = new Map(files.map(f => [ stripSlash(f), true ]));
             const filter = opt.filter;
             const mapHas = (file, r) => {
                 const root = r || path.parse(file).root || ".";
@@ -2658,10 +2658,10 @@ var __webpack_modules__ = {
             const u = new Unpack(opt);
             const readSize = opt.maxReadSize || 16 * 1024 * 1024;
             const file = opt.file;
-            const p = new Promise(((resolve, reject) => {
+            const p = new Promise((resolve, reject) => {
                 u.on("error", reject);
                 u.on("close", resolve);
-                fs.stat(file, ((er, stat) => {
+                fs.stat(file, (er, stat) => {
                     if (er) {
                         reject(er);
                     } else {
@@ -2672,8 +2672,8 @@ var __webpack_modules__ = {
                         stream.on("error", reject);
                         stream.pipe(u);
                     }
-                }));
-            }));
+                });
+            });
             return cb ? p.then(cb, cb) : p;
         };
         const extractSync = opt => new Unpack.Sync(opt);
@@ -2802,7 +2802,7 @@ var __webpack_modules__ = {
                 this[SIGNAL] = options && options.signal;
                 this[ABORTED] = false;
                 if (this[SIGNAL]) {
-                    this[SIGNAL].addEventListener("abort", (() => this[ABORT]()));
+                    this[SIGNAL].addEventListener("abort", () => this[ABORT]());
                     if (this[SIGNAL].aborted) {
                         this[ABORT]();
                     }
@@ -2819,7 +2819,7 @@ var __webpack_modules__ = {
                 if (this[ENCODING] && enc !== this[ENCODING] && (this[DECODER] && this[DECODER].lastNeed || this[BUFFERLENGTH])) throw new Error("cannot change encoding");
                 if (this[ENCODING] !== enc) {
                     this[DECODER] = enc ? new SD(enc) : null;
-                    if (this[BUFFER].length) this[BUFFER] = this[BUFFER].map((chunk => this[DECODER].write(chunk)));
+                    if (this[BUFFER].length) this[BUFFER] = this[BUFFER].map(chunk => this[DECODER].write(chunk));
                 }
                 this[ENCODING] = enc;
             }
@@ -2967,12 +2967,12 @@ var __webpack_modules__ = {
                     if (opts.end) dest.end();
                 } else {
                     this[PIPES].push(!opts.proxyErrors ? new Pipe(this, dest, opts) : new PipeProxyErrors(this, dest, opts));
-                    if (this[ASYNC]) defer((() => this[RESUME]())); else this[RESUME]();
+                    if (this[ASYNC]) defer(() => this[RESUME]()); else this[RESUME]();
                 }
                 return dest;
             }
             unpipe(dest) {
-                const p = this[PIPES].find((p => p.dest === dest));
+                const p = this[PIPES].find(p => p.dest === dest);
                 if (p) {
                     this[PIPES].splice(this[PIPES].indexOf(p), 1);
                     p.unpipe();
@@ -2987,7 +2987,7 @@ var __webpack_modules__ = {
                     super.emit(ev);
                     this.removeAllListeners(ev);
                 } else if (ev === "error" && this[EMITTED_ERROR]) {
-                    if (this[ASYNC]) defer((() => fn.call(this, this[EMITTED_ERROR]))); else fn.call(this, this[EMITTED_ERROR]);
+                    if (this[ASYNC]) defer(() => fn.call(this, this[EMITTED_ERROR])); else fn.call(this, this[EMITTED_ERROR]);
                 }
                 return ret;
             }
@@ -3006,7 +3006,7 @@ var __webpack_modules__ = {
             }
             emit(ev, data, ...extra) {
                 if (ev !== "error" && ev !== "close" && ev !== DESTROYED && this[DESTROYED]) return; else if (ev === "data") {
-                    return !this[OBJECTMODE] && !data ? false : this[ASYNC] ? defer((() => this[EMITDATA](data))) : this[EMITDATA](data);
+                    return !this[OBJECTMODE] && !data ? false : this[ASYNC] ? defer(() => this[EMITDATA](data)) : this[EMITDATA](data);
                 } else if (ev === "end") {
                     return this[EMITEND]();
                 } else if (ev === "close") {
@@ -3046,7 +3046,7 @@ var __webpack_modules__ = {
                 if (this[EMITTED_END]) return;
                 this[EMITTED_END] = true;
                 this.readable = false;
-                if (this[ASYNC]) defer((() => this[EMITEND2]())); else this[EMITEND2]();
+                if (this[ASYNC]) defer(() => this[EMITEND2]()); else this[EMITEND2]();
             }
             [EMITEND2]() {
                 if (this[DECODER]) {
@@ -3069,21 +3069,21 @@ var __webpack_modules__ = {
                 const buf = [];
                 if (!this[OBJECTMODE]) buf.dataLength = 0;
                 const p = this.promise();
-                this.on("data", (c => {
+                this.on("data", c => {
                     buf.push(c);
                     if (!this[OBJECTMODE]) buf.dataLength += c.length;
-                }));
-                return p.then((() => buf));
+                });
+                return p.then(() => buf);
             }
             concat() {
-                return this[OBJECTMODE] ? Promise.reject(new Error("cannot concat in objectMode")) : this.collect().then((buf => this[OBJECTMODE] ? Promise.reject(new Error("cannot concat in objectMode")) : this[ENCODING] ? buf.join("") : Buffer.concat(buf, buf.dataLength)));
+                return this[OBJECTMODE] ? Promise.reject(new Error("cannot concat in objectMode")) : this.collect().then(buf => this[OBJECTMODE] ? Promise.reject(new Error("cannot concat in objectMode")) : this[ENCODING] ? buf.join("") : Buffer.concat(buf, buf.dataLength));
             }
             promise() {
-                return new Promise(((resolve, reject) => {
-                    this.on(DESTROYED, (() => reject(new Error("stream destroyed"))));
-                    this.on("error", (er => reject(er)));
-                    this.on("end", (() => resolve()));
-                }));
+                return new Promise((resolve, reject) => {
+                    this.on(DESTROYED, () => reject(new Error("stream destroyed")));
+                    this.on("error", er => reject(er));
+                    this.on("end", () => resolve());
+                });
             }
             [ASYNCITERATOR]() {
                 let stopped = false;
@@ -3131,14 +3131,14 @@ var __webpack_modules__ = {
                         });
                     };
                     const ondestroy = () => onerr(new Error("stream destroyed"));
-                    return new Promise(((res, rej) => {
+                    return new Promise((res, rej) => {
                         reject = rej;
                         resolve = res;
                         this.once(DESTROYED, ondestroy);
                         this.once("error", onerr);
                         this.once("end", onend);
                         this.once("data", ondata);
-                    }));
+                    });
                 };
                 return {
                     next,
@@ -3316,7 +3316,9 @@ var __webpack_modules__ = {
         Object.defineProperty(exports, "__esModule", {
             value: true
         });
-        exports.SerializationError = exports.process = exports.serializationType = exports.SERIALIZERS = exports.SYMBOL_WIRE_TYPE = exports.EMPTY_OBJECT_FQN = void 0;
+        exports.SerializationError = exports.SERIALIZERS = exports.SYMBOL_WIRE_TYPE = exports.EMPTY_OBJECT_FQN = void 0;
+        exports.serializationType = serializationType;
+        exports.process = process;
         const spec = __webpack_require__(9501);
         const assert = __webpack_require__(2613);
         const util_1 = __webpack_require__(9023);
@@ -3448,7 +3450,7 @@ var __webpack_modules__ = {
                     host.debug("Serializing enum");
                     const enumType = optionalValue.type;
                     const enumMap = host.findSymbol(enumType.fqn);
-                    const enumEntry = Object.entries(enumMap).find((([, v]) => v === value));
+                    const enumEntry = Object.entries(enumMap).find(([, v]) => v === value);
                     if (!enumEntry) {
                         throw new SerializationError(`Value is not present in enum ${spec.describeTypeReference(enumType)}`, value, host);
                     }
@@ -3476,9 +3478,9 @@ var __webpack_modules__ = {
                         throw new SerializationError(`Value is not an array`, value, host);
                     }
                     const arrayType = optionalValue.type;
-                    return value.map(((x, idx) => process(host, "serialize", x, {
+                    return value.map((x, idx) => process(host, "serialize", x, {
                         type: arrayType.collection.elementtype
-                    }, `index ${(0, util_1.inspect)(idx)}`)));
+                    }, `index ${(0, util_1.inspect)(idx)}`));
                 },
                 deserialize(value, optionalValue, host) {
                     if (nullAndOk(value, optionalValue, host)) {
@@ -3489,9 +3491,9 @@ var __webpack_modules__ = {
                         throw new SerializationError(`Value is not an array`, value, host);
                     }
                     const arrayType = optionalValue.type;
-                    return value.map(((x, idx) => process(host, "deserialize", x, {
+                    return value.map((x, idx) => process(host, "deserialize", x, {
                         type: arrayType.collection.elementtype
-                    }, `index ${(0, util_1.inspect)(idx)}`)));
+                    }, `index ${(0, util_1.inspect)(idx)}`));
                 }
             },
             ["Map"]: {
@@ -3502,9 +3504,9 @@ var __webpack_modules__ = {
                     assert(optionalValue !== VOID, "Encountered unexpected void type!");
                     const mapType = optionalValue.type;
                     return {
-                        [api_1.TOKEN_MAP]: mapValues(value, ((v, key) => process(host, "serialize", v, {
+                        [api_1.TOKEN_MAP]: mapValues(value, (v, key) => process(host, "serialize", v, {
                             type: mapType.collection.elementtype
-                        }, `key ${(0, util_1.inspect)(key)}`)), host)
+                        }, `key ${(0, util_1.inspect)(key)}`), host)
                     };
                 },
                 deserialize(value, optionalValue, host, {allowNullishMapValue = false} = {}) {
@@ -3514,15 +3516,15 @@ var __webpack_modules__ = {
                     assert(optionalValue !== VOID, "Encountered unexpected void type!");
                     const mapType = optionalValue.type;
                     if (!(0, api_1.isWireMap)(value)) {
-                        return mapValues(value, ((v, key) => process(host, "deserialize", v, {
+                        return mapValues(value, (v, key) => process(host, "deserialize", v, {
                             optional: allowNullishMapValue,
                             type: mapType.collection.elementtype
-                        }, `key ${(0, util_1.inspect)(key)}`)), host);
+                        }, `key ${(0, util_1.inspect)(key)}`), host);
                     }
-                    const result = mapValues(value[api_1.TOKEN_MAP], ((v, key) => process(host, "deserialize", v, {
+                    const result = mapValues(value[api_1.TOKEN_MAP], (v, key) => process(host, "deserialize", v, {
                         optional: allowNullishMapValue,
                         type: mapType.collection.elementtype
-                    }, `key ${(0, util_1.inspect)(key)}`)), host);
+                    }, `key ${(0, util_1.inspect)(key)}`), host);
                     Object.defineProperty(result, exports.SYMBOL_WIRE_TYPE, {
                         configurable: false,
                         enumerable: false,
@@ -3578,12 +3580,12 @@ var __webpack_modules__ = {
                         value = value[_1.api.TOKEN_MAP];
                     }
                     value = validateRequiredProps(value, namedType.fqn, props, host);
-                    return mapValues(value, ((v, key) => {
+                    return mapValues(value, (v, key) => {
                         if (!props[key]) {
                             return undefined;
                         }
                         return process(host, "deserialize", v, props[key], `key ${(0, util_1.inspect)(key)}`);
-                    }), host);
+                    }, host);
                 }
             },
             ["RefType"]: {
@@ -3637,9 +3639,9 @@ var __webpack_modules__ = {
                         return value;
                     }
                     if (Array.isArray(value)) {
-                        return value.map(((e, idx) => process(host, "serialize", e, {
+                        return value.map((e, idx) => process(host, "serialize", e, {
                             type: spec.CANONICAL_ANY
-                        }, `index ${(0, util_1.inspect)(idx)}`)));
+                        }, `index ${(0, util_1.inspect)(idx)}`));
                     }
                     if (typeof value === "function") {
                         throw new SerializationError("Functions cannot be passed across language boundaries", value, host);
@@ -3668,9 +3670,9 @@ var __webpack_modules__ = {
                     if (jsiiType) {
                         return host.objects.registerObject(value, jsiiType);
                     }
-                    return mapValues(value, ((v, key) => process(host, "serialize", v, {
+                    return mapValues(value, (v, key) => process(host, "serialize", v, {
                         type: spec.CANONICAL_ANY
-                    }, `key ${(0, util_1.inspect)(key)}`)), host);
+                    }, `key ${(0, util_1.inspect)(key)}`), host);
                 },
                 deserialize(value, _type, host) {
                     if (value == null) {
@@ -3686,9 +3688,9 @@ var __webpack_modules__ = {
                     }
                     if (Array.isArray(value)) {
                         host.debug("ANY is an Array");
-                        return value.map(((e, idx) => process(host, "deserialize", e, {
+                        return value.map((e, idx) => process(host, "deserialize", e, {
                             type: spec.CANONICAL_ANY
-                        }, `index ${(0, util_1.inspect)(idx)}`)));
+                        }, `index ${(0, util_1.inspect)(idx)}`));
                     }
                     if ((0, api_1.isWireEnum)(value)) {
                         host.debug("ANY is an Enum");
@@ -3720,9 +3722,9 @@ var __webpack_modules__ = {
                         }, host);
                     }
                     host.debug("ANY is a Map");
-                    return mapValues(value, ((v, key) => process(host, "deserialize", v, {
+                    return mapValues(value, (v, key) => process(host, "deserialize", v, {
                         type: spec.CANONICAL_ANY
-                    }, `key ${(0, util_1.inspect)(key)}`)), host);
+                    }, `key ${(0, util_1.inspect)(key)}`), host);
                 }
             }
         };
@@ -3793,15 +3795,15 @@ var __webpack_modules__ = {
                 } ];
             }
             if (spec.isUnionTypeReference(typeRef.type)) {
-                const compoundTypes = flatMap(typeRef.type.union.types, (t => serializationType({
+                const compoundTypes = flatMap(typeRef.type.union.types, t => serializationType({
                     type: t
-                }, lookup)));
+                }, lookup));
                 for (const t of compoundTypes) {
                     if (t.typeRef !== "void") {
                         t.typeRef.optional = typeRef.optional;
                     }
                 }
-                return compoundTypes.sort(((l, r) => compareSerializationClasses(l.serializationClass, r.serializationClass)));
+                return compoundTypes.sort((l, r) => compareSerializationClasses(l.serializationClass, r.serializationClass));
             }
             const type = lookup(typeRef.type.fqn);
             if (spec.isEnumType(type)) {
@@ -3821,7 +3823,6 @@ var __webpack_modules__ = {
                 typeRef
             } ];
         }
-        exports.serializationType = serializationType;
         function nullAndOk(x, type, host) {
             if (x != null) {
                 return false;
@@ -3900,15 +3901,15 @@ var __webpack_modules__ = {
                 }
             }
             if (spec.isClassOrInterfaceType(actualType) && actualType.interfaces) {
-                return actualType.interfaces.find((iface => isAssignable(iface, requiredType, lookup))) != null;
+                return actualType.interfaces.find(iface => isAssignable(iface, requiredType, lookup)) != null;
             }
             return false;
         }
         function validateRequiredProps(actualProps, typeName, specProps, host) {
-            const missingRequiredProps = Object.keys(specProps).filter((name => !specProps[name].optional)).filter((name => !(name in actualProps)));
+            const missingRequiredProps = Object.keys(specProps).filter(name => !specProps[name].optional).filter(name => !(name in actualProps));
             if (missingRequiredProps.length > 0) {
-                throw new SerializationError(`Missing required properties for ${typeName}: ${missingRequiredProps.map((p => (0, 
-                util_1.inspect)(p))).join(", ")}`, actualProps, host);
+                throw new SerializationError(`Missing required properties for ${typeName}: ${missingRequiredProps.map(p => (0, 
+                util_1.inspect)(p)).join(", ")}`, actualProps, host);
             }
             return actualProps;
         }
@@ -3957,15 +3958,14 @@ var __webpack_modules__ = {
                 return [ first.toUpperCase(), ...rest ].join("");
             }
         }
-        exports.process = process;
         class SerializationError extends Error {
             constructor(message, value, {isVisibleType}, causes = [], {renderValue = false} = {}) {
                 super([ message, ...renderValue ? [ `${causes.length > 0 ? "├" : "╰"}── 🛑 Failing value is ${describeTypeOf(value, isVisibleType)}`, ...value == null ? [] : (0, 
-                util_1.inspect)(value, false, 0).split("\n").map((l => `${causes.length > 0 ? "│" : " "}      ${l}`)) ] : [], ...causes.length > 0 ? [ "╰── 🔍 Failure reason(s):", ...causes.map(((cause, idx) => {
+                util_1.inspect)(value, false, 0).split("\n").map(l => `${causes.length > 0 ? "│" : " "}      ${l}`) ] : [], ...causes.length > 0 ? [ "╰── 🔍 Failure reason(s):", ...causes.map((cause, idx) => {
                     var _a;
                     return `    ${idx < causes.length - 1 ? "├" : "╰"}─${causes.length > 1 ? ` [${(_a = cause.context) !== null && _a !== void 0 ? _a : (0, 
                     util_1.inspect)(idx)}]` : ""} ${cause.message.split("\n").join("\n        ")}`;
-                })) ] : [] ].join("\n"));
+                }) ] : [] ].join("\n"));
                 this.value = value;
                 this.causes = causes;
                 this.name = "@jsii/kernel.SerializationError";
@@ -4047,12 +4047,12 @@ var __webpack_modules__ = {
                     this.pos = this.start;
                 }
                 if (this.fd !== null) {
-                    process.nextTick((function() {
+                    process.nextTick(function() {
                         self._read();
-                    }));
+                    });
                     return;
                 }
-                fs.open(this.path, this.flags, this.mode, (function(err, fd) {
+                fs.open(this.path, this.flags, this.mode, function(err, fd) {
                     if (err) {
                         self.emit("error", err);
                         self.readable = false;
@@ -4061,7 +4061,7 @@ var __webpack_modules__ = {
                     self.fd = fd;
                     self.emit("open", fd);
                     self._read();
-                }));
+                });
             }
             function WriteStream(path, options) {
                 if (!(this instanceof WriteStream)) return new WriteStream(path, options);
@@ -4221,24 +4221,24 @@ var __webpack_modules__ = {
             applicability_1.schemaHasRulesForType)(it, types[0]));
             if (checkTypes) {
                 const wrongType = checkDataTypes(types, data, opts.strictNumbers, DataType.Wrong);
-                gen.if(wrongType, (() => {
+                gen.if(wrongType, () => {
                     if (coerceTo.length) coerceData(it, types, coerceTo); else reportTypeError(it);
-                }));
+                });
             }
             return checkTypes;
         }
         exports.coerceAndCheckDataType = coerceAndCheckDataType;
         const COERCIBLE = new Set([ "string", "number", "integer", "boolean", "null" ]);
         function coerceToTypes(types, coerceTypes) {
-            return coerceTypes ? types.filter((t => COERCIBLE.has(t) || coerceTypes === "array" && t === "array")) : [];
+            return coerceTypes ? types.filter(t => COERCIBLE.has(t) || coerceTypes === "array" && t === "array") : [];
         }
         function coerceData(it, types, coerceTo) {
             const {gen, data, opts} = it;
             const dataType = gen.let("dataType", (0, codegen_1._)`typeof ${data}`);
             const coerced = gen.let("coerced", (0, codegen_1._)`undefined`);
             if (opts.coerceTypes === "array") {
-                gen.if((0, codegen_1._)`${dataType} == 'object' && Array.isArray(${data}) && ${data}.length == 1`, (() => gen.assign(data, (0, 
-                codegen_1._)`${data}[0]`).assign(dataType, (0, codegen_1._)`typeof ${data}`).if(checkDataTypes(types, data, opts.strictNumbers), (() => gen.assign(coerced, data)))));
+                gen.if((0, codegen_1._)`${dataType} == 'object' && Array.isArray(${data}) && ${data}.length == 1`, () => gen.assign(data, (0, 
+                codegen_1._)`${data}[0]`).assign(dataType, (0, codegen_1._)`typeof ${data}`).if(checkDataTypes(types, data, opts.strictNumbers), () => gen.assign(coerced, data)));
             }
             gen.if((0, codegen_1._)`${coerced} !== undefined`);
             for (const t of coerceTo) {
@@ -4249,10 +4249,10 @@ var __webpack_modules__ = {
             gen.else();
             reportTypeError(it);
             gen.endIf();
-            gen.if((0, codegen_1._)`${coerced} !== undefined`, (() => {
+            gen.if((0, codegen_1._)`${coerced} !== undefined`, () => {
                 gen.assign(data, coerced);
                 assignParentData(it, coerced);
-            }));
+            });
             function coerceSpecificType(t) {
                 switch (t) {
                   case "string":
@@ -4289,7 +4289,7 @@ var __webpack_modules__ = {
             }
         }
         function assignParentData({gen, parentData, parentDataProperty}, expr) {
-            gen.if((0, codegen_1._)`${parentData} !== undefined`, (() => gen.assign((0, codegen_1._)`${parentData}[${parentDataProperty}]`, expr)));
+            gen.if((0, codegen_1._)`${parentData} !== undefined`, () => gen.assign((0, codegen_1._)`${parentData}[${parentDataProperty}]`, expr));
         }
         function checkDataType(dataType, data, strictNums, correct = DataType.Correct) {
             const EQ = correct === DataType.Correct ? codegen_1.operators.EQ : codegen_1.operators.NEQ;
@@ -4400,12 +4400,12 @@ var __webpack_modules__ = {
                 } else {
                     if (!Array.isArray(schema)) throw new Error("ajv implementation error");
                     const vSchema = gen.const("vSchema", schemaCode);
-                    valid = (0, codegen_1.or)(...schema.map(((_x, i) => equalCode(vSchema, i))));
+                    valid = (0, codegen_1.or)(...schema.map((_x, i) => equalCode(vSchema, i)));
                 }
                 cxt.pass(valid);
                 function loopEnum() {
                     gen.assign(valid, false);
-                    gen.forOf("v", schemaCode, (v => gen.if((0, codegen_1._)`${getEql()}(${data}, ${v})`, (() => gen.assign(valid, true).break()))));
+                    gen.forOf("v", schemaCode, v => gen.if((0, codegen_1._)`${getEql()}(${data}, ${v})`, () => gen.assign(valid, true).break()));
                 }
                 function equalCode(vSchema, i) {
                     const sch = schema[i];
@@ -4562,7 +4562,10 @@ var __webpack_modules__ = {
         Object.defineProperty(exports, "__esModule", {
             value: true
         });
-        exports.ObjectTable = exports.tagJsiiConstructor = exports.objectReference = exports.jsiiTypeFqn = void 0;
+        exports.ObjectTable = void 0;
+        exports.jsiiTypeFqn = jsiiTypeFqn;
+        exports.objectReference = objectReference;
+        exports.tagJsiiConstructor = tagJsiiConstructor;
         const spec = __webpack_require__(9501);
         const assert = __webpack_require__(2613);
         const api = __webpack_require__(3403);
@@ -4590,7 +4593,6 @@ var __webpack_modules__ = {
             }
             return undefined;
         }
-        exports.jsiiTypeFqn = jsiiTypeFqn;
         function objectReference(obj) {
             if (obj[OBJID_SYMBOL]) {
                 return {
@@ -4600,7 +4602,6 @@ var __webpack_modules__ = {
             }
             return undefined;
         }
-        exports.objectReference = objectReference;
         function tagObject(obj, objid, interfaces) {
             const privateField = {
                 enumerable: false,
@@ -4626,7 +4627,6 @@ var __webpack_modules__ = {
             }
             RESOLVED_TYPE_FQN.set(constructor, fqn);
         }
-        exports.tagJsiiConstructor = tagJsiiConstructor;
         class ObjectTable {
             constructor(resolveType) {
                 _ObjectTable_instances.add(this);
@@ -4877,11 +4877,11 @@ var __webpack_modules__ = {
                     return;
                 }
                 loaded = false;
-                signals.forEach((function(sig) {
+                signals.forEach(function(sig) {
                     try {
                         process.removeListener(sig, sigListeners[sig]);
                     } catch (er) {}
-                }));
+                });
                 process.emit = originalProcessEmit;
                 process.reallyExit = originalProcessReallyExit;
                 emitter.count -= 1;
@@ -4895,7 +4895,7 @@ var __webpack_modules__ = {
                 emitter.emit(event, code, signal);
             };
             var sigListeners = {};
-            signals.forEach((function(sig) {
+            signals.forEach(function(sig) {
                 sigListeners[sig] = function listener() {
                     if (!processOk(global.process)) {
                         return;
@@ -4911,7 +4911,7 @@ var __webpack_modules__ = {
                         process.kill(process.pid, sig);
                     }
                 };
-            }));
+            });
             module.exports.signals = function() {
                 return signals;
             };
@@ -4922,14 +4922,14 @@ var __webpack_modules__ = {
                 }
                 loaded = true;
                 emitter.count += 1;
-                signals = signals.filter((function(sig) {
+                signals = signals.filter(function(sig) {
                     try {
                         process.on(sig, sigListeners[sig]);
                         return true;
                     } catch (er) {
                         return false;
                     }
-                }));
+                });
                 process.emit = processEmit;
                 process.reallyExit = processReallyExit;
             };
@@ -4963,12 +4963,12 @@ var __webpack_modules__ = {
     2451: module => {
         "use strict";
         const raw = [ "|", "<", ">", "?", ":" ];
-        const win = raw.map((char => String.fromCharCode(61440 + char.charCodeAt(0))));
-        const toWin = new Map(raw.map(((char, i) => [ char, win[i] ])));
-        const toRaw = new Map(win.map(((char, i) => [ char, raw[i] ])));
+        const win = raw.map(char => String.fromCharCode(61440 + char.charCodeAt(0)));
+        const toWin = new Map(raw.map((char, i) => [ char, win[i] ]));
+        const toRaw = new Map(win.map((char, i) => [ char, raw[i] ]));
         module.exports = {
-            encode: s => raw.reduce(((s, c) => s.split(c).join(toWin.get(c))), s),
-            decode: s => win.reduce(((s, c) => s.split(c).join(toRaw.get(c))), s)
+            encode: s => raw.reduce((s, c) => s.split(c).join(toWin.get(c)), s),
+            decode: s => win.reduce((s, c) => s.split(c).join(toRaw.get(c)), s)
         };
     },
     2613: module => {
@@ -4978,8 +4978,8 @@ var __webpack_modules__ = {
     2635: module => {
         "use strict";
         const argmap = new Map([ [ "C", "cwd" ], [ "f", "file" ], [ "z", "gzip" ], [ "P", "preservePaths" ], [ "U", "unlink" ], [ "strip-components", "strip" ], [ "stripComponents", "strip" ], [ "keep-newer", "newer" ], [ "keepNewer", "newer" ], [ "keep-newer-files", "newer" ], [ "keepNewerFiles", "newer" ], [ "k", "keep" ], [ "keep-existing", "keep" ], [ "keepExisting", "keep" ], [ "m", "noMtime" ], [ "no-mtime", "noMtime" ], [ "p", "preserveOwner" ], [ "L", "follow" ], [ "h", "follow" ] ]);
-        module.exports = opt => opt ? Object.keys(opt).map((k => [ argmap.has(k) ? argmap.get(k) : k, opt[k] ])).reduce(((set, kv) => (set[kv[0]] = kv[1], 
-        set)), Object.create(null)) : {};
+        module.exports = opt => opt ? Object.keys(opt).map(k => [ argmap.has(k) ? argmap.get(k) : k, opt[k] ]).reduce((set, kv) => (set[kv[0]] = kv[1], 
+        set), Object.create(null)) : {};
     },
     2684: (module, __unused_webpack_exports, __webpack_require__) => {
         "use strict";
@@ -5026,7 +5026,7 @@ var __webpack_modules__ = {
             } : e => e.resume();
         };
         const filesFilter = (opt, files) => {
-            const map = new Map(files.map((f => [ stripSlash(f), true ])));
+            const map = new Map(files.map(f => [ stripSlash(f), true ]));
             const filter = opt.filter;
             const mapHas = (file, r) => {
                 const root = r || path.parse(file).root || ".";
@@ -5070,10 +5070,10 @@ var __webpack_modules__ = {
             const parse = new Parser(opt);
             const readSize = opt.maxReadSize || 16 * 1024 * 1024;
             const file = opt.file;
-            const p = new Promise(((resolve, reject) => {
+            const p = new Promise((resolve, reject) => {
                 parse.on("error", reject);
                 parse.on("end", resolve);
-                fs.stat(file, ((er, stat) => {
+                fs.stat(file, (er, stat) => {
                     if (er) {
                         reject(er);
                     } else {
@@ -5084,8 +5084,8 @@ var __webpack_modules__ = {
                         stream.on("error", reject);
                         stream.pipe(parse);
                     }
-                }));
-            }));
+                });
+            });
             return cb ? p.then(cb, cb) : p;
         };
         const list = opt => new Parser(opt);
@@ -5148,7 +5148,7 @@ var __webpack_modules__ = {
                 it.items = true;
                 const valid = gen.name("valid");
                 if (max === undefined && min === 1) {
-                    validateItems(valid, (() => gen.if(valid, (() => gen.break()))));
+                    validateItems(valid, () => gen.if(valid, () => gen.break()));
                 } else if (min === 0) {
                     gen.let(valid, true);
                     if (max !== undefined) gen.if((0, codegen_1._)`${data}.length > 0`, validateItemsWithCount);
@@ -5156,14 +5156,14 @@ var __webpack_modules__ = {
                     gen.let(valid, false);
                     validateItemsWithCount();
                 }
-                cxt.result(valid, (() => cxt.reset()));
+                cxt.result(valid, () => cxt.reset());
                 function validateItemsWithCount() {
                     const schValid = gen.name("_valid");
                     const count = gen.let("count", 0);
-                    validateItems(schValid, (() => gen.if(schValid, (() => checkLimits(count)))));
+                    validateItems(schValid, () => gen.if(schValid, () => checkLimits(count)));
                 }
                 function validateItems(_valid, block) {
-                    gen.forRange("i", 0, len, (i => {
+                    gen.forRange("i", 0, len, i => {
                         cxt.subschema({
                             keyword: "contains",
                             dataProp: i,
@@ -5171,15 +5171,15 @@ var __webpack_modules__ = {
                             compositeRule: true
                         }, _valid);
                         block();
-                    }));
+                    });
                 }
                 function checkLimits(count) {
                     gen.code((0, codegen_1._)`${count}++`);
                     if (max === undefined) {
-                        gen.if((0, codegen_1._)`${count} >= ${min}`, (() => gen.assign(valid, true).break()));
+                        gen.if((0, codegen_1._)`${count} >= ${min}`, () => gen.assign(valid, true).break());
                     } else {
-                        gen.if((0, codegen_1._)`${count} > ${max}`, (() => gen.assign(valid, false).break()));
-                        if (min === 1) gen.assign(valid, true); else gen.if((0, codegen_1._)`${count} >= ${min}`, (() => gen.assign(valid, true)));
+                        gen.if((0, codegen_1._)`${count} > ${max}`, () => gen.assign(valid, false).break());
+                        if (min === 1) gen.assign(valid, true); else gen.if((0, codegen_1._)`${count} >= ${min}`, () => gen.assign(valid, true));
                     }
                 }
             }
@@ -5573,14 +5573,14 @@ var __webpack_modules__ = {
             }
             get str() {
                 var _a;
-                return (_a = this._str) !== null && _a !== void 0 ? _a : this._str = this._items.reduce(((s, c) => `${s}${c}`), "");
+                return (_a = this._str) !== null && _a !== void 0 ? _a : this._str = this._items.reduce((s, c) => `${s}${c}`, "");
             }
             get names() {
                 var _a;
-                return (_a = this._names) !== null && _a !== void 0 ? _a : this._names = this._items.reduce(((names, c) => {
+                return (_a = this._names) !== null && _a !== void 0 ? _a : this._names = this._items.reduce((names, c) => {
                     if (c instanceof Name) names[c.str] = (names[c.str] || 0) + 1;
                     return names;
-                }), {});
+                }, {});
             }
         }
         exports._Code = _Code;
@@ -5690,7 +5690,7 @@ var __webpack_modules__ = {
                 const {gen, schema, it} = cxt;
                 if (!Array.isArray(schema)) throw new Error("ajv implementation error");
                 const valid = gen.name("valid");
-                schema.forEach(((sch, i) => {
+                schema.forEach((sch, i) => {
                     if ((0, util_1.alwaysValidSchema)(it, sch)) return;
                     const schCxt = cxt.subschema({
                         keyword: "allOf",
@@ -5698,7 +5698,7 @@ var __webpack_modules__ = {
                     }, valid);
                     cxt.ok(valid);
                     cxt.mergeEvaluated(schCxt);
-                }));
+                });
             }
         };
         exports["default"] = def;
@@ -5708,7 +5708,14 @@ var __webpack_modules__ = {
         Object.defineProperty(exports, "__esModule", {
             value: true
         });
-        exports.isPropertyOverride = exports.isMethodOverride = exports.isWireStruct = exports.isWireMap = exports.isWireEnum = exports.isWireDate = exports.isObjRef = exports.TOKEN_STRUCT = exports.TOKEN_MAP = exports.TOKEN_ENUM = exports.TOKEN_DATE = exports.TOKEN_INTERFACES = exports.TOKEN_REF = void 0;
+        exports.TOKEN_STRUCT = exports.TOKEN_MAP = exports.TOKEN_ENUM = exports.TOKEN_DATE = exports.TOKEN_INTERFACES = exports.TOKEN_REF = void 0;
+        exports.isObjRef = isObjRef;
+        exports.isWireDate = isWireDate;
+        exports.isWireEnum = isWireEnum;
+        exports.isWireMap = isWireMap;
+        exports.isWireStruct = isWireStruct;
+        exports.isMethodOverride = isMethodOverride;
+        exports.isPropertyOverride = isPropertyOverride;
         exports.TOKEN_REF = "$jsii.byref";
         exports.TOKEN_INTERFACES = "$jsii.interfaces";
         exports.TOKEN_DATE = "$jsii.date";
@@ -5718,31 +5725,24 @@ var __webpack_modules__ = {
         function isObjRef(value) {
             return typeof value === "object" && value !== null && exports.TOKEN_REF in value;
         }
-        exports.isObjRef = isObjRef;
         function isWireDate(value) {
             return typeof value === "object" && value !== null && exports.TOKEN_DATE in value;
         }
-        exports.isWireDate = isWireDate;
         function isWireEnum(value) {
             return typeof value === "object" && value !== null && exports.TOKEN_ENUM in value;
         }
-        exports.isWireEnum = isWireEnum;
         function isWireMap(value) {
             return typeof value === "object" && value !== null && exports.TOKEN_MAP in value;
         }
-        exports.isWireMap = isWireMap;
         function isWireStruct(value) {
             return typeof value === "object" && value !== null && exports.TOKEN_STRUCT in value;
         }
-        exports.isWireStruct = isWireStruct;
         function isMethodOverride(value) {
             return value.method != null;
         }
-        exports.isMethodOverride = isMethodOverride;
         function isPropertyOverride(value) {
             return value.property != null;
         }
-        exports.isPropertyOverride = isPropertyOverride;
     },
     3649: (module, __unused_webpack_exports, __webpack_require__) => {
         "use strict";
@@ -5763,32 +5763,32 @@ var __webpack_modules__ = {
         function createSymlink(srcpath, dstpath, type, callback) {
             callback = typeof type === "function" ? type : callback;
             type = typeof type === "function" ? false : type;
-            fs.lstat(dstpath, ((err, stats) => {
+            fs.lstat(dstpath, (err, stats) => {
                 if (!err && stats.isSymbolicLink()) {
-                    Promise.all([ fs.stat(srcpath), fs.stat(dstpath) ]).then((([srcStat, dstStat]) => {
+                    Promise.all([ fs.stat(srcpath), fs.stat(dstpath) ]).then(([srcStat, dstStat]) => {
                         if (areIdentical(srcStat, dstStat)) return callback(null);
                         _createSymlink(srcpath, dstpath, type, callback);
-                    }));
+                    });
                 } else _createSymlink(srcpath, dstpath, type, callback);
-            }));
+            });
         }
         function _createSymlink(srcpath, dstpath, type, callback) {
-            symlinkPaths(srcpath, dstpath, ((err, relative) => {
+            symlinkPaths(srcpath, dstpath, (err, relative) => {
                 if (err) return callback(err);
                 srcpath = relative.toDst;
-                symlinkType(relative.toCwd, type, ((err, type) => {
+                symlinkType(relative.toCwd, type, (err, type) => {
                     if (err) return callback(err);
                     const dir = path.dirname(dstpath);
-                    pathExists(dir, ((err, dirExists) => {
+                    pathExists(dir, (err, dirExists) => {
                         if (err) return callback(err);
                         if (dirExists) return fs.symlink(srcpath, dstpath, type, callback);
-                        mkdirs(dir, (err => {
+                        mkdirs(dir, err => {
                             if (err) return callback(err);
                             fs.symlink(srcpath, dstpath, type, callback);
-                        }));
-                    }));
-                }));
-            }));
+                        });
+                    });
+                });
+            });
         }
         function createSymlinkSync(srcpath, dstpath, type) {
             let stats;
@@ -5899,19 +5899,19 @@ var __webpack_modules__ = {
             function callAsyncRef() {
                 if (!env.$async) throw new Error("async schema referenced by sync schema");
                 const valid = gen.let("valid");
-                gen.try((() => {
+                gen.try(() => {
                     gen.code((0, codegen_1._)`await ${(0, code_1.callValidateCode)(cxt, v, passCxt)}`);
                     addEvaluatedFrom(v);
                     if (!allErrors) gen.assign(valid, true);
-                }), (e => {
-                    gen.if((0, codegen_1._)`!(${e} instanceof ${it.ValidationError})`, (() => gen.throw(e)));
+                }, e => {
+                    gen.if((0, codegen_1._)`!(${e} instanceof ${it.ValidationError})`, () => gen.throw(e));
                     addErrorsFrom(e);
                     if (!allErrors) gen.assign(valid, false);
-                }));
+                });
                 cxt.ok(valid);
             }
             function callSyncRef() {
-                cxt.result((0, code_1.callValidateCode)(cxt, v, passCxt), (() => addEvaluatedFrom(v)), (() => addErrorsFrom(v)));
+                cxt.result((0, code_1.callValidateCode)(cxt, v, passCxt), () => addEvaluatedFrom(v), () => addErrorsFrom(v));
             }
             function addErrorsFrom(source) {
                 const errs = (0, codegen_1._)`${source}.errors`;
@@ -6021,7 +6021,7 @@ var __webpack_modules__ = {
                 throw new TypeError("this is a readable stream");
             }
             [_open]() {
-                fs.open(this[_path], "r", ((er, fd) => this[_onopen](er, fd)));
+                fs.open(this[_path], "r", (er, fd) => this[_onopen](er, fd));
             }
             [_onopen](er, fd) {
                 if (er) this[_onerror](er); else {
@@ -6037,8 +6037,8 @@ var __webpack_modules__ = {
                 if (!this[_reading]) {
                     this[_reading] = true;
                     const buf = this[_makeBuf]();
-                    if (buf.length === 0) return process.nextTick((() => this[_onread](null, 0, buf)));
-                    fs.read(this[_fd], buf, 0, buf.length, null, ((er, br, buf) => this[_onread](er, br, buf)));
+                    if (buf.length === 0) return process.nextTick(() => this[_onread](null, 0, buf));
+                    fs.read(this[_fd], buf, 0, buf.length, null, (er, br, buf) => this[_onread](er, br, buf));
                 }
             }
             [_onread](er, br, buf) {
@@ -6049,7 +6049,7 @@ var __webpack_modules__ = {
                 if (this[_autoClose] && typeof this[_fd] === "number") {
                     const fd = this[_fd];
                     this[_fd] = null;
-                    fs.close(fd, (er => er ? this.emit("error", er) : this.emit("close")));
+                    fs.close(fd, er => er ? this.emit("error", er) : this.emit("close"));
                 }
             }
             [_onerror](er) {
@@ -6164,7 +6164,7 @@ var __webpack_modules__ = {
                 this.emit("error", er);
             }
             [_open]() {
-                fs.open(this[_path], this[_flags], this[_mode], ((er, fd) => this[_onopen](er, fd)));
+                fs.open(this[_path], this[_flags], this[_mode], (er, fd) => this[_onopen](er, fd));
             }
             [_onopen](er, fd) {
                 if (this[_defaultFlag] && this[_flags] === "r+" && er && er.code === "ENOENT") {
@@ -6198,7 +6198,7 @@ var __webpack_modules__ = {
                 return true;
             }
             [_write](buf) {
-                fs.write(this[_fd], buf, 0, buf.length, this[_pos], ((er, bw) => this[_onwrite](er, bw)));
+                fs.write(this[_fd], buf, 0, buf.length, this[_pos], (er, bw) => this[_onwrite](er, bw));
             }
             [_onwrite](er, bw) {
                 if (er) this[_onerror](er); else {
@@ -6222,14 +6222,14 @@ var __webpack_modules__ = {
                 } else if (this[_queue].length === 1) this[_write](this[_queue].pop()); else {
                     const iovec = this[_queue];
                     this[_queue] = [];
-                    writev(this[_fd], iovec, this[_pos], ((er, bw) => this[_onwrite](er, bw)));
+                    writev(this[_fd], iovec, this[_pos], (er, bw) => this[_onwrite](er, bw));
                 }
             }
             [_close]() {
                 if (this[_autoClose] && typeof this[_fd] === "number") {
                     const fd = this[_fd];
                     this[_fd] = null;
-                    fs.close(fd, (er => er ? this.emit("error", er) : this.emit("close")));
+                    fs.close(fd, er => er ? this.emit("error", er) : this.emit("close"));
                 }
             }
         }
@@ -6278,25 +6278,36 @@ var __webpack_modules__ = {
         Object.defineProperty(exports, "__esModule", {
             value: true
         });
-        exports.isDeprecated = exports.describeTypeReference = exports.isClassOrInterfaceType = exports.isEnumType = exports.isInterfaceType = exports.isClassType = exports.TypeKind = exports.isMethod = exports.isUnionTypeReference = exports.isCollectionTypeReference = exports.isPrimitiveTypeReference = exports.isNamedTypeReference = exports.CANONICAL_ANY = exports.PrimitiveType = exports.CollectionKind = exports.Stability = exports.SchemaVersion = exports.SPEC_FILE_NAME_COMPRESSED = exports.SPEC_FILE_NAME = void 0;
+        exports.TypeKind = exports.CANONICAL_ANY = exports.PrimitiveType = exports.CollectionKind = exports.Stability = exports.SchemaVersion = exports.SPEC_FILE_NAME_COMPRESSED = exports.SPEC_FILE_NAME = void 0;
+        exports.isNamedTypeReference = isNamedTypeReference;
+        exports.isPrimitiveTypeReference = isPrimitiveTypeReference;
+        exports.isCollectionTypeReference = isCollectionTypeReference;
+        exports.isUnionTypeReference = isUnionTypeReference;
+        exports.isMethod = isMethod;
+        exports.isClassType = isClassType;
+        exports.isInterfaceType = isInterfaceType;
+        exports.isEnumType = isEnumType;
+        exports.isClassOrInterfaceType = isClassOrInterfaceType;
+        exports.describeTypeReference = describeTypeReference;
+        exports.isDeprecated = isDeprecated;
         exports.SPEC_FILE_NAME = ".jsii";
         exports.SPEC_FILE_NAME_COMPRESSED = `${exports.SPEC_FILE_NAME}.gz`;
         var SchemaVersion;
         (function(SchemaVersion) {
             SchemaVersion["LATEST"] = "jsii/0.10.0";
-        })(SchemaVersion = exports.SchemaVersion || (exports.SchemaVersion = {}));
+        })(SchemaVersion || (exports.SchemaVersion = SchemaVersion = {}));
         var Stability;
         (function(Stability) {
             Stability["Deprecated"] = "deprecated";
             Stability["Experimental"] = "experimental";
             Stability["Stable"] = "stable";
             Stability["External"] = "external";
-        })(Stability = exports.Stability || (exports.Stability = {}));
+        })(Stability || (exports.Stability = Stability = {}));
         var CollectionKind;
         (function(CollectionKind) {
             CollectionKind["Array"] = "array";
             CollectionKind["Map"] = "map";
-        })(CollectionKind = exports.CollectionKind || (exports.CollectionKind = {}));
+        })(CollectionKind || (exports.CollectionKind = CollectionKind = {}));
         var PrimitiveType;
         (function(PrimitiveType) {
             PrimitiveType["Date"] = "date";
@@ -6305,52 +6316,43 @@ var __webpack_modules__ = {
             PrimitiveType["Boolean"] = "boolean";
             PrimitiveType["Json"] = "json";
             PrimitiveType["Any"] = "any";
-        })(PrimitiveType = exports.PrimitiveType || (exports.PrimitiveType = {}));
+        })(PrimitiveType || (exports.PrimitiveType = PrimitiveType = {}));
         exports.CANONICAL_ANY = {
             primitive: PrimitiveType.Any
         };
         function isNamedTypeReference(ref) {
             return !!ref?.fqn;
         }
-        exports.isNamedTypeReference = isNamedTypeReference;
         function isPrimitiveTypeReference(ref) {
             return !!ref?.primitive;
         }
-        exports.isPrimitiveTypeReference = isPrimitiveTypeReference;
         function isCollectionTypeReference(ref) {
             return !!ref?.collection;
         }
-        exports.isCollectionTypeReference = isCollectionTypeReference;
         function isUnionTypeReference(ref) {
             return !!ref?.union;
         }
-        exports.isUnionTypeReference = isUnionTypeReference;
         function isMethod(callable) {
             return !!callable.name;
         }
-        exports.isMethod = isMethod;
         var TypeKind;
         (function(TypeKind) {
             TypeKind["Class"] = "class";
             TypeKind["Enum"] = "enum";
             TypeKind["Interface"] = "interface";
-        })(TypeKind = exports.TypeKind || (exports.TypeKind = {}));
+        })(TypeKind || (exports.TypeKind = TypeKind = {}));
         function isClassType(type) {
             return type?.kind === TypeKind.Class;
         }
-        exports.isClassType = isClassType;
         function isInterfaceType(type) {
             return type?.kind === TypeKind.Interface;
         }
-        exports.isInterfaceType = isInterfaceType;
         function isEnumType(type) {
             return type?.kind === TypeKind.Enum;
         }
-        exports.isEnumType = isEnumType;
         function isClassOrInterfaceType(type) {
             return isClassType(type) || isInterfaceType(type);
         }
-        exports.isClassOrInterfaceType = isClassOrInterfaceType;
         function describeTypeReference(type) {
             if (type === undefined) {
                 return "void";
@@ -6370,11 +6372,9 @@ var __webpack_modules__ = {
             }
             throw new Error("Unrecognized type reference");
         }
-        exports.describeTypeReference = describeTypeReference;
         function isDeprecated(entity) {
             return entity?.docs?.stability === Stability.Deprecated;
         }
-        exports.isDeprecated = isDeprecated;
     },
     3741: (module, __unused_webpack_exports, __webpack_require__) => {
         const fs = __webpack_require__(9896);
@@ -6455,11 +6455,11 @@ var __webpack_modules__ = {
         const isWindows = process.platform === "win32";
         function defaults(options) {
             const methods = [ "unlink", "chmod", "stat", "lstat", "rmdir", "readdir" ];
-            methods.forEach((m => {
+            methods.forEach(m => {
                 options[m] = options[m] || fs[m];
                 m = m + "Sync";
                 options[m] = options[m] || fs[m];
-            }));
+            });
             options.maxBusyTries = options.maxBusyTries || 3;
         }
         function rimraf(p, options, cb) {
@@ -6474,23 +6474,23 @@ var __webpack_modules__ = {
             assert(options, "rimraf: invalid options argument provided");
             assert.strictEqual(typeof options, "object", "rimraf: options should be object");
             defaults(options);
-            rimraf_(p, options, (function CB(er) {
+            rimraf_(p, options, function CB(er) {
                 if (er) {
                     if ((er.code === "EBUSY" || er.code === "ENOTEMPTY" || er.code === "EPERM") && busyTries < options.maxBusyTries) {
                         busyTries++;
                         const time = busyTries * 100;
-                        return setTimeout((() => rimraf_(p, options, CB)), time);
+                        return setTimeout(() => rimraf_(p, options, CB), time);
                     }
                     if (er.code === "ENOENT") er = null;
                 }
                 cb(er);
-            }));
+            });
         }
         function rimraf_(p, options, cb) {
             assert(p);
             assert(options);
             assert(typeof cb === "function");
-            options.lstat(p, ((er, st) => {
+            options.lstat(p, (er, st) => {
                 if (er && er.code === "ENOENT") {
                     return cb(null);
                 }
@@ -6500,7 +6500,7 @@ var __webpack_modules__ = {
                 if (st && st.isDirectory()) {
                     return rmdir(p, options, er, cb);
                 }
-                options.unlink(p, (er => {
+                options.unlink(p, er => {
                     if (er) {
                         if (er.code === "ENOENT") {
                             return cb(null);
@@ -6513,18 +6513,18 @@ var __webpack_modules__ = {
                         }
                     }
                     return cb(er);
-                }));
-            }));
+                });
+            });
         }
         function fixWinEPERM(p, options, er, cb) {
             assert(p);
             assert(options);
             assert(typeof cb === "function");
-            options.chmod(p, 438, (er2 => {
+            options.chmod(p, 438, er2 => {
                 if (er2) {
                     cb(er2.code === "ENOENT" ? null : er);
                 } else {
-                    options.stat(p, ((er3, stats) => {
+                    options.stat(p, (er3, stats) => {
                         if (er3) {
                             cb(er3.code === "ENOENT" ? null : er);
                         } else if (stats.isDirectory()) {
@@ -6532,9 +6532,9 @@ var __webpack_modules__ = {
                         } else {
                             options.unlink(p, cb);
                         }
-                    }));
+                    });
                 }
-            }));
+            });
         }
         function fixWinEPERMSync(p, options, er) {
             let stats;
@@ -6568,7 +6568,7 @@ var __webpack_modules__ = {
             assert(p);
             assert(options);
             assert(typeof cb === "function");
-            options.rmdir(p, (er => {
+            options.rmdir(p, er => {
                 if (er && (er.code === "ENOTEMPTY" || er.code === "EEXIST" || er.code === "EPERM")) {
                     rmkids(p, options, cb);
                 } else if (er && er.code === "ENOTDIR") {
@@ -6576,19 +6576,19 @@ var __webpack_modules__ = {
                 } else {
                     cb(er);
                 }
-            }));
+            });
         }
         function rmkids(p, options, cb) {
             assert(p);
             assert(options);
             assert(typeof cb === "function");
-            options.readdir(p, ((er, files) => {
+            options.readdir(p, (er, files) => {
                 if (er) return cb(er);
                 let n = files.length;
                 let errState;
                 if (n === 0) return options.rmdir(p, cb);
-                files.forEach((f => {
-                    rimraf(path.join(p, f), options, (er => {
+                files.forEach(f => {
+                    rimraf(path.join(p, f), options, er => {
                         if (errState) {
                             return;
                         }
@@ -6596,9 +6596,9 @@ var __webpack_modules__ = {
                         if (--n === 0) {
                             options.rmdir(p, cb);
                         }
-                    }));
-                }));
-            }));
+                    });
+                });
+            });
         }
         function rimrafSync(p, options) {
             let st;
@@ -6653,7 +6653,7 @@ var __webpack_modules__ = {
         function rmkidsSync(p, options) {
             assert(p);
             assert(options);
-            options.readdirSync(p).forEach((f => rimrafSync(path.join(p, f), options)));
+            options.readdirSync(p).forEach(f => rimrafSync(path.join(p, f), options));
             if (isWindows) {
                 const startTime = Date.now();
                 do {
@@ -6700,7 +6700,7 @@ var __webpack_modules__ = {
         const {dirname} = __webpack_require__(6928);
         const findMade = (opts, parent, path = undefined) => {
             if (path === parent) return Promise.resolve();
-            return opts.statAsync(parent).then((st => st.isDirectory() ? path : undefined), (er => er.code === "ENOENT" ? findMade(opts, dirname(parent), parent) : undefined));
+            return opts.statAsync(parent).then(st => st.isDirectory() ? path : undefined, er => er.code === "ENOENT" ? findMade(opts, dirname(parent), parent) : undefined);
         };
         const findMadeSync = (opts, parent, path = undefined) => {
             if (path === parent) return undefined;
@@ -6815,7 +6815,7 @@ var __webpack_modules__ = {
                 if (this[ENCODING] && enc !== this[ENCODING] && (this[DECODER] && this[DECODER].lastNeed || this[BUFFERLENGTH])) throw new Error("cannot change encoding");
                 if (this[ENCODING] !== enc) {
                     this[DECODER] = enc ? new SD(enc) : null;
-                    if (this.buffer.length) this.buffer = this.buffer.map((chunk => this[DECODER].write(chunk)));
+                    if (this.buffer.length) this.buffer = this.buffer.map(chunk => this[DECODER].write(chunk));
                 }
                 this[ENCODING] = enc;
             }
@@ -6954,12 +6954,12 @@ var __webpack_modules__ = {
                     if (opts.end) dest.end();
                 } else {
                     this.pipes.push(!opts.proxyErrors ? new Pipe(this, dest, opts) : new PipeProxyErrors(this, dest, opts));
-                    if (this[ASYNC]) defer((() => this[RESUME]())); else this[RESUME]();
+                    if (this[ASYNC]) defer(() => this[RESUME]()); else this[RESUME]();
                 }
                 return dest;
             }
             unpipe(dest) {
-                const p = this.pipes.find((p => p.dest === dest));
+                const p = this.pipes.find(p => p.dest === dest);
                 if (p) {
                     this.pipes.splice(this.pipes.indexOf(p), 1);
                     p.unpipe();
@@ -6974,7 +6974,7 @@ var __webpack_modules__ = {
                     super.emit(ev);
                     this.removeAllListeners(ev);
                 } else if (ev === "error" && this[EMITTED_ERROR]) {
-                    if (this[ASYNC]) defer((() => fn.call(this, this[EMITTED_ERROR]))); else fn.call(this, this[EMITTED_ERROR]);
+                    if (this[ASYNC]) defer(() => fn.call(this, this[EMITTED_ERROR])); else fn.call(this, this[EMITTED_ERROR]);
                 }
                 return ret;
             }
@@ -6993,7 +6993,7 @@ var __webpack_modules__ = {
             }
             emit(ev, data, ...extra) {
                 if (ev !== "error" && ev !== "close" && ev !== DESTROYED && this[DESTROYED]) return; else if (ev === "data") {
-                    return !data ? false : this[ASYNC] ? defer((() => this[EMITDATA](data))) : this[EMITDATA](data);
+                    return !data ? false : this[ASYNC] ? defer(() => this[EMITDATA](data)) : this[EMITDATA](data);
                 } else if (ev === "end") {
                     return this[EMITEND]();
                 } else if (ev === "close") {
@@ -7032,7 +7032,7 @@ var __webpack_modules__ = {
                 if (this[EMITTED_END]) return;
                 this[EMITTED_END] = true;
                 this.readable = false;
-                if (this[ASYNC]) defer((() => this[EMITEND2]())); else this[EMITEND2]();
+                if (this[ASYNC]) defer(() => this[EMITEND2]()); else this[EMITEND2]();
             }
             [EMITEND2]() {
                 if (this[DECODER]) {
@@ -7055,21 +7055,21 @@ var __webpack_modules__ = {
                 const buf = [];
                 if (!this[OBJECTMODE]) buf.dataLength = 0;
                 const p = this.promise();
-                this.on("data", (c => {
+                this.on("data", c => {
                     buf.push(c);
                     if (!this[OBJECTMODE]) buf.dataLength += c.length;
-                }));
-                return p.then((() => buf));
+                });
+                return p.then(() => buf);
             }
             concat() {
-                return this[OBJECTMODE] ? Promise.reject(new Error("cannot concat in objectMode")) : this.collect().then((buf => this[OBJECTMODE] ? Promise.reject(new Error("cannot concat in objectMode")) : this[ENCODING] ? buf.join("") : Buffer.concat(buf, buf.dataLength)));
+                return this[OBJECTMODE] ? Promise.reject(new Error("cannot concat in objectMode")) : this.collect().then(buf => this[OBJECTMODE] ? Promise.reject(new Error("cannot concat in objectMode")) : this[ENCODING] ? buf.join("") : Buffer.concat(buf, buf.dataLength));
             }
             promise() {
-                return new Promise(((resolve, reject) => {
-                    this.on(DESTROYED, (() => reject(new Error("stream destroyed"))));
-                    this.on("error", (er => reject(er)));
-                    this.on("end", (() => resolve()));
-                }));
+                return new Promise((resolve, reject) => {
+                    this.on(DESTROYED, () => reject(new Error("stream destroyed")));
+                    this.on("error", er => reject(er));
+                    this.on("end", () => resolve());
+                });
             }
             [ASYNCITERATOR]() {
                 const next = () => {
@@ -7105,14 +7105,14 @@ var __webpack_modules__ = {
                         });
                     };
                     const ondestroy = () => onerr(new Error("stream destroyed"));
-                    return new Promise(((res, rej) => {
+                    return new Promise((res, rej) => {
                         reject = rej;
                         resolve = res;
                         this.once(DESTROYED, ondestroy);
                         this.once("error", onerr);
                         this.once("end", onend);
                         this.once("data", ondata);
-                    }));
+                    });
                 };
                 return {
                     next
@@ -7379,18 +7379,18 @@ var __webpack_modules__ = {
             }
             opts = opts || {};
             const overwrite = opts.overwrite || opts.clobber || false;
-            stat.checkPaths(src, dest, "move", opts, ((err, stats) => {
+            stat.checkPaths(src, dest, "move", opts, (err, stats) => {
                 if (err) return cb(err);
                 const {srcStat, isChangingCase = false} = stats;
-                stat.checkParentPaths(src, srcStat, dest, "move", (err => {
+                stat.checkParentPaths(src, srcStat, dest, "move", err => {
                     if (err) return cb(err);
                     if (isParentRoot(dest)) return doRename(src, dest, overwrite, isChangingCase, cb);
-                    mkdirp(path.dirname(dest), (err => {
+                    mkdirp(path.dirname(dest), err => {
                         if (err) return cb(err);
                         return doRename(src, dest, overwrite, isChangingCase, cb);
-                    }));
-                }));
-            }));
+                    });
+                });
+            });
         }
         function isParentRoot(dest) {
             const parent = path.dirname(dest);
@@ -7400,33 +7400,33 @@ var __webpack_modules__ = {
         function doRename(src, dest, overwrite, isChangingCase, cb) {
             if (isChangingCase) return rename(src, dest, overwrite, cb);
             if (overwrite) {
-                return remove(dest, (err => {
+                return remove(dest, err => {
                     if (err) return cb(err);
                     return rename(src, dest, overwrite, cb);
-                }));
+                });
             }
-            pathExists(dest, ((err, destExists) => {
+            pathExists(dest, (err, destExists) => {
                 if (err) return cb(err);
                 if (destExists) return cb(new Error("dest already exists."));
                 return rename(src, dest, overwrite, cb);
-            }));
+            });
         }
         function rename(src, dest, overwrite, cb) {
-            fs.rename(src, dest, (err => {
+            fs.rename(src, dest, err => {
                 if (!err) return cb();
                 if (err.code !== "EXDEV") return cb(err);
                 return moveAcrossDevice(src, dest, overwrite, cb);
-            }));
+            });
         }
         function moveAcrossDevice(src, dest, overwrite, cb) {
             const opts = {
                 overwrite,
                 errorOnExist: true
             };
-            copy(src, dest, opts, (err => {
+            copy(src, dest, opts, err => {
                 if (err) return cb(err);
                 return remove(src, cb);
-            }));
+            });
         }
         module.exports = move;
     },
@@ -7441,9 +7441,9 @@ var __webpack_modules__ = {
             if (obj instanceof Object) var copy = {
                 __proto__: getPrototypeOf(obj)
             }; else var copy = Object.create(null);
-            Object.getOwnPropertyNames(obj).forEach((function(key) {
+            Object.getOwnPropertyNames(obj).forEach(function(key) {
                 Object.defineProperty(copy, key, Object.getOwnPropertyDescriptor(obj, key));
-            }));
+            });
             return copy;
         }
     },
@@ -7613,7 +7613,7 @@ var __webpack_modules__ = {
         }
         const hexLookUp = Array.from({
             length: 127
-        }, ((_v, k) => /[^!"$&'()*+,\-.;=_`a-z{}~]/u.test(String.fromCharCode(k))));
+        }, (_v, k) => /[^!"$&'()*+,\-.;=_`a-z{}~]/u.test(String.fromCharCode(k)));
         function nonSimpleDomain(value) {
             let code = 0;
             for (let i = 0, len = value.length; i < len; ++i) {
@@ -7757,7 +7757,7 @@ var __webpack_modules__ = {
                 count++;
                 if (SIMPLE_INLINED.has(key)) continue;
                 if (typeof schema[key] == "object") {
-                    (0, util_1.eachItem)(schema[key], (sch => count += countKeys(sch)));
+                    (0, util_1.eachItem)(schema[key], sch => count += countKeys(sch));
                 }
                 if (count === Infinity) return Infinity;
             }
@@ -7797,7 +7797,7 @@ var __webpack_modules__ = {
             const schemaRefs = new Set;
             traverse(schema, {
                 allKeys: true
-            }, ((sch, jsonPtr, _, parentJsonPtr) => {
+            }, (sch, jsonPtr, _, parentJsonPtr) => {
                 if (parentJsonPtr === undefined) return;
                 const fullPath = pathPrefix + jsonPtr;
                 let innerBaseId = baseIds[parentJsonPtr];
@@ -7830,7 +7830,7 @@ var __webpack_modules__ = {
                         addRef.call(this, `#${anchor}`);
                     }
                 }
-            }));
+            });
             return localRefs;
             function checkAmbiguosRef(sch1, sch2, ref) {
                 if (sch2 !== undefined && !equal(sch1, sch2)) throw ambiguos(ref);
@@ -7864,17 +7864,17 @@ var __webpack_modules__ = {
             return Object.prototype.hasOwnProperty.call(obj, prop);
         }
         var onExit = __webpack_require__(2434);
-        onExit((function() {
+        onExit(function() {
             debug("exit listener");
             Object.keys(locks).forEach(exports.unlockSync);
-        }));
+        });
         if (/^v0\.[0-8]\./.test(process.version)) {
             debug("uncaughtException, version = %s", process.version);
-            process.on("uncaughtException", (function H(er) {
+            process.on("uncaughtException", function H(er) {
                 debug("uncaughtException");
-                var l = process.listeners("uncaughtException").filter((function(h) {
+                var l = process.listeners("uncaughtException").filter(function(h) {
                     return h !== H;
-                }));
+                });
                 if (!l.length) {
                     try {
                         Object.keys(locks).forEach(exports.unlockSync);
@@ -7882,14 +7882,14 @@ var __webpack_modules__ = {
                     process.removeListener("uncaughtException", H);
                     throw er;
                 }
-            }));
+            });
         }
         exports.unlock = function(path, cb) {
             debug("unlock", path);
             delete locks[path];
-            fs.unlink(path, (function(unlinkEr) {
+            fs.unlink(path, function(unlinkEr) {
                 cb && cb();
-            }));
+            });
         };
         exports.unlockSync = function(path) {
             debug("unlockSync", path);
@@ -7901,26 +7901,26 @@ var __webpack_modules__ = {
         exports.check = function(path, opts, cb) {
             if (typeof opts === "function") cb = opts, opts = {};
             debug("check", path, opts);
-            fs.open(path, "r", (function(er, fd) {
+            fs.open(path, "r", function(er, fd) {
                 if (er) {
                     if (er.code !== "ENOENT") return cb(er);
                     return cb(null, false);
                 }
                 if (!opts.stale) {
-                    return fs.close(fd, (function(er) {
+                    return fs.close(fd, function(er) {
                         return cb(er, true);
-                    }));
+                    });
                 }
-                fs.fstat(fd, (function(er, st) {
-                    if (er) return fs.close(fd, (function(er2) {
+                fs.fstat(fd, function(er, st) {
+                    if (er) return fs.close(fd, function(er2) {
                         return cb(er);
-                    }));
-                    fs.close(fd, (function(er) {
+                    });
+                    fs.close(fd, function(er) {
                         var age = Date.now() - st[exports.filetime].getTime();
                         return cb(er, age <= opts.stale);
-                    }));
-                }));
-            }));
+                    });
+                });
+            });
         };
         exports.checkSync = function(path, opts) {
             opts = opts || {};
@@ -7975,13 +7975,13 @@ var __webpack_modules__ = {
                     };
                 }(cb);
             }
-            fs.open(path, wx, (function(er, fd) {
+            fs.open(path, wx, function(er, fd) {
                 if (!er) {
                     debug("locked", path, fd);
                     locks[path] = fd;
-                    return fs.close(fd, (function() {
+                    return fs.close(fd, function() {
                         return cb();
-                    }));
+                    });
                 }
                 debug("failed to acquire lock", er);
                 if (er.code !== "EEXIST") {
@@ -7990,11 +7990,11 @@ var __webpack_modules__ = {
                 }
                 if (!opts.stale) return notStale(er, path, opts, cb);
                 return maybeStale(er, path, opts, false, cb);
-            }));
+            });
             debug("lock return");
         };
         function maybeStale(originalEr, path, opts, hasStaleLock, cb) {
-            fs.stat(path, (function(statEr, st) {
+            fs.stat(path, function(statEr, st) {
                 if (statEr) {
                     if (statEr.code === "ENOENT") {
                         opts.stale = false;
@@ -8008,23 +8008,23 @@ var __webpack_modules__ = {
                 if (age <= opts.stale) return notStale(originalEr, path, opts, cb);
                 debug("lock stale", path, opts);
                 if (hasStaleLock) {
-                    exports.unlock(path, (function(er) {
+                    exports.unlock(path, function(er) {
                         if (er) return cb(er);
                         debug("lock stale retry", path, opts);
-                        fs.link(path + ".STALE", path, (function(er) {
-                            fs.unlink(path + ".STALE", (function() {
+                        fs.link(path + ".STALE", path, function(er) {
+                            fs.unlink(path + ".STALE", function() {
                                 cb(er);
-                            }));
-                        }));
-                    }));
+                            });
+                        });
+                    });
                 } else {
                     debug("acquire .STALE file lock", opts);
-                    exports.lock(path + ".STALE", opts, (function(er) {
+                    exports.lock(path + ".STALE", opts, function(er) {
                         if (er) return cb(er);
                         maybeStale(originalEr, path, opts, true, cb);
-                    }));
+                    });
                 }
-            }));
+            });
         }
         function notStale(er, path, opts, cb) {
             debug("notStale", path, opts);
@@ -8094,19 +8094,19 @@ var __webpack_modules__ = {
             opts.recursive = false;
             const parent = dirname(path);
             if (parent === path) {
-                return opts.mkdirAsync(path, opts).catch((er => {
+                return opts.mkdirAsync(path, opts).catch(er => {
                     if (er.code !== "EISDIR") throw er;
-                }));
+                });
             }
-            return opts.mkdirAsync(path, opts).then((() => made || path), (er => {
-                if (er.code === "ENOENT") return mkdirpManual(parent, opts).then((made => mkdirpManual(path, opts, made)));
+            return opts.mkdirAsync(path, opts).then(() => made || path, er => {
+                if (er.code === "ENOENT") return mkdirpManual(parent, opts).then(made => mkdirpManual(path, opts, made));
                 if (er.code !== "EEXIST" && er.code !== "EROFS") throw er;
-                return opts.statAsync(path).then((st => {
+                return opts.statAsync(path).then(st => {
                     if (st.isDirectory()) return made; else throw er;
-                }), (() => {
+                }, () => {
                     throw er;
-                }));
-            }));
+                });
+            });
         };
         const mkdirpManualSync = (path, opts, made) => {
             const parent = dirname(path);
@@ -8179,7 +8179,7 @@ var __webpack_modules__ = {
         class Ajv extends core_1.default {
             _addVocabularies() {
                 super._addVocabularies();
-                draft7_1.default.forEach((v => this.addVocabulary(v)));
+                draft7_1.default.forEach(v => this.addVocabulary(v));
                 if (this.opts.discriminator) this.addKeyword(discriminator_1.default);
             }
             _addDefaultMetaSchema() {
@@ -8581,14 +8581,14 @@ var __webpack_modules__ = {
                 encoding = "utf8";
             }
             const dir = path.dirname(file);
-            pathExists(dir, ((err, itDoes) => {
+            pathExists(dir, (err, itDoes) => {
                 if (err) return callback(err);
                 if (itDoes) return fs.writeFile(file, data, encoding, callback);
-                mkdir.mkdirs(dir, (err => {
+                mkdir.mkdirs(dir, err => {
                     if (err) return callback(err);
                     fs.writeFile(file, data, encoding, callback);
-                }));
-            }));
+                });
+            });
         }
         function outputFileSync(file, ...args) {
             const dir = path.dirname(file);
@@ -8703,7 +8703,7 @@ var __webpack_modules__ = {
                 if (this[ENCODING] && enc !== this[ENCODING] && (this[DECODER] && this[DECODER].lastNeed || this[BUFFERLENGTH])) throw new Error("cannot change encoding");
                 if (this[ENCODING] !== enc) {
                     this[DECODER] = enc ? new SD(enc) : null;
-                    if (this.buffer.length) this.buffer = this.buffer.map((chunk => this[DECODER].write(chunk)));
+                    if (this.buffer.length) this.buffer = this.buffer.map(chunk => this[DECODER].write(chunk));
                 }
                 this[ENCODING] = enc;
             }
@@ -8842,12 +8842,12 @@ var __webpack_modules__ = {
                     if (opts.end) dest.end();
                 } else {
                     this.pipes.push(!opts.proxyErrors ? new Pipe(this, dest, opts) : new PipeProxyErrors(this, dest, opts));
-                    if (this[ASYNC]) defer((() => this[RESUME]())); else this[RESUME]();
+                    if (this[ASYNC]) defer(() => this[RESUME]()); else this[RESUME]();
                 }
                 return dest;
             }
             unpipe(dest) {
-                const p = this.pipes.find((p => p.dest === dest));
+                const p = this.pipes.find(p => p.dest === dest);
                 if (p) {
                     this.pipes.splice(this.pipes.indexOf(p), 1);
                     p.unpipe();
@@ -8862,7 +8862,7 @@ var __webpack_modules__ = {
                     super.emit(ev);
                     this.removeAllListeners(ev);
                 } else if (ev === "error" && this[EMITTED_ERROR]) {
-                    if (this[ASYNC]) defer((() => fn.call(this, this[EMITTED_ERROR]))); else fn.call(this, this[EMITTED_ERROR]);
+                    if (this[ASYNC]) defer(() => fn.call(this, this[EMITTED_ERROR])); else fn.call(this, this[EMITTED_ERROR]);
                 }
                 return ret;
             }
@@ -8881,7 +8881,7 @@ var __webpack_modules__ = {
             }
             emit(ev, data, ...extra) {
                 if (ev !== "error" && ev !== "close" && ev !== DESTROYED && this[DESTROYED]) return; else if (ev === "data") {
-                    return !data ? false : this[ASYNC] ? defer((() => this[EMITDATA](data))) : this[EMITDATA](data);
+                    return !data ? false : this[ASYNC] ? defer(() => this[EMITDATA](data)) : this[EMITDATA](data);
                 } else if (ev === "end") {
                     return this[EMITEND]();
                 } else if (ev === "close") {
@@ -8920,7 +8920,7 @@ var __webpack_modules__ = {
                 if (this[EMITTED_END]) return;
                 this[EMITTED_END] = true;
                 this.readable = false;
-                if (this[ASYNC]) defer((() => this[EMITEND2]())); else this[EMITEND2]();
+                if (this[ASYNC]) defer(() => this[EMITEND2]()); else this[EMITEND2]();
             }
             [EMITEND2]() {
                 if (this[DECODER]) {
@@ -8943,21 +8943,21 @@ var __webpack_modules__ = {
                 const buf = [];
                 if (!this[OBJECTMODE]) buf.dataLength = 0;
                 const p = this.promise();
-                this.on("data", (c => {
+                this.on("data", c => {
                     buf.push(c);
                     if (!this[OBJECTMODE]) buf.dataLength += c.length;
-                }));
-                return p.then((() => buf));
+                });
+                return p.then(() => buf);
             }
             concat() {
-                return this[OBJECTMODE] ? Promise.reject(new Error("cannot concat in objectMode")) : this.collect().then((buf => this[OBJECTMODE] ? Promise.reject(new Error("cannot concat in objectMode")) : this[ENCODING] ? buf.join("") : Buffer.concat(buf, buf.dataLength)));
+                return this[OBJECTMODE] ? Promise.reject(new Error("cannot concat in objectMode")) : this.collect().then(buf => this[OBJECTMODE] ? Promise.reject(new Error("cannot concat in objectMode")) : this[ENCODING] ? buf.join("") : Buffer.concat(buf, buf.dataLength));
             }
             promise() {
-                return new Promise(((resolve, reject) => {
-                    this.on(DESTROYED, (() => reject(new Error("stream destroyed"))));
-                    this.on("error", (er => reject(er)));
-                    this.on("end", (() => resolve()));
-                }));
+                return new Promise((resolve, reject) => {
+                    this.on(DESTROYED, () => reject(new Error("stream destroyed")));
+                    this.on("error", er => reject(er));
+                    this.on("end", () => resolve());
+                });
             }
             [ASYNCITERATOR]() {
                 const next = () => {
@@ -8993,14 +8993,14 @@ var __webpack_modules__ = {
                         });
                     };
                     const ondestroy = () => onerr(new Error("stream destroyed"));
-                    return new Promise(((res, rej) => {
+                    return new Promise((res, rej) => {
                         reject = rej;
                         resolve = res;
                         this.once(DESTROYED, ondestroy);
                         this.once("error", onerr);
                         this.once("end", onend);
                         this.once("data", ondata);
-                    }));
+                    });
                 };
                 return {
                     next
@@ -9099,18 +9099,18 @@ var __webpack_modules__ = {
                     function rename(from, to, cb) {
                         var start = Date.now();
                         var backoff = 0;
-                        fs$rename(from, to, (function CB(er) {
+                        fs$rename(from, to, function CB(er) {
                             if (er && (er.code === "EACCES" || er.code === "EPERM" || er.code === "EBUSY") && Date.now() - start < 6e4) {
-                                setTimeout((function() {
-                                    fs.stat(to, (function(stater, st) {
+                                setTimeout(function() {
+                                    fs.stat(to, function(stater, st) {
                                         if (stater && stater.code === "ENOENT") fs$rename(from, to, CB); else cb(er);
-                                    }));
-                                }), backoff);
+                                    });
+                                }, backoff);
                                 if (backoff < 100) backoff += 10;
                                 return;
                             }
                             if (cb) cb(er);
-                        }));
+                        });
                     }
                     if (Object.setPrototypeOf) Object.setPrototypeOf(rename, fs$rename);
                     return rename;
@@ -9152,17 +9152,17 @@ var __webpack_modules__ = {
             }(fs.readSync);
             function patchLchmod(fs) {
                 fs.lchmod = function(path, mode, callback) {
-                    fs.open(path, constants.O_WRONLY | constants.O_SYMLINK, mode, (function(err, fd) {
+                    fs.open(path, constants.O_WRONLY | constants.O_SYMLINK, mode, function(err, fd) {
                         if (err) {
                             if (callback) callback(err);
                             return;
                         }
-                        fs.fchmod(fd, mode, (function(err) {
-                            fs.close(fd, (function(err2) {
+                        fs.fchmod(fd, mode, function(err) {
+                            fs.close(fd, function(err2) {
                                 if (callback) callback(err || err2);
-                            }));
-                        }));
-                    }));
+                            });
+                        });
+                    });
                 };
                 fs.lchmodSync = function(path, mode) {
                     var fd = fs.openSync(path, constants.O_WRONLY | constants.O_SYMLINK, mode);
@@ -9186,17 +9186,17 @@ var __webpack_modules__ = {
             function patchLutimes(fs) {
                 if (constants.hasOwnProperty("O_SYMLINK") && fs.futimes) {
                     fs.lutimes = function(path, at, mt, cb) {
-                        fs.open(path, constants.O_SYMLINK, (function(er, fd) {
+                        fs.open(path, constants.O_SYMLINK, function(er, fd) {
                             if (er) {
                                 if (cb) cb(er);
                                 return;
                             }
-                            fs.futimes(fd, at, mt, (function(er) {
-                                fs.close(fd, (function(er2) {
+                            fs.futimes(fd, at, mt, function(er) {
+                                fs.close(fd, function(er2) {
                                     if (cb) cb(er || er2);
-                                }));
-                            }));
-                        }));
+                                });
+                            });
+                        });
                     };
                     fs.lutimesSync = function(path, at, mt) {
                         var fd = fs.openSync(path, constants.O_SYMLINK);
@@ -9226,10 +9226,10 @@ var __webpack_modules__ = {
             function chmodFix(orig) {
                 if (!orig) return orig;
                 return function(target, mode, cb) {
-                    return orig.call(fs, target, mode, (function(er) {
+                    return orig.call(fs, target, mode, function(er) {
                         if (chownErOk(er)) er = null;
                         if (cb) cb.apply(this, arguments);
-                    }));
+                    });
                 };
             }
             function chmodFixSync(orig) {
@@ -9245,10 +9245,10 @@ var __webpack_modules__ = {
             function chownFix(orig) {
                 if (!orig) return orig;
                 return function(target, uid, gid, cb) {
-                    return orig.call(fs, target, uid, gid, (function(er) {
+                    return orig.call(fs, target, uid, gid, function(er) {
                         if (chownErOk(er)) er = null;
                         if (cb) cb.apply(this, arguments);
-                    }));
+                    });
                 };
             }
             function chownFixSync(orig) {
@@ -9315,7 +9315,7 @@ var __webpack_modules__ = {
                     assignDefault(it, key, properties[key].default);
                 }
             } else if (ty === "array" && Array.isArray(items)) {
-                items.forEach(((sch, i) => assignDefault(it, i, sch.default)));
+                items.forEach((sch, i) => assignDefault(it, i, sch.default));
             }
         }
         exports.assignDefaults = assignDefaults;
@@ -9479,7 +9479,8 @@ var __webpack_modules__ = {
         Object.defineProperty(exports, "__esModule", {
             value: true
         });
-        exports.validateAssembly = exports.schema = void 0;
+        exports.schema = void 0;
+        exports.validateAssembly = validateAssembly;
         const ajv_1 = __webpack_require__(4588);
         exports.schema = __webpack_require__(878);
         function validateAssembly(obj) {
@@ -9500,7 +9501,6 @@ var __webpack_modules__ = {
             }
             return obj;
         }
-        exports.validateAssembly = validateAssembly;
     },
     5513: (__unused_webpack_module, exports, __webpack_require__) => {
         "use strict";
@@ -9534,7 +9534,9 @@ var __webpack_modules__ = {
         Object.defineProperty(exports, "__esModule", {
             value: true
         });
-        exports.validateAssemblyRedirect = exports.isAssemblyRedirect = exports.assemblyRedirectSchema = void 0;
+        exports.assemblyRedirectSchema = void 0;
+        exports.isAssemblyRedirect = isAssemblyRedirect;
+        exports.validateAssemblyRedirect = validateAssemblyRedirect;
         const ajv_1 = __webpack_require__(4588);
         exports.assemblyRedirectSchema = __webpack_require__(3346);
         const SCHEMA = "jsii/file-redirect";
@@ -9544,7 +9546,6 @@ var __webpack_modules__ = {
             }
             return obj.schema === SCHEMA;
         }
-        exports.isAssemblyRedirect = isAssemblyRedirect;
         function validateAssemblyRedirect(obj) {
             const ajv = new ajv_1.default({
                 allErrors: true
@@ -9559,7 +9560,6 @@ var __webpack_modules__ = {
             }
             return obj;
         }
-        exports.validateAssemblyRedirect = validateAssemblyRedirect;
     },
     5531: (__unused_webpack_module, exports, __webpack_require__) => {
         "use strict";
@@ -9608,15 +9608,15 @@ var __webpack_modules__ = {
             }
             const valid = gen.name("valid");
             const len = gen.const("len", (0, codegen_1._)`${data}.length`);
-            schArr.forEach(((sch, i) => {
+            schArr.forEach((sch, i) => {
                 if ((0, util_1.alwaysValidSchema)(it, sch)) return;
-                gen.if((0, codegen_1._)`${len} > ${i}`, (() => cxt.subschema({
+                gen.if((0, codegen_1._)`${len} > ${i}`, () => cxt.subschema({
                     keyword,
                     schemaProp: i,
                     dataProp: i
-                }, valid)));
+                }, valid));
                 cxt.ok(valid);
-            }));
+            });
             function checkStrictTuple(sch) {
                 const {opts, errSchemaPath} = it;
                 const l = schArr.length;
@@ -9668,7 +9668,13 @@ var __webpack_modules__ = {
         Object.defineProperty(exports, "__esModule", {
             value: true
         });
-        exports.loadAssemblyFromFile = exports.loadAssemblyFromPath = exports.loadAssemblyFromBuffer = exports.writeAssembly = exports.replaceAssembly = exports.findAssemblyFile = exports.compressedAssemblyExists = void 0;
+        exports.compressedAssemblyExists = compressedAssemblyExists;
+        exports.findAssemblyFile = findAssemblyFile;
+        exports.replaceAssembly = replaceAssembly;
+        exports.writeAssembly = writeAssembly;
+        exports.loadAssemblyFromBuffer = loadAssemblyFromBuffer;
+        exports.loadAssemblyFromPath = loadAssemblyFromPath;
+        exports.loadAssemblyFromFile = loadAssemblyFromFile;
         const fs = __webpack_require__(9896);
         const path = __webpack_require__(6928);
         const zlib = __webpack_require__(3106);
@@ -9678,7 +9684,6 @@ var __webpack_modules__ = {
         function compressedAssemblyExists(directory) {
             return fs.existsSync(path.join(directory, assembly_1.SPEC_FILE_NAME_COMPRESSED));
         }
-        exports.compressedAssemblyExists = compressedAssemblyExists;
         function findAssemblyFile(directory) {
             const dotJsiiFile = path.join(directory, assembly_1.SPEC_FILE_NAME);
             if (!fs.existsSync(dotJsiiFile)) {
@@ -9686,13 +9691,11 @@ var __webpack_modules__ = {
             }
             return dotJsiiFile;
         }
-        exports.findAssemblyFile = findAssemblyFile;
         function replaceAssembly(assembly, directory) {
             writeAssembly(directory, _fingerprint(assembly), {
                 compress: compressedAssemblyExists(directory)
             });
         }
-        exports.replaceAssembly = replaceAssembly;
         function _fingerprint(assembly) {
             assembly.fingerprint = "*".repeat(10);
             return assembly;
@@ -9710,7 +9713,6 @@ var __webpack_modules__ = {
             }
             return compress;
         }
-        exports.writeAssembly = writeAssembly;
         const failNoReadfileProvided = filename => {
             throw new Error(`Unable to load assembly support file ${JSON.stringify(filename)}: no readFile callback provided!`);
         };
@@ -9721,21 +9723,18 @@ var __webpack_modules__ = {
             }
             return validate ? (0, validate_assembly_1.validateAssembly)(contents) : contents;
         }
-        exports.loadAssemblyFromBuffer = loadAssemblyFromBuffer;
         function loadAssemblyFromPath(directory, validate = true) {
             const assemblyFile = findAssemblyFile(directory);
             return loadAssemblyFromFile(assemblyFile, validate);
         }
-        exports.loadAssemblyFromPath = loadAssemblyFromPath;
         function loadAssemblyFromFile(pathToFile, validate = true) {
             const data = fs.readFileSync(pathToFile);
             try {
-                return loadAssemblyFromBuffer(data, (filename => fs.readFileSync(path.resolve(pathToFile, "..", filename))), validate);
+                return loadAssemblyFromBuffer(data, filename => fs.readFileSync(path.resolve(pathToFile, "..", filename)), validate);
             } catch (e) {
                 throw new Error(`Error loading assembly from file ${pathToFile}:\n${e}`);
             }
         }
-        exports.loadAssemblyFromFile = loadAssemblyFromFile;
         function followRedirect(assemblyRedirect, readFile) {
             (0, redirect_1.validateAssemblyRedirect)(assemblyRedirect);
             let data = readFile(assemblyRedirect.filename);
@@ -9768,9 +9767,9 @@ var __webpack_modules__ = {
             self.head = null;
             self.length = 0;
             if (list && typeof list.forEach === "function") {
-                list.forEach((function(item) {
+                list.forEach(function(item) {
                     self.push(item);
-                }));
+                });
             } else if (arguments.length > 0) {
                 for (var i = 0, l = arguments.length; i < l; i++) {
                     self.push(arguments[i]);
@@ -10304,7 +10303,7 @@ var __webpack_modules__ = {
             const getPos = (fd, size, cb_) => {
                 const cb = (er, pos) => {
                     if (er) {
-                        fs.close(fd, (_ => cb_(er)));
+                        fs.close(fd, _ => cb_(er));
                     } else {
                         cb_(null, pos);
                     }
@@ -10349,7 +10348,7 @@ var __webpack_modules__ = {
                 };
                 fs.read(fd, headBuf, 0, 512, position, onread);
             };
-            const promise = new Promise(((resolve, reject) => {
+            const promise = new Promise((resolve, reject) => {
                 p.on("error", reject);
                 let flag = "r+";
                 const onopen = (er, fd) => {
@@ -10360,11 +10359,11 @@ var __webpack_modules__ = {
                     if (er) {
                         return reject(er);
                     }
-                    fs.fstat(fd, ((er, st) => {
+                    fs.fstat(fd, (er, st) => {
                         if (er) {
-                            return fs.close(fd, (() => reject(er)));
+                            return fs.close(fd, () => reject(er));
                         }
-                        getPos(fd, st.size, ((er, position) => {
+                        getPos(fd, st.size, (er, position) => {
                             if (er) {
                                 return reject(er);
                             }
@@ -10376,15 +10375,15 @@ var __webpack_modules__ = {
                             stream.on("error", reject);
                             stream.on("close", resolve);
                             addFilesAsync(p, files);
-                        }));
-                    }));
+                        });
+                    });
                 };
                 fs.open(opt.file, flag, onopen);
-            }));
+            });
             return cb ? promise.then(cb, cb) : promise;
         };
         const addFilesSync = (p, files) => {
-            files.forEach((file => {
+            files.forEach(file => {
                 if (file.charAt(0) === "@") {
                     t({
                         file: path.resolve(p.cwd, file.slice(1)),
@@ -10395,7 +10394,7 @@ var __webpack_modules__ = {
                 } else {
                     p.add(file);
                 }
-            }));
+            });
             p.end();
         };
         const addFilesAsync = (p, files) => {
@@ -10406,7 +10405,7 @@ var __webpack_modules__ = {
                         file: path.resolve(p.cwd, file.slice(1)),
                         noResume: true,
                         onentry: entry => p.add(entry)
-                    }).then((_ => addFilesAsync(p, files)));
+                    }).then(_ => addFilesAsync(p, files));
                 } else {
                     p.add(file);
                 }
@@ -10468,11 +10467,11 @@ var __webpack_modules__ = {
                     deps: deps.join(", ")
                 });
                 if (it.allErrors) {
-                    gen.if(hasProperty, (() => {
+                    gen.if(hasProperty, () => {
                         for (const depProp of deps) {
                             (0, code_1.checkReportMissingProp)(cxt, depProp);
                         }
-                    }));
+                    });
                 } else {
                     gen.if((0, codegen_1._)`${hasProperty} && (${(0, code_1.checkMissingProp)(cxt, deps, missing)})`);
                     (0, code_1.reportMissingProp)(cxt, missing);
@@ -10486,13 +10485,13 @@ var __webpack_modules__ = {
             const valid = gen.name("valid");
             for (const prop in schemaDeps) {
                 if ((0, util_1.alwaysValidSchema)(it, schemaDeps[prop])) continue;
-                gen.if((0, code_1.propertyInData)(gen, data, prop, it.opts.ownProperties), (() => {
+                gen.if((0, code_1.propertyInData)(gen, data, prop, it.opts.ownProperties), () => {
                     const schCxt = cxt.subschema({
                         keyword,
                         schemaProp: prop
                     }, valid);
                     cxt.mergeValidEvaluated(schCxt, valid);
-                }), (() => gen.var(valid, true)));
+                }, () => gen.var(valid, true));
                 cxt.ok(valid);
             }
         }
@@ -10645,59 +10644,59 @@ var __webpack_modules__ = {
         "use strict";
         const u = __webpack_require__(9022).fromCallback;
         const fs = __webpack_require__(9333);
-        const api = [ "access", "appendFile", "chmod", "chown", "close", "copyFile", "fchmod", "fchown", "fdatasync", "fstat", "fsync", "ftruncate", "futimes", "lchmod", "lchown", "link", "lstat", "mkdir", "mkdtemp", "open", "opendir", "readdir", "readFile", "readlink", "realpath", "rename", "rm", "rmdir", "stat", "symlink", "truncate", "unlink", "utimes", "writeFile" ].filter((key => typeof fs[key] === "function"));
+        const api = [ "access", "appendFile", "chmod", "chown", "close", "copyFile", "fchmod", "fchown", "fdatasync", "fstat", "fsync", "ftruncate", "futimes", "lchmod", "lchown", "link", "lstat", "mkdir", "mkdtemp", "open", "opendir", "readdir", "readFile", "readlink", "realpath", "rename", "rm", "rmdir", "stat", "symlink", "truncate", "unlink", "utimes", "writeFile" ].filter(key => typeof fs[key] === "function");
         Object.assign(exports, fs);
-        api.forEach((method => {
+        api.forEach(method => {
             exports[method] = u(fs[method]);
-        }));
+        });
         exports.exists = function(filename, callback) {
             if (typeof callback === "function") {
                 return fs.exists(filename, callback);
             }
-            return new Promise((resolve => fs.exists(filename, resolve)));
+            return new Promise(resolve => fs.exists(filename, resolve));
         };
         exports.read = function(fd, buffer, offset, length, position, callback) {
             if (typeof callback === "function") {
                 return fs.read(fd, buffer, offset, length, position, callback);
             }
-            return new Promise(((resolve, reject) => {
-                fs.read(fd, buffer, offset, length, position, ((err, bytesRead, buffer) => {
+            return new Promise((resolve, reject) => {
+                fs.read(fd, buffer, offset, length, position, (err, bytesRead, buffer) => {
                     if (err) return reject(err);
                     resolve({
                         bytesRead,
                         buffer
                     });
-                }));
-            }));
+                });
+            });
         };
         exports.write = function(fd, buffer, ...args) {
             if (typeof args[args.length - 1] === "function") {
                 return fs.write(fd, buffer, ...args);
             }
-            return new Promise(((resolve, reject) => {
-                fs.write(fd, buffer, ...args, ((err, bytesWritten, buffer) => {
+            return new Promise((resolve, reject) => {
+                fs.write(fd, buffer, ...args, (err, bytesWritten, buffer) => {
                     if (err) return reject(err);
                     resolve({
                         bytesWritten,
                         buffer
                     });
-                }));
-            }));
+                });
+            });
         };
         if (typeof fs.writev === "function") {
             exports.writev = function(fd, buffers, ...args) {
                 if (typeof args[args.length - 1] === "function") {
                     return fs.writev(fd, buffers, ...args);
                 }
-                return new Promise(((resolve, reject) => {
-                    fs.writev(fd, buffers, ...args, ((err, bytesWritten, buffers) => {
+                return new Promise((resolve, reject) => {
+                    fs.writev(fd, buffers, ...args, (err, bytesWritten, buffers) => {
                         if (err) return reject(err);
                         resolve({
                             bytesWritten,
                             buffers
                         });
-                    }));
-                }));
+                    });
+                });
             };
         }
         if (typeof fs.realpath.native === "function") {
@@ -10709,21 +10708,21 @@ var __webpack_modules__ = {
     6307: (__unused_webpack_module, exports) => {
         "use strict";
         exports.name = new Map([ [ "0", "File" ], [ "", "OldFile" ], [ "1", "Link" ], [ "2", "SymbolicLink" ], [ "3", "CharacterDevice" ], [ "4", "BlockDevice" ], [ "5", "Directory" ], [ "6", "FIFO" ], [ "7", "ContiguousFile" ], [ "g", "GlobalExtendedHeader" ], [ "x", "ExtendedHeader" ], [ "A", "SolarisACL" ], [ "D", "GNUDumpDir" ], [ "I", "Inode" ], [ "K", "NextFileHasLongLinkpath" ], [ "L", "NextFileHasLongPath" ], [ "M", "ContinuationFile" ], [ "N", "OldGnuLongPath" ], [ "S", "SparseFile" ], [ "V", "TapeVolumeHeader" ], [ "X", "OldExtendedHeader" ] ]);
-        exports.code = new Map(Array.from(exports.name).map((kv => [ kv[1], kv[0] ])));
+        exports.code = new Map(Array.from(exports.name).map(kv => [ kv[1], kv[0] ]));
     },
     6318: function(__unused_webpack_module, exports, __webpack_require__) {
         "use strict";
+        var __classPrivateFieldGet = this && this.__classPrivateFieldGet || function(receiver, state, kind, f) {
+            if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a getter");
+            if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
+            return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
+        };
         var __classPrivateFieldSet = this && this.__classPrivateFieldSet || function(receiver, state, value, kind, f) {
             if (kind === "m") throw new TypeError("Private method is not writable");
             if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a setter");
             if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot write private member to an object whose class did not declare it");
             return kind === "a" ? f.call(receiver, value) : f ? f.value = value : state.set(receiver, value), 
             value;
-        };
-        var __classPrivateFieldGet = this && this.__classPrivateFieldGet || function(receiver, state, kind, f) {
-            if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a getter");
-            if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
-            return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
         };
         var _DiskCache_instances, _a, _DiskCache_CACHE, _DiskCache_root, _DiskCache_entries, _Entry_instances, _Entry_lockFile_get, _Entry_markerFile_get, _Entry_touchMarkerFile;
         Object.defineProperty(exports, "__esModule", {
@@ -10738,12 +10737,6 @@ var __webpack_modules__ = {
         const ONE_DAY_IN_MS = 864e5;
         const PRUNE_AFTER_MILLISECONDS = process.env.JSII_RUNTIME_PACKAGE_CACHE_TTL ? parseInt(process.env.JSII_RUNTIME_PACKAGE_CACHE_TTL, 10) * ONE_DAY_IN_MS : 30 * ONE_DAY_IN_MS;
         class DiskCache {
-            constructor(root) {
-                _DiskCache_instances.add(this);
-                _DiskCache_root.set(this, void 0);
-                __classPrivateFieldSet(this, _DiskCache_root, root, "f");
-                process.once("beforeExit", (() => this.pruneExpiredEntries()));
-            }
             static inDirectory(path) {
                 const didCreate = (0, fs_1.mkdirSync)(path, {
                     recursive: true
@@ -10755,20 +10748,26 @@ var __webpack_modules__ = {
                 }
                 path = (0, fs_1.realpathSync)(path);
                 if (!__classPrivateFieldGet(this, _a, "f", _DiskCache_CACHE).has(path)) {
-                    __classPrivateFieldGet(this, _a, "f", _DiskCache_CACHE).set(path, new DiskCache(path));
+                    __classPrivateFieldGet(this, _a, "f", _DiskCache_CACHE).set(path, new _a(path));
                 }
                 return __classPrivateFieldGet(this, _a, "f", _DiskCache_CACHE).get(path);
+            }
+            constructor(root) {
+                _DiskCache_instances.add(this);
+                _DiskCache_root.set(this, void 0);
+                __classPrivateFieldSet(this, _DiskCache_root, root, "f");
+                process.once("beforeExit", () => this.pruneExpiredEntries());
             }
             entry(...key) {
                 if (key.length === 0) {
                     throw new Error(`Cache entry key must contain at least 1 element!`);
                 }
-                return new Entry((0, path_1.join)(__classPrivateFieldGet(this, _DiskCache_root, "f"), ...key.flatMap((s => s.replace(/[^@a-z0-9_.\\/-]+/g, "_").split(/[\\/]+/).map((ss => {
+                return new Entry((0, path_1.join)(__classPrivateFieldGet(this, _DiskCache_root, "f"), ...key.flatMap(s => s.replace(/[^@a-z0-9_.\\/-]+/g, "_").split(/[\\/]+/).map(ss => {
                     if (ss === "..") {
                         throw new Error(`A cache entry key cannot contain a '..' path segment! (${s})`);
                     }
                     return ss;
-                }))))));
+                }))));
             }
             entryFor(path, ...comments) {
                 const rawDigest = (0, digest_file_1.digestFile)(path, ...comments);
@@ -10778,12 +10777,12 @@ var __webpack_modules__ = {
                 const cutOff = new Date(Date.now() - PRUNE_AFTER_MILLISECONDS);
                 for (const entry of __classPrivateFieldGet(this, _DiskCache_instances, "m", _DiskCache_entries).call(this)) {
                     if (entry.atime < cutOff) {
-                        entry.lock((lockedEntry => {
+                        entry.lock(lockedEntry => {
                             if (entry.atime > cutOff) {
                                 return;
                             }
                             lockedEntry.delete();
-                        }));
+                        });
                     }
                 }
                 for (const dir of directoriesUnder(__classPrivateFieldGet(this, _DiskCache_root, "f"), true)) {
@@ -10820,8 +10819,8 @@ var __webpack_modules__ = {
         };
         class Entry {
             constructor(path) {
-                this.path = path;
                 _Entry_instances.add(this);
+                this.path = path;
             }
             get atime() {
                 try {
@@ -10849,7 +10848,7 @@ var __webpack_modules__ = {
                     };
                 }
                 let cache = "miss";
-                this.lock((lock => {
+                this.lock(lock => {
                     if (this.isComplete) {
                         cache = "hit";
                         return;
@@ -10867,7 +10866,7 @@ var __webpack_modules__ = {
                         throw error;
                     }
                     lock.markComplete();
-                }));
+                });
                 return {
                     path: this.path,
                     cache
@@ -11015,17 +11014,17 @@ var __webpack_modules__ = {
         const util_2 = __webpack_require__(8117);
         function checkReportMissingProp(cxt, prop) {
             const {gen, data, it} = cxt;
-            gen.if(noPropertyInData(gen, data, prop, it.opts.ownProperties), (() => {
+            gen.if(noPropertyInData(gen, data, prop, it.opts.ownProperties), () => {
                 cxt.setParams({
                     missingProperty: (0, codegen_1._)`${prop}`
                 }, true);
                 cxt.error();
-            }));
+            });
         }
         exports.checkReportMissingProp = checkReportMissingProp;
         function checkMissingProp({gen, data, it: {opts}}, properties, missing) {
-            return (0, codegen_1.or)(...properties.map((prop => (0, codegen_1.and)(noPropertyInData(gen, data, prop, opts.ownProperties), (0, 
-            codegen_1._)`${missing} = ${prop}`))));
+            return (0, codegen_1.or)(...properties.map(prop => (0, codegen_1.and)(noPropertyInData(gen, data, prop, opts.ownProperties), (0, 
+            codegen_1._)`${missing} = ${prop}`)));
         }
         exports.checkMissingProp = checkMissingProp;
         function reportMissingProp(cxt, missing) {
@@ -11057,11 +11056,11 @@ var __webpack_modules__ = {
         }
         exports.noPropertyInData = noPropertyInData;
         function allSchemaProperties(schemaMap) {
-            return schemaMap ? Object.keys(schemaMap).filter((p => p !== "__proto__")) : [];
+            return schemaMap ? Object.keys(schemaMap).filter(p => p !== "__proto__") : [];
         }
         exports.allSchemaProperties = allSchemaProperties;
         function schemaProperties(it, schemaMap) {
-            return allSchemaProperties(schemaMap).filter((p => !(0, util_1.alwaysValidSchema)(it, schemaMap[p])));
+            return allSchemaProperties(schemaMap).filter(p => !(0, util_1.alwaysValidSchema)(it, schemaMap[p]));
         }
         exports.schemaProperties = schemaProperties;
         function callValidateCode({schemaCode, data, it: {gen, topSchemaRef, schemaPath, errorPath}, it}, func, context, passSchema) {
@@ -11090,33 +11089,33 @@ var __webpack_modules__ = {
             const valid = gen.name("valid");
             if (it.allErrors) {
                 const validArr = gen.let("valid", true);
-                validateItems((() => gen.assign(validArr, false)));
+                validateItems(() => gen.assign(validArr, false));
                 return validArr;
             }
             gen.var(valid, true);
-            validateItems((() => gen.break()));
+            validateItems(() => gen.break());
             return valid;
             function validateItems(notValid) {
                 const len = gen.const("len", (0, codegen_1._)`${data}.length`);
-                gen.forRange("i", 0, len, (i => {
+                gen.forRange("i", 0, len, i => {
                     cxt.subschema({
                         keyword,
                         dataProp: i,
                         dataPropType: util_1.Type.Num
                     }, valid);
                     gen.if((0, codegen_1.not)(valid), notValid);
-                }));
+                });
             }
         }
         exports.validateArray = validateArray;
         function validateUnion(cxt) {
             const {gen, schema, keyword, it} = cxt;
             if (!Array.isArray(schema)) throw new Error("ajv implementation error");
-            const alwaysValid = schema.some((sch => (0, util_1.alwaysValidSchema)(it, sch)));
+            const alwaysValid = schema.some(sch => (0, util_1.alwaysValidSchema)(it, sch));
             if (alwaysValid && !it.opts.unevaluated) return;
             const valid = gen.let("valid", false);
             const schValid = gen.name("_valid");
-            gen.block((() => schema.forEach(((_sch, i) => {
+            gen.block(() => schema.forEach((_sch, i) => {
                 const schCxt = cxt.subschema({
                     keyword,
                     schemaProp: i,
@@ -11125,8 +11124,8 @@ var __webpack_modules__ = {
                 gen.assign(valid, (0, codegen_1._)`${valid} || ${schValid}`);
                 const merged = cxt.mergeValidEvaluated(schCxt, schValid);
                 if (!merged) gen.if((0, codegen_1.not)(valid));
-            }))));
-            cxt.result(valid, (() => cxt.reset()), (() => cxt.error(true)));
+            }));
+            cxt.result(valid, () => cxt.reset(), () => cxt.error(true));
         }
         exports.validateUnion = validateUnion;
     },
@@ -11350,12 +11349,12 @@ var __webpack_modules__ = {
         }
         exports.schemaHasRulesForType = schemaHasRulesForType;
         function shouldUseGroup(schema, group) {
-            return group.rules.some((rule => shouldUseRule(schema, rule)));
+            return group.rules.some(rule => shouldUseRule(schema, rule));
         }
         exports.shouldUseGroup = shouldUseGroup;
         function shouldUseRule(schema, rule) {
             var _a;
-            return schema[rule.keyword] !== undefined || ((_a = rule.definition.implements) === null || _a === void 0 ? void 0 : _a.some((kwd => schema[kwd] !== undefined)));
+            return schema[rule.keyword] !== undefined || ((_a = rule.definition.implements) === null || _a === void 0 ? void 0 : _a.some(kwd => schema[kwd] !== undefined));
         }
         exports.shouldUseRule = shouldUseRule;
     },
@@ -11463,10 +11462,10 @@ var __webpack_modules__ = {
                         }
                         this.zip = new zlib.BrotliCompress(opt.brotli);
                     }
-                    this.zip.on("data", (chunk => super.write(chunk)));
-                    this.zip.on("end", (_ => super.end()));
-                    this.zip.on("drain", (_ => this[ONDRAIN]()));
-                    this.on("resume", (_ => this.zip.resume()));
+                    this.zip.on("data", chunk => super.write(chunk));
+                    this.zip.on("end", _ => super.end());
+                    this.zip.on("drain", _ => this[ONDRAIN]());
+                    this.on("resume", _ => this.zip.resume());
                 } else {
                     this.on("drain", this[ONDRAIN]);
                 }
@@ -11514,7 +11513,7 @@ var __webpack_modules__ = {
                 } else {
                     const job = new PackJob(p.path, absolute, false);
                     job.entry = new WriteEntryTar(p, this[ENTRYOPT](job));
-                    job.entry.on("end", (_ => this[JOBDONE](job)));
+                    job.entry.on("end", _ => this[JOBDONE](job));
                     this[JOBS] += 1;
                     this[QUEUE].push(job);
                 }
@@ -11529,7 +11528,7 @@ var __webpack_modules__ = {
                 job.pending = true;
                 this[JOBS] += 1;
                 const stat = this.follow ? "stat" : "lstat";
-                fs[stat](job.absolute, ((er, stat) => {
+                fs[stat](job.absolute, (er, stat) => {
                     job.pending = false;
                     this[JOBS] -= 1;
                     if (er) {
@@ -11537,7 +11536,7 @@ var __webpack_modules__ = {
                     } else {
                         this[ONSTAT](job, stat);
                     }
-                }));
+                });
             }
             [ONSTAT](job, stat) {
                 this.statCache.set(job.absolute, stat);
@@ -11550,14 +11549,14 @@ var __webpack_modules__ = {
             [READDIR](job) {
                 job.pending = true;
                 this[JOBS] += 1;
-                fs.readdir(job.absolute, ((er, entries) => {
+                fs.readdir(job.absolute, (er, entries) => {
                     job.pending = false;
                     this[JOBS] -= 1;
                     if (er) {
                         return this.emit("error", er);
                     }
                     this[ONREADDIR](job, entries);
-                }));
+                });
             }
             [ONREADDIR](job, entries) {
                 this.readdirCache.set(job.absolute, entries);
@@ -11657,7 +11656,7 @@ var __webpack_modules__ = {
             [ENTRY](job) {
                 this[JOBS] += 1;
                 try {
-                    return new this[WRITEENTRYCLASS](job.path, this[ENTRYOPT](job)).on("end", (() => this[JOBDONE](job))).on("error", (er => this.emit("error", er)));
+                    return new this[WRITEENTRYCLASS](job.path, this[ENTRYOPT](job)).on("end", () => this[JOBDONE](job)).on("error", er => this.emit("error", er));
                 } catch (er) {
                     this.emit("error", er);
                 }
@@ -11670,26 +11669,26 @@ var __webpack_modules__ = {
             [PIPE](job) {
                 job.piped = true;
                 if (job.readdir) {
-                    job.readdir.forEach((entry => {
+                    job.readdir.forEach(entry => {
                         const p = job.path;
                         const base = p === "./" ? "" : p.replace(/\/*$/, "/");
                         this[ADDFSENTRY](base + entry);
-                    }));
+                    });
                 }
                 const source = job.entry;
                 const zip = this.zip;
                 if (zip) {
-                    source.on("data", (chunk => {
+                    source.on("data", chunk => {
                         if (!zip.write(chunk)) {
                             source.pause();
                         }
-                    }));
+                    });
                 } else {
-                    source.on("data", (chunk => {
+                    source.on("data", chunk => {
                         if (!super.write(chunk)) {
                             source.pause();
                         }
-                    }));
+                    });
                 }
             }
             pause() {
@@ -11717,20 +11716,20 @@ var __webpack_modules__ = {
                 const source = job.entry;
                 const zip = this.zip;
                 if (job.readdir) {
-                    job.readdir.forEach((entry => {
+                    job.readdir.forEach(entry => {
                         const p = job.path;
                         const base = p === "./" ? "" : p.replace(/\/*$/, "/");
                         this[ADDFSENTRY](base + entry);
-                    }));
+                    });
                 }
                 if (zip) {
-                    source.on("data", (chunk => {
+                    source.on("data", chunk => {
                         zip.write(chunk);
-                    }));
+                    });
                 } else {
-                    source.on("data", (chunk => {
+                    source.on("data", chunk => {
                         super[WRITE](chunk);
-                    }));
+                    });
                 }
             }
         }
@@ -11763,18 +11762,18 @@ var __webpack_modules__ = {
                     return;
                 }
             }
-            validateFunction(it, (() => (0, boolSchema_1.topBoolOrEmptySchema)(it)));
+            validateFunction(it, () => (0, boolSchema_1.topBoolOrEmptySchema)(it));
         }
         exports.validateFunctionCode = validateFunctionCode;
         function validateFunction({gen, validateName, schema, schemaEnv, opts}, body) {
             if (opts.code.es5) {
-                gen.func(validateName, (0, codegen_1._)`${names_1.default.data}, ${names_1.default.valCxt}`, schemaEnv.$async, (() => {
+                gen.func(validateName, (0, codegen_1._)`${names_1.default.data}, ${names_1.default.valCxt}`, schemaEnv.$async, () => {
                     gen.code((0, codegen_1._)`"use strict"; ${funcSourceUrl(schema, opts)}`);
                     destructureValCxtES5(gen, opts);
                     gen.code(body);
-                }));
+                });
             } else {
-                gen.func(validateName, (0, codegen_1._)`${names_1.default.data}, ${destructureValCxt(opts)}`, schemaEnv.$async, (() => gen.code(funcSourceUrl(schema, opts)).code(body)));
+                gen.func(validateName, (0, codegen_1._)`${names_1.default.data}, ${destructureValCxt(opts)}`, schemaEnv.$async, () => gen.code(funcSourceUrl(schema, opts)).code(body));
             }
         }
         function destructureValCxt(opts) {
@@ -11782,23 +11781,23 @@ var __webpack_modules__ = {
             codegen_1._)`, ${names_1.default.dynamicAnchors}={}` : codegen_1.nil}}={}`;
         }
         function destructureValCxtES5(gen, opts) {
-            gen.if(names_1.default.valCxt, (() => {
+            gen.if(names_1.default.valCxt, () => {
                 gen.var(names_1.default.instancePath, (0, codegen_1._)`${names_1.default.valCxt}.${names_1.default.instancePath}`);
                 gen.var(names_1.default.parentData, (0, codegen_1._)`${names_1.default.valCxt}.${names_1.default.parentData}`);
                 gen.var(names_1.default.parentDataProperty, (0, codegen_1._)`${names_1.default.valCxt}.${names_1.default.parentDataProperty}`);
                 gen.var(names_1.default.rootData, (0, codegen_1._)`${names_1.default.valCxt}.${names_1.default.rootData}`);
                 if (opts.dynamicRef) gen.var(names_1.default.dynamicAnchors, (0, codegen_1._)`${names_1.default.valCxt}.${names_1.default.dynamicAnchors}`);
-            }), (() => {
+            }, () => {
                 gen.var(names_1.default.instancePath, (0, codegen_1._)`""`);
                 gen.var(names_1.default.parentData, (0, codegen_1._)`undefined`);
                 gen.var(names_1.default.parentDataProperty, (0, codegen_1._)`undefined`);
                 gen.var(names_1.default.rootData, names_1.default.data);
                 if (opts.dynamicRef) gen.var(names_1.default.dynamicAnchors, (0, codegen_1._)`{}`);
-            }));
+            });
         }
         function topSchemaObjCode(it) {
             const {schema, opts, gen} = it;
-            validateFunction(it, (() => {
+            validateFunction(it, () => {
                 if (opts.$comment && schema.$comment) commentKeyword(it);
                 checkNoDefault(it);
                 gen.let(names_1.default.vErrors, null);
@@ -11806,16 +11805,16 @@ var __webpack_modules__ = {
                 if (opts.unevaluated) resetEvaluated(it);
                 typeAndKeywords(it);
                 returnResults(it);
-            }));
+            });
             return;
         }
         function resetEvaluated(it) {
             const {gen, validateName} = it;
             it.evaluated = gen.const("evaluated", (0, codegen_1._)`${validateName}.evaluated`);
-            gen.if((0, codegen_1._)`${it.evaluated}.dynamicProps`, (() => gen.assign((0, codegen_1._)`${it.evaluated}.props`, (0, 
-            codegen_1._)`undefined`)));
-            gen.if((0, codegen_1._)`${it.evaluated}.dynamicItems`, (() => gen.assign((0, codegen_1._)`${it.evaluated}.items`, (0, 
-            codegen_1._)`undefined`)));
+            gen.if((0, codegen_1._)`${it.evaluated}.dynamicProps`, () => gen.assign((0, codegen_1._)`${it.evaluated}.props`, (0, 
+            codegen_1._)`undefined`));
+            gen.if((0, codegen_1._)`${it.evaluated}.dynamicItems`, () => gen.assign((0, codegen_1._)`${it.evaluated}.items`, (0, 
+            codegen_1._)`undefined`));
         }
         function funcSourceUrl(schema, opts) {
             const schId = typeof schema == "object" && schema[opts.schemaId];
@@ -11892,8 +11891,8 @@ var __webpack_modules__ = {
         function returnResults(it) {
             const {gen, schemaEnv, validateName, ValidationError, opts} = it;
             if (schemaEnv.$async) {
-                gen.if((0, codegen_1._)`${names_1.default.errors} === 0`, (() => gen.return(names_1.default.data)), (() => gen.throw((0, 
-                codegen_1._)`new ${ValidationError}(${names_1.default.vErrors})`)));
+                gen.if((0, codegen_1._)`${names_1.default.errors} === 0`, () => gen.return(names_1.default.data), () => gen.throw((0, 
+                codegen_1._)`new ${ValidationError}(${names_1.default.vErrors})`));
             } else {
                 gen.assign((0, codegen_1._)`${validateName}.errors`, names_1.default.vErrors);
                 if (opts.unevaluated) assignEvaluated(it);
@@ -11908,14 +11907,14 @@ var __webpack_modules__ = {
             const {gen, schema, data, allErrors, opts, self} = it;
             const {RULES} = self;
             if (schema.$ref && (opts.ignoreKeywordsWithRef || !(0, util_1.schemaHasRulesButRef)(schema, RULES))) {
-                gen.block((() => keywordCode(it, "$ref", RULES.all.$ref.definition)));
+                gen.block(() => keywordCode(it, "$ref", RULES.all.$ref.definition));
                 return;
             }
             if (!opts.jtd) checkStrictTypes(it, types);
-            gen.block((() => {
+            gen.block(() => {
                 for (const group of RULES.rules) groupKeywords(group);
                 groupKeywords(RULES.post);
-            }));
+            });
             function groupKeywords(group) {
                 if (!(0, applicability_1.shouldUseGroup)(schema, group)) return;
                 if (group.type) {
@@ -11935,13 +11934,13 @@ var __webpack_modules__ = {
         function iterateKeywords(it, group) {
             const {gen, schema, opts: {useDefaults}} = it;
             if (useDefaults) (0, defaults_1.assignDefaults)(it, group.type);
-            gen.block((() => {
+            gen.block(() => {
                 for (const rule of group.rules) {
                     if ((0, applicability_1.shouldUseRule)(schema, rule)) {
                         keywordCode(it, rule.keyword, rule.definition, group.type);
                     }
                 }
-            }));
+            });
         }
         function checkStrictTypes(it, types) {
             if (it.schemaEnv.meta || !it.opts.strictTypes) return;
@@ -11955,11 +11954,11 @@ var __webpack_modules__ = {
                 it.dataTypes = types;
                 return;
             }
-            types.forEach((t => {
+            types.forEach(t => {
                 if (!includesType(it.dataTypes, t)) {
                     strictTypesError(it, `type "${t}" not allowed by context "${it.dataTypes.join(",")}"`);
                 }
-            }));
+            });
             narrowSchemaTypes(it, types);
         }
         function checkMultipleTypes(it, ts) {
@@ -11973,7 +11972,7 @@ var __webpack_modules__ = {
                 const rule = rules[keyword];
                 if (typeof rule == "object" && (0, applicability_1.shouldUseRule)(it.schema, rule)) {
                     const {type} = rule.definition;
-                    if (type.length && !type.some((t => hasApplicableType(ts, t)))) {
+                    if (type.length && !type.some(t => hasApplicableType(ts, t))) {
                         strictTypesError(it, `missing type "${type.join(",")}" for keyword "${keyword}"`);
                     }
                 }
@@ -12082,10 +12081,10 @@ var __webpack_modules__ = {
                 if (assign) Object.assign(this.params, obj); else this.params = obj;
             }
             block$data(valid, codeBlock, $dataValid = codegen_1.nil) {
-                this.gen.block((() => {
+                this.gen.block(() => {
                     this.check$data(valid, $dataValid);
                     codeBlock();
-                }));
+                });
             }
             check$data(valid = codegen_1.nil, $dataValid = codegen_1.nil) {
                 if (!this.$data) return;
@@ -12146,7 +12145,7 @@ var __webpack_modules__ = {
             mergeValidEvaluated(schemaCxt, valid) {
                 const {it, gen} = this;
                 if (it.opts.unevaluated && (it.props !== true || it.items !== true)) {
-                    gen.if(valid, (() => this.mergeEvaluated(schemaCxt, codegen_1.Name)));
+                    gen.if(valid, () => this.mergeEvaluated(schemaCxt, codegen_1.Name));
                     return true;
                 }
             }
@@ -12263,29 +12262,29 @@ var __webpack_modules__ = {
         exports.reportExtraError = reportExtraError;
         function resetErrorsCount(gen, errsCount) {
             gen.assign(names_1.default.errors, errsCount);
-            gen.if((0, codegen_1._)`${names_1.default.vErrors} !== null`, (() => gen.if(errsCount, (() => gen.assign((0, 
-            codegen_1._)`${names_1.default.vErrors}.length`, errsCount)), (() => gen.assign(names_1.default.vErrors, null)))));
+            gen.if((0, codegen_1._)`${names_1.default.vErrors} !== null`, () => gen.if(errsCount, () => gen.assign((0, 
+            codegen_1._)`${names_1.default.vErrors}.length`, errsCount), () => gen.assign(names_1.default.vErrors, null)));
         }
         exports.resetErrorsCount = resetErrorsCount;
         function extendErrors({gen, keyword, schemaValue, data, errsCount, it}) {
             if (errsCount === undefined) throw new Error("ajv implementation error");
             const err = gen.name("err");
-            gen.forRange("i", errsCount, names_1.default.errors, (i => {
+            gen.forRange("i", errsCount, names_1.default.errors, i => {
                 gen.const(err, (0, codegen_1._)`${names_1.default.vErrors}[${i}]`);
-                gen.if((0, codegen_1._)`${err}.instancePath === undefined`, (() => gen.assign((0, 
-                codegen_1._)`${err}.instancePath`, (0, codegen_1.strConcat)(names_1.default.instancePath, it.errorPath))));
+                gen.if((0, codegen_1._)`${err}.instancePath === undefined`, () => gen.assign((0, 
+                codegen_1._)`${err}.instancePath`, (0, codegen_1.strConcat)(names_1.default.instancePath, it.errorPath)));
                 gen.assign((0, codegen_1._)`${err}.schemaPath`, (0, codegen_1.str)`${it.errSchemaPath}/${keyword}`);
                 if (it.opts.verbose) {
                     gen.assign((0, codegen_1._)`${err}.schema`, schemaValue);
                     gen.assign((0, codegen_1._)`${err}.data`, data);
                 }
-            }));
+            });
         }
         exports.extendErrors = extendErrors;
         function addError(gen, errObj) {
             const err = gen.const("err", errObj);
-            gen.if((0, codegen_1._)`${names_1.default.vErrors} === null`, (() => gen.assign(names_1.default.vErrors, (0, 
-            codegen_1._)`[${err}]`)), (0, codegen_1._)`${names_1.default.vErrors}.push(${err})`);
+            gen.if((0, codegen_1._)`${names_1.default.vErrors} === null`, () => gen.assign(names_1.default.vErrors, (0, 
+            codegen_1._)`[${err}]`), (0, codegen_1._)`${names_1.default.vErrors}.push(${err})`);
             gen.code((0, codegen_1._)`${names_1.default.errors}++`);
         }
         function returnErrors(it, errs) {
@@ -12383,16 +12382,16 @@ var __webpack_modules__ = {
                 mode: opt.mode || 438
             });
             p.pipe(stream);
-            const promise = new Promise(((res, rej) => {
+            const promise = new Promise((res, rej) => {
                 stream.on("error", rej);
                 stream.on("close", res);
                 p.on("error", rej);
-            }));
+            });
             addFilesAsync(p, files);
             return cb ? promise.then(cb, cb) : promise;
         };
         const addFilesSync = (p, files) => {
-            files.forEach((file => {
+            files.forEach(file => {
                 if (file.charAt(0) === "@") {
                     t({
                         file: path.resolve(p.cwd, file.slice(1)),
@@ -12403,7 +12402,7 @@ var __webpack_modules__ = {
                 } else {
                     p.add(file);
                 }
-            }));
+            });
             p.end();
         };
         const addFilesAsync = (p, files) => {
@@ -12414,7 +12413,7 @@ var __webpack_modules__ = {
                         file: path.resolve(p.cwd, file.slice(1)),
                         noResume: true,
                         onentry: entry => p.add(entry)
-                    }).then((_ => addFilesAsync(p, files)));
+                    }).then(_ => addFilesAsync(p, files));
                 } else {
                     p.add(file);
                 }
@@ -12438,7 +12437,9 @@ var __webpack_modules__ = {
         Object.defineProperty(exports, "__esModule", {
             value: true
         });
-        exports.setPackageCacheEnabled = exports.getPackageCacheEnabled = exports.extract = void 0;
+        exports.extract = extract;
+        exports.getPackageCacheEnabled = getPackageCacheEnabled;
+        exports.setPackageCacheEnabled = setPackageCacheEnabled;
         const fs_1 = __webpack_require__(9896);
         const tar = __webpack_require__(5194);
         const disk_cache_1 = __webpack_require__(4018);
@@ -12456,20 +12457,19 @@ var __webpack_modules__ = {
                 throw err;
             }
         }
-        exports.extract = extract;
         function extractViaCache(file, outDir, options = {}, ...comments) {
             var _a;
             const cacheRoot = (_a = process.env.JSII_RUNTIME_PACKAGE_CACHE_ROOT) !== null && _a !== void 0 ? _a : (0, 
             default_cache_root_1.defaultCacheRoot)();
             const dirCache = disk_cache_1.DiskCache.inDirectory(cacheRoot);
             const entry = dirCache.entryFor(file, ...comments);
-            const {path, cache} = entry.retrieve((path => {
+            const {path, cache} = entry.retrieve(path => {
                 untarInto({
                     ...options,
                     cwd: path,
                     file
                 });
-            }));
+            });
             (0, link_1.link)(path, outDir);
             return {
                 cache
@@ -12503,11 +12503,9 @@ var __webpack_modules__ = {
         function getPackageCacheEnabled() {
             return packageCacheEnabled;
         }
-        exports.getPackageCacheEnabled = getPackageCacheEnabled;
         function setPackageCacheEnabled(value) {
             packageCacheEnabled = value;
         }
-        exports.setPackageCacheEnabled = setPackageCacheEnabled;
     },
     7432: (module, __unused_webpack_exports, __webpack_require__) => {
         "use strict";
@@ -12617,12 +12615,12 @@ var __webpack_modules__ = {
                 return super.emit(ev, ...data);
             }
             [LSTAT]() {
-                fs.lstat(this.absolute, ((er, stat) => {
+                fs.lstat(this.absolute, (er, stat) => {
                     if (er) {
                         return this.emit("error", er);
                     }
                     this[ONLSTAT](stat);
-                }));
+                });
             }
             [ONLSTAT](stat) {
                 this.statCache.set(this.absolute, stat);
@@ -12699,12 +12697,12 @@ var __webpack_modules__ = {
                 this.end();
             }
             [SYMLINK]() {
-                fs.readlink(this.absolute, ((er, linkpath) => {
+                fs.readlink(this.absolute, (er, linkpath) => {
                     if (er) {
                         return this.emit("error", er);
                     }
                     this[ONREADLINK](linkpath);
-                }));
+                });
             }
             [ONREADLINK](linkpath) {
                 this.linkpath = normPath(linkpath);
@@ -12736,12 +12734,12 @@ var __webpack_modules__ = {
                 this[OPENFILE]();
             }
             [OPENFILE]() {
-                fs.open(this.absolute, "r", ((er, fd) => {
+                fs.open(this.absolute, "r", (er, fd) => {
                     if (er) {
                         return this.emit("error", er);
                     }
                     this[ONOPENFILE](fd);
-                }));
+                });
             }
             [ONOPENFILE](fd) {
                 this.fd = fd;
@@ -12760,12 +12758,12 @@ var __webpack_modules__ = {
             }
             [READ]() {
                 const {fd, buf, offset, length, pos} = this;
-                fs.read(fd, buf, offset, length, pos, ((er, bytesRead) => {
+                fs.read(fd, buf, offset, length, pos, (er, bytesRead) => {
                     if (er) {
-                        return this[CLOSE]((() => this.emit("error", er)));
+                        return this[CLOSE](() => this.emit("error", er));
                     }
                     this[ONREAD](bytesRead);
-                }));
+                });
             }
             [CLOSE](cb) {
                 fs.close(this.fd, cb);
@@ -12776,14 +12774,14 @@ var __webpack_modules__ = {
                     er.path = this.absolute;
                     er.syscall = "read";
                     er.code = "EOF";
-                    return this[CLOSE]((() => this.emit("error", er)));
+                    return this[CLOSE](() => this.emit("error", er));
                 }
                 if (bytesRead > this.remain) {
                     const er = new Error("did not encounter expected EOF");
                     er.path = this.absolute;
                     er.syscall = "read";
                     er.code = "EOF";
-                    return this[CLOSE]((() => this.emit("error", er)));
+                    return this[CLOSE](() => this.emit("error", er));
                 }
                 if (bytesRead === this.remain) {
                     for (let i = bytesRead; i < this.length && bytesRead < this.blockRemain; i++) {
@@ -12795,7 +12793,7 @@ var __webpack_modules__ = {
                 const writeBuf = this.offset === 0 && bytesRead === this.buf.length ? this.buf : this.buf.slice(this.offset, this.offset + bytesRead);
                 const flushed = this.write(writeBuf);
                 if (!flushed) {
-                    this[AWAITDRAIN]((() => this[ONDRAIN]()));
+                    this[AWAITDRAIN](() => this[ONDRAIN]());
                 } else {
                     this[ONDRAIN]();
                 }
@@ -12820,7 +12818,7 @@ var __webpack_modules__ = {
                     if (this.blockRemain) {
                         super.write(Buffer.alloc(this.blockRemain));
                     }
-                    return this[CLOSE]((er => er ? this.emit("error", er) : this.end()));
+                    return this[CLOSE](er => er ? this.emit("error", er) : this.end());
                 }
                 if (this.offset >= this.length) {
                     this.buf = Buffer.allocUnsafe(Math.min(this.blockRemain, this.buf.length));
@@ -12850,7 +12848,7 @@ var __webpack_modules__ = {
                 } finally {
                     if (threw) {
                         try {
-                            this[CLOSE]((() => {}));
+                            this[CLOSE](() => {});
                         } catch (er) {}
                     }
                 }
@@ -12986,7 +12984,7 @@ var __webpack_modules__ = {
                 const {gen, schema, data, it} = cxt;
                 if ((0, util_1.alwaysValidSchema)(it, schema)) return;
                 const valid = gen.name("valid");
-                gen.forIn("key", data, (key => {
+                gen.forIn("key", data, key => {
                     cxt.setParams({
                         propertyName: key
                     });
@@ -12997,11 +12995,11 @@ var __webpack_modules__ = {
                         propertyName: key,
                         compositeRule: true
                     }, valid);
-                    gen.if((0, codegen_1.not)(valid), (() => {
+                    gen.if((0, codegen_1.not)(valid), () => {
                         cxt.error(true);
                         if (!it.allErrors) gen.break();
-                    }));
-                }));
+                    });
+                });
                 cxt.ok(valid);
             }
         };
@@ -13223,7 +13221,7 @@ var __webpack_modules__ = {
             }
         }
         Pax.parse = (string, ex, g) => new Pax(merge(parseKV(string), ex), g);
-        const merge = (a, b) => b ? Object.keys(a).reduce(((s, k) => (s[k] = a[k], s)), b) : a;
+        const merge = (a, b) => b ? Object.keys(a).reduce((s, k) => (s[k] = a[k], s), b) : a;
         const parseKV = string => string.replace(/\n$/, "").split("\n").reduce(parseKVLine, Object.create(null));
         const parseKVLine = (set, line) => {
             const n = parseInt(line, 10);
@@ -13291,19 +13289,19 @@ var __webpack_modules__ = {
                 super(opt);
                 this.file = opt.file || "";
                 this[SAW_VALID_ENTRY] = null;
-                this.on(DONE, (_ => {
+                this.on(DONE, _ => {
                     if (this[STATE] === "begin" || this[SAW_VALID_ENTRY] === false) {
                         this.warn("TAR_BAD_ARCHIVE", "Unrecognized archive format");
                     }
-                }));
+                });
                 if (opt.ondone) {
                     this.on(DONE, opt.ondone);
                 } else {
-                    this.on(DONE, (_ => {
+                    this.on(DONE, _ => {
                         this.emit("prefinish");
                         this.emit("finish");
                         this.emit("end");
-                    }));
+                    });
                 }
                 this.strict = !!opt.strict;
                 this.maxMetaEntrySize = opt.maxMetaEntrySize || maxMetaEntrySize;
@@ -13325,7 +13323,7 @@ var __webpack_modules__ = {
                 this[ABORTED] = false;
                 this[SAW_NULL_BLOCK] = false;
                 this[SAW_EOF] = false;
-                this.on("end", (() => this[CLOSESTREAM]()));
+                this.on("end", () => this[CLOSESTREAM]());
                 if (typeof opt.onwarn === "function") {
                     this.on("warn", opt.onwarn);
                 }
@@ -13396,7 +13394,7 @@ var __webpack_modules__ = {
                                     entry.resume();
                                 } else if (entry.size > 0) {
                                     this[META] = "";
-                                    entry.on("data", (c => this[META] += c));
+                                    entry.on("data", c => this[META] += c);
                                     this[STATE] = "meta";
                                 }
                             } else {
@@ -13426,7 +13424,7 @@ var __webpack_modules__ = {
                 }
             }
             [CLOSESTREAM]() {
-                nextTick((() => this.emit("close")));
+                nextTick(() => this.emit("close"));
             }
             [PROCESSENTRY](entry) {
                 let go = true;
@@ -13439,7 +13437,7 @@ var __webpack_modules__ = {
                     this[READENTRY] = entry;
                     this.emit("entry", entry);
                     if (!entry.emittedEnd) {
-                        entry.on("end", (_ => this[NEXTENTRY]()));
+                        entry.on("end", _ => this[NEXTENTRY]());
                         go = false;
                     }
                 }
@@ -13455,7 +13453,7 @@ var __webpack_modules__ = {
                             this.emit("drain");
                         }
                     } else {
-                        re.once("drain", (_ => this.emit("drain")));
+                        re.once("drain", _ => this.emit("drain"));
                     }
                 }
             }
@@ -13561,12 +13559,12 @@ var __webpack_modules__ = {
                         const ended = this[ENDED];
                         this[ENDED] = false;
                         this[UNZIP] = this[UNZIP] === null ? new zlib.Unzip : new zlib.BrotliDecompress;
-                        this[UNZIP].on("data", (chunk => this[CONSUMECHUNK](chunk)));
-                        this[UNZIP].on("error", (er => this.abort(er)));
-                        this[UNZIP].on("end", (_ => {
+                        this[UNZIP].on("data", chunk => this[CONSUMECHUNK](chunk));
+                        this[UNZIP].on("error", er => this.abort(er));
+                        this[UNZIP].on("end", _ => {
                             this[ENDED] = true;
                             this[CONSUMECHUNK]();
-                        }));
+                        });
                         this[WRITING] = true;
                         const ret = this[UNZIP][ended ? "end" : "write"](chunk);
                         this[WRITING] = false;
@@ -13582,7 +13580,7 @@ var __webpack_modules__ = {
                 this[WRITING] = false;
                 const ret = this[QUEUE].length ? false : this[READENTRY] ? this[READENTRY].flowing : true;
                 if (!ret && !this[QUEUE].length) {
-                    this[READENTRY].once("drain", (_ => this.emit("drain")));
+                    this[READENTRY].once("drain", _ => this.emit("drain"));
                 }
                 return ret;
             }
@@ -13743,12 +13741,12 @@ var __webpack_modules__ = {
                 return fs.unlink(path, cb);
             }
             const name = path + ".DELETE." + crypto.randomBytes(16).toString("hex");
-            fs.rename(path, name, (er => {
+            fs.rename(path, name, er => {
                 if (er) {
                     return cb(er);
                 }
                 fs.unlink(name, cb);
-            }));
+            });
         };
         const unlinkFileSync = path => {
             if (!isWindows) {
@@ -13828,7 +13826,7 @@ var __webpack_modules__ = {
                 this.umask = typeof opt.umask === "number" ? opt.umask : this.processUmask;
                 this.dmode = opt.dmode || 511 & ~this.umask;
                 this.fmode = opt.fmode || 438 & ~this.umask;
-                this.on("entry", (entry => this[ONENTRY](entry)));
+                this.on("entry", entry => this[ONENTRY](entry));
             }
             warn(code, msg, data = {}) {
                 if (code === "TAR_BAD_ARCHIVE" || code === "TAR_ABORT") {
@@ -13980,65 +13978,65 @@ var __webpack_modules__ = {
                     mode,
                     autoClose: false
                 });
-                stream.on("error", (er => {
+                stream.on("error", er => {
                     if (stream.fd) {
-                        fs.close(stream.fd, (() => {}));
+                        fs.close(stream.fd, () => {});
                     }
                     stream.write = () => true;
                     this[ONERROR](er, entry);
                     fullyDone();
-                }));
+                });
                 let actions = 1;
                 const done = er => {
                     if (er) {
                         if (stream.fd) {
-                            fs.close(stream.fd, (() => {}));
+                            fs.close(stream.fd, () => {});
                         }
                         this[ONERROR](er, entry);
                         fullyDone();
                         return;
                     }
                     if (--actions === 0) {
-                        fs.close(stream.fd, (er => {
+                        fs.close(stream.fd, er => {
                             if (er) {
                                 this[ONERROR](er, entry);
                             } else {
                                 this[UNPEND]();
                             }
                             fullyDone();
-                        }));
+                        });
                     }
                 };
-                stream.on("finish", (_ => {
+                stream.on("finish", _ => {
                     const abs = entry.absolute;
                     const fd = stream.fd;
                     if (entry.mtime && !this.noMtime) {
                         actions++;
                         const atime = entry.atime || new Date;
                         const mtime = entry.mtime;
-                        fs.futimes(fd, atime, mtime, (er => er ? fs.utimes(abs, atime, mtime, (er2 => done(er2 && er))) : done()));
+                        fs.futimes(fd, atime, mtime, er => er ? fs.utimes(abs, atime, mtime, er2 => done(er2 && er)) : done());
                     }
                     if (this[DOCHOWN](entry)) {
                         actions++;
                         const uid = this[UID](entry);
                         const gid = this[GID](entry);
-                        fs.fchown(fd, uid, gid, (er => er ? fs.chown(abs, uid, gid, (er2 => done(er2 && er))) : done()));
+                        fs.fchown(fd, uid, gid, er => er ? fs.chown(abs, uid, gid, er2 => done(er2 && er)) : done());
                     }
                     done();
-                }));
+                });
                 const tx = this.transform ? this.transform(entry) || entry : entry;
                 if (tx !== entry) {
-                    tx.on("error", (er => {
+                    tx.on("error", er => {
                         this[ONERROR](er, entry);
                         fullyDone();
-                    }));
+                    });
                     entry.pipe(tx);
                 }
                 tx.pipe(stream);
             }
             [DIRECTORY](entry, fullyDone) {
                 const mode = entry.mode & 4095 || this.dmode;
-                this[MKDIR](entry.absolute, mode, (er => {
+                this[MKDIR](entry.absolute, mode, er => {
                     if (er) {
                         this[ONERROR](er, entry);
                         fullyDone();
@@ -14061,7 +14059,7 @@ var __webpack_modules__ = {
                         fs.chown(entry.absolute, this[UID](entry), this[GID](entry), done);
                     }
                     done();
-                }));
+                });
             }
             [UNSUPPORTED](entry) {
                 entry.unsupported = true;
@@ -14097,7 +14095,7 @@ var __webpack_modules__ = {
                 if (entry.linkpath) {
                     paths.push(entry.linkpath);
                 }
-                this.reservations.reserve(paths, (done => this[CHECKFS2](entry, done)));
+                this.reservations.reserve(paths, done => this[CHECKFS2](entry, done));
             }
             [PRUNECACHE](entry) {
                 if (entry.type === "SymbolicLink") {
@@ -14113,7 +14111,7 @@ var __webpack_modules__ = {
                     fullyDone(er);
                 };
                 const checkCwd = () => {
-                    this[MKDIR](this.cwd, this.dmode, (er => {
+                    this[MKDIR](this.cwd, this.dmode, er => {
                         if (er) {
                             this[ONERROR](er, entry);
                             done();
@@ -14121,26 +14119,26 @@ var __webpack_modules__ = {
                         }
                         this[CHECKED_CWD] = true;
                         start();
-                    }));
+                    });
                 };
                 const start = () => {
                     if (entry.absolute !== this.cwd) {
                         const parent = normPath(path.dirname(entry.absolute));
                         if (parent !== this.cwd) {
-                            return this[MKDIR](parent, this.dmode, (er => {
+                            return this[MKDIR](parent, this.dmode, er => {
                                 if (er) {
                                     this[ONERROR](er, entry);
                                     done();
                                     return;
                                 }
                                 afterMakeParent();
-                            }));
+                            });
                         }
                     }
                     afterMakeParent();
                 };
                 const afterMakeParent = () => {
-                    fs.lstat(entry.absolute, ((lstatEr, st) => {
+                    fs.lstat(entry.absolute, (lstatEr, st) => {
                         if (st && (this.keep || this.newer && st.mtime > entry.mtime)) {
                             this[SKIP](entry);
                             done();
@@ -14159,14 +14157,14 @@ var __webpack_modules__ = {
                                 return fs.chmod(entry.absolute, entry.mode, afterChmod);
                             }
                             if (entry.absolute !== this.cwd) {
-                                return fs.rmdir(entry.absolute, (er => this[MAKEFS](er, entry, done)));
+                                return fs.rmdir(entry.absolute, er => this[MAKEFS](er, entry, done));
                             }
                         }
                         if (entry.absolute === this.cwd) {
                             return this[MAKEFS](null, entry, done);
                         }
-                        unlinkFile(entry.absolute, (er => this[MAKEFS](er, entry, done)));
-                    }));
+                        unlinkFile(entry.absolute, er => this[MAKEFS](er, entry, done));
+                    });
                 };
                 if (this[CHECKED_CWD]) {
                     start();
@@ -14198,7 +14196,7 @@ var __webpack_modules__ = {
                 }
             }
             [LINK](entry, linkpath, link, done) {
-                fs[link](linkpath, entry.absolute, (er => {
+                fs[link](linkpath, entry.absolute, er => {
                     if (er) {
                         this[ONERROR](er, entry);
                     } else {
@@ -14206,7 +14204,7 @@ var __webpack_modules__ = {
                         entry.resume();
                     }
                     done();
-                }));
+                });
             }
         }
         const callSync = fn => {
@@ -14218,7 +14216,7 @@ var __webpack_modules__ = {
         };
         class UnpackSync extends Unpack {
             [MAKEFS](er, entry) {
-                return super[MAKEFS](er, entry, (() => {}));
+                return super[MAKEFS](er, entry, () => {});
             }
             [CHECKFS](entry) {
                 this[PRUNECACHE](entry);
@@ -14238,7 +14236,7 @@ var __webpack_modules__ = {
                         }
                     }
                 }
-                const [lstatEr, st] = callSync((() => fs.lstatSync(entry.absolute)));
+                const [lstatEr, st] = callSync(() => fs.lstatSync(entry.absolute));
                 if (st && (this.keep || this.newer && st.mtime > entry.mtime)) {
                     return this[SKIP](entry);
                 }
@@ -14248,15 +14246,15 @@ var __webpack_modules__ = {
                 if (st.isDirectory()) {
                     if (entry.type === "Directory") {
                         const needChmod = !this.noChmod && entry.mode && (st.mode & 4095) !== entry.mode;
-                        const [er] = needChmod ? callSync((() => {
+                        const [er] = needChmod ? callSync(() => {
                             fs.chmodSync(entry.absolute, entry.mode);
-                        })) : [];
+                        }) : [];
                         return this[MAKEFS](er, entry);
                     }
-                    const [er] = callSync((() => fs.rmdirSync(entry.absolute)));
+                    const [er] = callSync(() => fs.rmdirSync(entry.absolute));
                     this[MAKEFS](er, entry);
                 }
-                const [er] = entry.absolute === this.cwd ? [] : callSync((() => unlinkFileSync(entry.absolute)));
+                const [er] = entry.absolute === this.cwd ? [] : callSync(() => unlinkFileSync(entry.absolute));
                 this[MAKEFS](er, entry);
             }
             [FILE](entry, done) {
@@ -14281,17 +14279,17 @@ var __webpack_modules__ = {
                 }
                 const tx = this.transform ? this.transform(entry) || entry : entry;
                 if (tx !== entry) {
-                    tx.on("error", (er => this[ONERROR](er, entry)));
+                    tx.on("error", er => this[ONERROR](er, entry));
                     entry.pipe(tx);
                 }
-                tx.on("data", (chunk => {
+                tx.on("data", chunk => {
                     try {
                         fs.writeSync(fd, chunk, 0, chunk.length);
                     } catch (er) {
                         oner(er);
                     }
-                }));
-                tx.on("end", (_ => {
+                });
+                tx.on("end", _ => {
                     let er = null;
                     if (entry.mtime && !this.noMtime) {
                         const atime = entry.atime || new Date;
@@ -14320,7 +14318,7 @@ var __webpack_modules__ = {
                         }
                     }
                     oner(er);
-                }));
+                });
             }
             [DIRECTORY](entry, done) {
                 const mode = entry.mode & 4095 || this.dmode;
@@ -14397,7 +14395,7 @@ var __webpack_modules__ = {
                     createErrors: false,
                     allErrors: false
                 }, valid);
-                cxt.failResult(valid, (() => cxt.reset()), (() => cxt.error()));
+                cxt.failResult(valid, () => cxt.reset(), () => cxt.error());
             },
             error: {
                 message: "must NOT be valid"
@@ -14444,18 +14442,18 @@ var __webpack_modules__ = {
                 cxt.pass((0, codegen_1._)`${len} <= ${items.length}`);
             } else if (typeof schema == "object" && !(0, util_1.alwaysValidSchema)(it, schema)) {
                 const valid = gen.var("valid", (0, codegen_1._)`${len} <= ${items.length}`);
-                gen.if((0, codegen_1.not)(valid), (() => validateItems(valid)));
+                gen.if((0, codegen_1.not)(valid), () => validateItems(valid));
                 cxt.ok(valid);
             }
             function validateItems(valid) {
-                gen.forRange("i", items.length, len, (i => {
+                gen.forRange("i", items.length, len, i => {
                     cxt.subschema({
                         keyword,
                         dataProp: i,
                         dataPropType: util_1.Type.Num
                     }, valid);
-                    if (!it.allErrors) gen.if((0, codegen_1.not)(valid), (() => gen.break()));
-                }));
+                    if (!it.allErrors) gen.if((0, codegen_1.not)(valid), () => gen.break());
+                });
             }
         }
         exports.validateAdditionalItems = validateAdditionalItems;
@@ -14672,16 +14670,16 @@ var __webpack_modules__ = {
                 return vs.get(keyOrRef);
             }
             scopeRefs(scopeName, values = this._values) {
-                return this._reduceValues(values, (name => {
+                return this._reduceValues(values, name => {
                     if (name.scopePath === undefined) throw new Error(`CodeGen: name "${name}" has no value`);
                     return (0, code_1._)`${scopeName}${name.scopePath}`;
-                }));
+                });
             }
             scopeCode(values = this._values, usedValues, getCode) {
-                return this._reduceValues(values, (name => {
+                return this._reduceValues(values, name => {
                     if (name.value === undefined) throw new Error(`CodeGen: name "${name}" has no value`);
                     return name.value.code;
-                }), usedValues, getCode);
+                }, usedValues, getCode);
             }
             _reduceValues(values, valueCode, usedValues = {}, getCode) {
                 let code = code_1.nil;
@@ -14689,7 +14687,7 @@ var __webpack_modules__ = {
                     const vs = values[prefix];
                     if (!vs) continue;
                     const nameSet = usedValues[prefix] = usedValues[prefix] || new Map;
-                    vs.forEach((name => {
+                    vs.forEach(name => {
                         if (nameSet.has(name)) return;
                         nameSet.set(name, UsedValueState.Started);
                         let c = valueCode(name);
@@ -14702,7 +14700,7 @@ var __webpack_modules__ = {
                             throw new ValueError(name);
                         }
                         nameSet.set(name, UsedValueState.Completed);
-                    }));
+                    });
                 }
                 return code;
             }
@@ -14794,18 +14792,18 @@ var __webpack_modules__ = {
         }
         exports.mergeEvaluated = {
             props: makeMergeEvaluated({
-                mergeNames: (gen, from, to) => gen.if((0, codegen_1._)`${to} !== true && ${from} !== undefined`, (() => {
-                    gen.if((0, codegen_1._)`${from} === true`, (() => gen.assign(to, true)), (() => gen.assign(to, (0, 
-                    codegen_1._)`${to} || {}`).code((0, codegen_1._)`Object.assign(${to}, ${from})`)));
-                })),
-                mergeToName: (gen, from, to) => gen.if((0, codegen_1._)`${to} !== true`, (() => {
+                mergeNames: (gen, from, to) => gen.if((0, codegen_1._)`${to} !== true && ${from} !== undefined`, () => {
+                    gen.if((0, codegen_1._)`${from} === true`, () => gen.assign(to, true), () => gen.assign(to, (0, 
+                    codegen_1._)`${to} || {}`).code((0, codegen_1._)`Object.assign(${to}, ${from})`));
+                }),
+                mergeToName: (gen, from, to) => gen.if((0, codegen_1._)`${to} !== true`, () => {
                     if (from === true) {
                         gen.assign(to, true);
                     } else {
                         gen.assign(to, (0, codegen_1._)`${to} || {}`);
                         setEvaluated(gen, to, from);
                     }
-                })),
+                }),
                 mergeValues: (from, to) => from === true ? true : {
                     ...from,
                     ...to
@@ -14813,10 +14811,10 @@ var __webpack_modules__ = {
                 resultToName: evaluatedPropsToName
             }),
             items: makeMergeEvaluated({
-                mergeNames: (gen, from, to) => gen.if((0, codegen_1._)`${to} !== true && ${from} !== undefined`, (() => gen.assign(to, (0, 
-                codegen_1._)`${from} === true ? true : ${to} > ${from} ? ${to} : ${from}`))),
-                mergeToName: (gen, from, to) => gen.if((0, codegen_1._)`${to} !== true`, (() => gen.assign(to, from === true ? true : (0, 
-                codegen_1._)`${to} > ${from} ? ${to} : ${from}`))),
+                mergeNames: (gen, from, to) => gen.if((0, codegen_1._)`${to} !== true && ${from} !== undefined`, () => gen.assign(to, (0, 
+                codegen_1._)`${from} === true ? true : ${to} > ${from} ? ${to} : ${from}`)),
+                mergeToName: (gen, from, to) => gen.if((0, codegen_1._)`${to} !== true`, () => gen.assign(to, from === true ? true : (0, 
+                codegen_1._)`${to} > ${from} ? ${to} : ${from}`)),
                 mergeValues: (from, to) => from === true ? true : Math.max(from, to),
                 resultToName: (gen, items) => gen.var("items", items)
             })
@@ -14829,7 +14827,7 @@ var __webpack_modules__ = {
         }
         exports.evaluatedPropsToName = evaluatedPropsToName;
         function setEvaluated(gen, props, ps) {
-            Object.keys(ps).forEach((p => gen.assign((0, codegen_1._)`${props}${(0, codegen_1.getProperty)(p)}`, true)));
+            Object.keys(ps).forEach(p => gen.assign((0, codegen_1._)`${props}${(0, codegen_1.getProperty)(p)}`, true));
         }
         exports.setEvaluated = setEvaluated;
         const snippets = {};
@@ -14868,7 +14866,7 @@ var __webpack_modules__ = {
         Object.defineProperty(exports, "__esModule", {
             value: true
         });
-        exports.link = void 0;
+        exports.link = link;
         const fs_1 = __webpack_require__(9896);
         const os = __webpack_require__(857);
         const path_1 = __webpack_require__(6928);
@@ -14907,7 +14905,6 @@ var __webpack_modules__ = {
                 }
             }
         }
-        exports.link = link;
     },
     8197: (__unused_webpack_module, exports, __webpack_require__) => {
         "use strict";
@@ -14962,8 +14959,8 @@ var __webpack_modules__ = {
                     this.close();
                     this.emit("error", err);
                 };
-                this[_handle].on("error", (er => this[_onError](new ZlibError(er))));
-                this.once("end", (() => this.close));
+                this[_handle].on("error", er => this[_onError](new ZlibError(er)));
+                this.once("end", () => this.close);
             }
             close() {
                 if (this[_handle]) {
@@ -15021,7 +15018,7 @@ var __webpack_modules__ = {
                         this[_handle].removeAllListeners("error");
                     }
                 }
-                if (this[_handle]) this[_handle].on("error", (er => this[_onError](new ZlibError(er))));
+                if (this[_handle]) this[_handle].on("error", er => this[_onError](new ZlibError(er)));
                 let writeReturn;
                 if (result) {
                     if (Array.isArray(result) && result.length > 0) {
@@ -15156,7 +15153,7 @@ var __webpack_modules__ = {
     },
     8330: module => {
         "use strict";
-        module.exports = JSON.parse('{"name":"@jsii/runtime","version":"1.112.0","description":"jsii runtime kernel process","license":"Apache-2.0","author":{"name":"Amazon Web Services","url":"https://aws.amazon.com"},"homepage":"https://github.com/aws/jsii","bugs":{"url":"https://github.com/aws/jsii/issues"},"repository":{"type":"git","url":"https://github.com/aws/jsii.git","directory":"packages/@jsii/runtime"},"engines":{"node":">= 14.17.0"},"main":"lib/index.js","types":"lib/index.d.ts","bin":{"jsii-runtime":"bin/jsii-runtime"},"scripts":{"build":"tsc --build && chmod +x bin/jsii-runtime && npx webpack-cli && npm run lint","watch":"tsc --build -w","lint":"ESLINT_USE_FLAT_CONFIG=false eslint . --ext .js,.ts --ignore-path=.gitignore --ignore-pattern=webpack.config.js","lint:fix":"yarn lint --fix","test":"jest","test:update":"jest -u","package":"package-js"},"dependencies":{"@jsii/kernel":"^1.112.0","@jsii/check-node":"1.112.0","@jsii/spec":"^1.112.0"},"devDependencies":{"@scope/jsii-calc-base":"^1.112.0","@scope/jsii-calc-lib":"^1.112.0","jsii-build-tools":"^1.112.0","jsii-calc":"^3.20.120","source-map-loader":"^5.0.0","webpack":"^5.99.7","webpack-cli":"^6.0.1"}}');
+        module.exports = JSON.parse('{"name":"@jsii/runtime","version":"1.113.0","description":"jsii runtime kernel process","license":"Apache-2.0","author":{"name":"Amazon Web Services","url":"https://aws.amazon.com"},"homepage":"https://github.com/aws/jsii","bugs":{"url":"https://github.com/aws/jsii/issues"},"repository":{"type":"git","url":"https://github.com/aws/jsii.git","directory":"packages/@jsii/runtime"},"engines":{"node":">= 14.17.0"},"main":"lib/index.js","types":"lib/index.d.ts","bin":{"jsii-runtime":"bin/jsii-runtime"},"scripts":{"build":"tsc --build && chmod +x bin/jsii-runtime && npx webpack-cli && yarn lint","watch":"tsc --build -w","lint":"ESLINT_USE_FLAT_CONFIG=false eslint . --ext .js,.ts --ignore-path=.gitignore --ignore-pattern=webpack.config.js","lint:fix":"yarn lint --fix","test":"jest","test:update":"jest -u","package":"package-js"},"dependencies":{"@jsii/kernel":"^1.113.0","@jsii/check-node":"1.113.0","@jsii/spec":"^1.113.0"},"devDependencies":{"@scope/jsii-calc-base":"^1.113.0","@scope/jsii-calc-lib":"^1.113.0","jsii-build-tools":"^1.113.0","jsii-calc":"^3.20.120","source-map-loader":"^5.0.0","webpack":"^5.100.2","webpack-cli":"^6.0.1"}}');
     },
     8463: (module, __unused_webpack_exports, __webpack_require__) => {
         "use strict";
@@ -15206,32 +15203,32 @@ var __webpack_modules__ = {
             if (opts.preserveTimestamps && process.arch === "ia32") {
                 process.emitWarning("Using the preserveTimestamps option in 32-bit node is not recommended;\n\n" + "\tsee https://github.com/jprichardson/node-fs-extra/issues/269", "Warning", "fs-extra-WARN0001");
             }
-            stat.checkPaths(src, dest, "copy", opts, ((err, stats) => {
+            stat.checkPaths(src, dest, "copy", opts, (err, stats) => {
                 if (err) return cb(err);
                 const {srcStat, destStat} = stats;
-                stat.checkParentPaths(src, srcStat, dest, "copy", (err => {
+                stat.checkParentPaths(src, srcStat, dest, "copy", err => {
                     if (err) return cb(err);
                     if (opts.filter) return handleFilter(checkParentDir, destStat, src, dest, opts, cb);
                     return checkParentDir(destStat, src, dest, opts, cb);
-                }));
-            }));
+                });
+            });
         }
         function checkParentDir(destStat, src, dest, opts, cb) {
             const destParent = path.dirname(dest);
-            pathExists(destParent, ((err, dirExists) => {
+            pathExists(destParent, (err, dirExists) => {
                 if (err) return cb(err);
                 if (dirExists) return getStats(destStat, src, dest, opts, cb);
-                mkdirs(destParent, (err => {
+                mkdirs(destParent, err => {
                     if (err) return cb(err);
                     return getStats(destStat, src, dest, opts, cb);
-                }));
-            }));
+                });
+            });
         }
         function handleFilter(onInclude, destStat, src, dest, opts, cb) {
-            Promise.resolve(opts.filter(src, dest)).then((include => {
+            Promise.resolve(opts.filter(src, dest)).then(include => {
                 if (include) return onInclude(destStat, src, dest, opts, cb);
                 return cb();
-            }), (error => cb(error)));
+            }, error => cb(error));
         }
         function startCopy(destStat, src, dest, opts, cb) {
             if (opts.filter) return handleFilter(getStats, destStat, src, dest, opts, cb);
@@ -15239,11 +15236,11 @@ var __webpack_modules__ = {
         }
         function getStats(destStat, src, dest, opts, cb) {
             const stat = opts.dereference ? fs.stat : fs.lstat;
-            stat(src, ((err, srcStat) => {
+            stat(src, (err, srcStat) => {
                 if (err) return cb(err);
                 if (srcStat.isDirectory()) return onDir(srcStat, destStat, src, dest, opts, cb); else if (srcStat.isFile() || srcStat.isCharacterDevice() || srcStat.isBlockDevice()) return onFile(srcStat, destStat, src, dest, opts, cb); else if (srcStat.isSymbolicLink()) return onLink(destStat, src, dest, opts, cb); else if (srcStat.isSocket()) return cb(new Error(`Cannot copy a socket file: ${src}`)); else if (srcStat.isFIFO()) return cb(new Error(`Cannot copy a FIFO pipe: ${src}`));
                 return cb(new Error(`Unknown file: ${src}`));
-            }));
+            });
         }
         function onFile(srcStat, destStat, src, dest, opts, cb) {
             if (!destStat) return copyFile(srcStat, src, dest, opts, cb);
@@ -15251,27 +15248,27 @@ var __webpack_modules__ = {
         }
         function mayCopyFile(srcStat, src, dest, opts, cb) {
             if (opts.overwrite) {
-                fs.unlink(dest, (err => {
+                fs.unlink(dest, err => {
                     if (err) return cb(err);
                     return copyFile(srcStat, src, dest, opts, cb);
-                }));
+                });
             } else if (opts.errorOnExist) {
                 return cb(new Error(`'${dest}' already exists`));
             } else return cb();
         }
         function copyFile(srcStat, src, dest, opts, cb) {
-            fs.copyFile(src, dest, (err => {
+            fs.copyFile(src, dest, err => {
                 if (err) return cb(err);
                 if (opts.preserveTimestamps) return handleTimestampsAndMode(srcStat.mode, src, dest, cb);
                 return setDestMode(dest, srcStat.mode, cb);
-            }));
+            });
         }
         function handleTimestampsAndMode(srcMode, src, dest, cb) {
             if (fileIsNotWritable(srcMode)) {
-                return makeFileWritable(dest, srcMode, (err => {
+                return makeFileWritable(dest, srcMode, err => {
                     if (err) return cb(err);
                     return setDestTimestampsAndMode(srcMode, src, dest, cb);
-                }));
+                });
             }
             return setDestTimestampsAndMode(srcMode, src, dest, cb);
         }
@@ -15282,38 +15279,38 @@ var __webpack_modules__ = {
             return setDestMode(dest, srcMode | 128, cb);
         }
         function setDestTimestampsAndMode(srcMode, src, dest, cb) {
-            setDestTimestamps(src, dest, (err => {
+            setDestTimestamps(src, dest, err => {
                 if (err) return cb(err);
                 return setDestMode(dest, srcMode, cb);
-            }));
+            });
         }
         function setDestMode(dest, srcMode, cb) {
             return fs.chmod(dest, srcMode, cb);
         }
         function setDestTimestamps(src, dest, cb) {
-            fs.stat(src, ((err, updatedSrcStat) => {
+            fs.stat(src, (err, updatedSrcStat) => {
                 if (err) return cb(err);
                 return utimesMillis(dest, updatedSrcStat.atime, updatedSrcStat.mtime, cb);
-            }));
+            });
         }
         function onDir(srcStat, destStat, src, dest, opts, cb) {
             if (!destStat) return mkDirAndCopy(srcStat.mode, src, dest, opts, cb);
             return copyDir(src, dest, opts, cb);
         }
         function mkDirAndCopy(srcMode, src, dest, opts, cb) {
-            fs.mkdir(dest, (err => {
+            fs.mkdir(dest, err => {
                 if (err) return cb(err);
-                copyDir(src, dest, opts, (err => {
+                copyDir(src, dest, opts, err => {
                     if (err) return cb(err);
                     return setDestMode(dest, srcMode, cb);
-                }));
-            }));
+                });
+            });
         }
         function copyDir(src, dest, opts, cb) {
-            fs.readdir(src, ((err, items) => {
+            fs.readdir(src, (err, items) => {
                 if (err) return cb(err);
                 return copyDirItems(items, src, dest, opts, cb);
-            }));
+            });
         }
         function copyDirItems(items, src, dest, opts, cb) {
             const item = items.pop();
@@ -15323,17 +15320,17 @@ var __webpack_modules__ = {
         function copyDirItem(items, item, src, dest, opts, cb) {
             const srcItem = path.join(src, item);
             const destItem = path.join(dest, item);
-            stat.checkPaths(srcItem, destItem, "copy", opts, ((err, stats) => {
+            stat.checkPaths(srcItem, destItem, "copy", opts, (err, stats) => {
                 if (err) return cb(err);
                 const {destStat} = stats;
-                startCopy(destStat, srcItem, destItem, opts, (err => {
+                startCopy(destStat, srcItem, destItem, opts, err => {
                     if (err) return cb(err);
                     return copyDirItems(items, src, dest, opts, cb);
-                }));
-            }));
+                });
+            });
         }
         function onLink(destStat, src, dest, opts, cb) {
-            fs.readlink(src, ((err, resolvedSrc) => {
+            fs.readlink(src, (err, resolvedSrc) => {
                 if (err) return cb(err);
                 if (opts.dereference) {
                     resolvedSrc = path.resolve(process.cwd(), resolvedSrc);
@@ -15341,7 +15338,7 @@ var __webpack_modules__ = {
                 if (!destStat) {
                     return fs.symlink(resolvedSrc, dest, cb);
                 } else {
-                    fs.readlink(dest, ((err, resolvedDest) => {
+                    fs.readlink(dest, (err, resolvedDest) => {
                         if (err) {
                             if (err.code === "EINVAL" || err.code === "UNKNOWN") return fs.symlink(resolvedSrc, dest, cb);
                             return cb(err);
@@ -15356,15 +15353,15 @@ var __webpack_modules__ = {
                             return cb(new Error(`Cannot overwrite '${resolvedDest}' with '${resolvedSrc}'.`));
                         }
                         return copyLink(resolvedSrc, dest, cb);
-                    }));
+                    });
                 }
-            }));
+            });
         }
         function copyLink(resolvedSrc, dest, cb) {
-            fs.unlink(dest, (err => {
+            fs.unlink(dest, err => {
                 if (err) return cb(err);
                 return fs.symlink(resolvedSrc, dest, cb);
-            }));
+            });
         }
         module.exports = copy;
     },
@@ -15424,9 +15421,9 @@ var __webpack_modules__ = {
                     this.eventEmitter.emit("exit", (_a = req === null || req === void 0 ? void 0 : req.exit) !== null && _a !== void 0 ? _a : 0);
                     return;
                 }
-                this.processRequest(req, (() => {
-                    setImmediate((() => this.run()));
-                }));
+                this.processRequest(req, () => {
+                    setImmediate(() => this.run());
+                });
             }
             once(event, listener) {
                 this.eventEmitter.once(event, listener);
@@ -15468,25 +15465,25 @@ var __webpack_modules__ = {
                     if (apiReq.api === "begin" || apiReq.api === "complete") {
                         checkIfAsyncIsAllowed();
                         this.debug("processing pending promises before responding");
-                        setImmediate((() => {
+                        setImmediate(() => {
                             this.writeOkay(ret);
                             next();
-                        }));
+                        });
                         return undefined;
                     }
                     if (this.isPromise(ret)) {
                         checkIfAsyncIsAllowed();
                         this.debug("waiting for promise to be fulfilled");
                         const promise = ret;
-                        promise.then((val => {
+                        promise.then(val => {
                             this.debug("promise succeeded:", val);
                             this.writeOkay(val);
                             next();
-                        })).catch((e => {
+                        }).catch(e => {
                             this.debug("promise failed:", e);
                             this.writeError(e);
                             next();
-                        }));
+                        });
                         return undefined;
                     }
                     this.writeOkay(ret);
@@ -15606,7 +15603,7 @@ var __webpack_modules__ = {
                 topSchemaRef: schemaRef,
                 compositeRule: true
             }, valid);
-            cxt.pass(valid, (() => cxt.error(true)));
+            cxt.pass(valid, () => cxt.error(true));
         }
         exports.macroKeywordCode = macroKeywordCode;
         function funcKeywordCode(cxt, def) {
@@ -15622,18 +15619,18 @@ var __webpack_modules__ = {
                 if (def.errors === false) {
                     assignValid();
                     if (def.modifying) modifyData(cxt);
-                    reportErrs((() => cxt.error()));
+                    reportErrs(() => cxt.error());
                 } else {
                     const ruleErrs = def.async ? validateAsync() : validateSync();
                     if (def.modifying) modifyData(cxt);
-                    reportErrs((() => addErrs(cxt, ruleErrs)));
+                    reportErrs(() => addErrs(cxt, ruleErrs));
                 }
             }
             function validateAsync() {
                 const ruleErrs = gen.let("ruleErrs", null);
-                gen.try((() => assignValid((0, codegen_1._)`await `)), (e => gen.assign(valid, false).if((0, 
-                codegen_1._)`${e} instanceof ${it.ValidationError}`, (() => gen.assign(ruleErrs, (0, 
-                codegen_1._)`${e}.errors`)), (() => gen.throw(e)))));
+                gen.try(() => assignValid((0, codegen_1._)`await `), e => gen.assign(valid, false).if((0, 
+                codegen_1._)`${e} instanceof ${it.ValidationError}`, () => gen.assign(ruleErrs, (0, 
+                codegen_1._)`${e}.errors`), () => gen.throw(e)));
                 return ruleErrs;
             }
             function validateSync() {
@@ -15655,15 +15652,15 @@ var __webpack_modules__ = {
         exports.funcKeywordCode = funcKeywordCode;
         function modifyData(cxt) {
             const {gen, data, it} = cxt;
-            gen.if(it.parentData, (() => gen.assign(data, (0, codegen_1._)`${it.parentData}[${it.parentDataProperty}]`)));
+            gen.if(it.parentData, () => gen.assign(data, (0, codegen_1._)`${it.parentData}[${it.parentDataProperty}]`));
         }
         function addErrs(cxt, errs) {
             const {gen} = cxt;
-            gen.if((0, codegen_1._)`Array.isArray(${errs})`, (() => {
+            gen.if((0, codegen_1._)`Array.isArray(${errs})`, () => {
                 gen.assign(names_1.default.vErrors, (0, codegen_1._)`${names_1.default.vErrors} === null ? ${errs} : ${names_1.default.vErrors}.concat(${errs})`).assign(names_1.default.errors, (0, 
                 codegen_1._)`${names_1.default.vErrors}.length`);
                 (0, errors_1.extendErrors)(cxt);
-            }), (() => cxt.error()));
+            }, () => cxt.error());
         }
         function checkAsyncKeyword({schemaEnv}, def) {
             if (def.async && !schemaEnv.$async) throw new Error("async keyword in sync schema");
@@ -15678,7 +15675,7 @@ var __webpack_modules__ = {
             });
         }
         function validSchemaType(schema, schemaType, allowUndefined = false) {
-            return !schemaType.length || schemaType.some((st => st === "array" ? Array.isArray(schema) : st === "object" ? schema && typeof schema == "object" && !Array.isArray(schema) : typeof schema == st || allowUndefined && typeof schema == "undefined"));
+            return !schemaType.length || schemaType.some(st => st === "array" ? Array.isArray(schema) : st === "object" ? schema && typeof schema == "object" && !Array.isArray(schema) : typeof schema == st || allowUndefined && typeof schema == "undefined");
         }
         exports.validSchemaType = validSchemaType;
         function validateKeywordUsage({schema, opts, self, errSchemaPath}, def, keyword) {
@@ -15686,7 +15683,7 @@ var __webpack_modules__ = {
                 throw new Error("ajv implementation error");
             }
             const deps = def.dependencies;
-            if (deps === null || deps === void 0 ? void 0 : deps.some((kwd => !Object.prototype.hasOwnProperty.call(schema, kwd)))) {
+            if (deps === null || deps === void 0 ? void 0 : deps.some(kwd => !Object.prototype.hasOwnProperty.call(schema, kwd))) {
                 throw new Error(`parent schema must have dependencies of ${keyword}: ${deps.join(",")}`);
             }
             if (def.validateSchema) {
@@ -15707,31 +15704,31 @@ var __webpack_modules__ = {
         const mkdir = __webpack_require__(2924);
         function createFile(file, callback) {
             function makeFile() {
-                fs.writeFile(file, "", (err => {
+                fs.writeFile(file, "", err => {
                     if (err) return callback(err);
                     callback();
-                }));
+                });
             }
-            fs.stat(file, ((err, stats) => {
+            fs.stat(file, (err, stats) => {
                 if (!err && stats.isFile()) return callback();
                 const dir = path.dirname(file);
-                fs.stat(dir, ((err, stats) => {
+                fs.stat(dir, (err, stats) => {
                     if (err) {
                         if (err.code === "ENOENT") {
-                            return mkdir.mkdirs(dir, (err => {
+                            return mkdir.mkdirs(dir, err => {
                                 if (err) return callback(err);
                                 makeFile();
-                            }));
+                            });
                         }
                         return callback(err);
                     }
                     if (stats.isDirectory()) makeFile(); else {
-                        fs.readdir(dir, (err => {
+                        fs.readdir(dir, err => {
                             if (err) return callback(err);
-                        }));
+                        });
                     }
-                }));
-            }));
+                });
+            });
         }
         function createFileSync(file) {
             let stats;
@@ -15765,13 +15762,13 @@ var __webpack_modules__ = {
             const queues = new Map;
             const reservations = new Map;
             const getDirs = path => {
-                const dirs = path.split("/").slice(0, -1).reduce(((set, path) => {
+                const dirs = path.split("/").slice(0, -1).reduce((set, path) => {
                     if (set.length) {
                         path = join(set[set.length - 1], path);
                     }
                     set.push(path || "/");
                     return set;
-                }), []);
+                }, []);
                 return dirs;
             };
             const running = new Set;
@@ -15781,20 +15778,20 @@ var __webpack_modules__ = {
                     throw new Error("function does not have any path reservations");
                 }
                 return {
-                    paths: res.paths.map((path => queues.get(path))),
-                    dirs: [ ...res.dirs ].map((path => queues.get(path)))
+                    paths: res.paths.map(path => queues.get(path)),
+                    dirs: [ ...res.dirs ].map(path => queues.get(path))
                 };
             };
             const check = fn => {
                 const {paths, dirs} = getQueues(fn);
-                return paths.every((q => q[0] === fn)) && dirs.every((q => q[0] instanceof Set && q[0].has(fn)));
+                return paths.every(q => q[0] === fn) && dirs.every(q => q[0] instanceof Set && q[0].has(fn));
             };
             const run = fn => {
                 if (running.has(fn) || !check(fn)) {
                     return false;
                 }
                 running.add(fn);
-                fn((() => clear(fn)));
+                fn(() => clear(fn));
                 return true;
             };
             const clear = fn => {
@@ -15803,7 +15800,7 @@ var __webpack_modules__ = {
                 }
                 const {paths, dirs} = reservations.get(fn);
                 const next = new Set;
-                paths.forEach((path => {
+                paths.forEach(path => {
                     const q = queues.get(path);
                     assert.equal(q[0], fn);
                     if (q.length === 1) {
@@ -15813,11 +15810,11 @@ var __webpack_modules__ = {
                         if (typeof q[0] === "function") {
                             next.add(q[0]);
                         } else {
-                            q[0].forEach((fn => next.add(fn)));
+                            q[0].forEach(fn => next.add(fn));
                         }
                     }
-                }));
-                dirs.forEach((dir => {
+                });
+                dirs.forEach(dir => {
                     const q = queues.get(dir);
                     assert(q[0] instanceof Set);
                     if (q[0].size === 1 && q.length === 1) {
@@ -15828,27 +15825,27 @@ var __webpack_modules__ = {
                     } else {
                         q[0].delete(fn);
                     }
-                }));
+                });
                 running.delete(fn);
-                next.forEach((fn => run(fn)));
+                next.forEach(fn => run(fn));
                 return true;
             };
             const reserve = (paths, fn) => {
-                paths = isWindows ? [ "win32 parallelization disabled" ] : paths.map((p => stripSlashes(join(normalize(p))).toLowerCase()));
-                const dirs = new Set(paths.map((path => getDirs(path))).reduce(((a, b) => a.concat(b))));
+                paths = isWindows ? [ "win32 parallelization disabled" ] : paths.map(p => stripSlashes(join(normalize(p))).toLowerCase());
+                const dirs = new Set(paths.map(path => getDirs(path)).reduce((a, b) => a.concat(b)));
                 reservations.set(fn, {
                     dirs,
                     paths
                 });
-                paths.forEach((path => {
+                paths.forEach(path => {
                     const q = queues.get(path);
                     if (!q) {
                         queues.set(path, [ fn ]);
                     } else {
                         q.push(fn);
                     }
-                }));
-                dirs.forEach((dir => {
+                });
+                dirs.forEach(dir => {
                     const q = queues.get(dir);
                     if (!q) {
                         queues.set(dir, [ new Set([ fn ]) ]);
@@ -15857,7 +15854,7 @@ var __webpack_modules__ = {
                     } else {
                         q.push(new Set([ fn ]));
                     }
-                }));
+                });
                 return run(fn);
             };
             return {
@@ -15871,7 +15868,7 @@ var __webpack_modules__ = {
         Object.defineProperty(exports, "__esModule", {
             value: true
         });
-        exports.defaultCacheRoot = void 0;
+        exports.defaultCacheRoot = defaultCacheRoot;
         const os_1 = __webpack_require__(857);
         const path_1 = __webpack_require__(6928);
         function defaultCacheRoot() {
@@ -15892,7 +15889,6 @@ var __webpack_modules__ = {
             }
             return (0, path_1.join)((0, os_1.tmpdir)(), "aws-jsii-package-cache");
         }
-        exports.defaultCacheRoot = defaultCacheRoot;
     },
     8895: (__unused_webpack_module, exports, __webpack_require__) => {
         "use strict";
@@ -15925,11 +15921,11 @@ var __webpack_modules__ = {
                 if (!oneOf) throw new Error("discriminator: requires oneOf keyword");
                 const valid = gen.let("valid", false);
                 const tag = gen.const("tag", (0, codegen_1._)`${data}${(0, codegen_1.getProperty)(tagName)}`);
-                gen.if((0, codegen_1._)`typeof ${tag} == "string"`, (() => validateMapping()), (() => cxt.error(false, {
+                gen.if((0, codegen_1._)`typeof ${tag} == "string"`, () => validateMapping(), () => cxt.error(false, {
                     discrError: types_1.DiscrError.Tag,
                     tag,
                     tagName
-                })));
+                }));
                 cxt.ok(valid);
                 function validateMapping() {
                     const mapping = getMapping();
@@ -16005,25 +16001,25 @@ var __webpack_modules__ = {
     9022: (__unused_webpack_module, exports) => {
         "use strict";
         exports.fromCallback = function(fn) {
-            return Object.defineProperty((function(...args) {
+            return Object.defineProperty(function(...args) {
                 if (typeof args[args.length - 1] === "function") fn.apply(this, args); else {
-                    return new Promise(((resolve, reject) => {
-                        args.push(((err, res) => err != null ? reject(err) : resolve(res)));
+                    return new Promise((resolve, reject) => {
+                        args.push((err, res) => err != null ? reject(err) : resolve(res));
                         fn.apply(this, args);
-                    }));
+                    });
                 }
-            }), "name", {
+            }, "name", {
                 value: fn.name
             });
         };
         exports.fromPromise = function(fn) {
-            return Object.defineProperty((function(...args) {
+            return Object.defineProperty(function(...args) {
                 const cb = args[args.length - 1];
                 if (typeof cb !== "function") return fn.apply(this, args); else {
                     args.pop();
-                    fn.apply(this, args).then((r => cb(null, r)), cb);
+                    fn.apply(this, args).then(r => cb(null, r), cb);
                 }
-            }), "name", {
+            }, "name", {
                 value: fn.name
             });
         };
@@ -16073,7 +16069,7 @@ var __webpack_modules__ = {
         Object.defineProperty(exports, "__esModule", {
             value: true
         });
-        exports.digestFile = void 0;
+        exports.digestFile = digestFile;
         const crypto_1 = __webpack_require__(6982);
         const fs_1 = __webpack_require__(9896);
         const ALGORITHM = "sha256";
@@ -16095,7 +16091,6 @@ var __webpack_modules__ = {
                 (0, fs_1.closeSync)(fd);
             }
         }
-        exports.digestFile = digestFile;
     },
     9102: (__unused_webpack_module, exports, __webpack_require__) => {
         "use strict";
@@ -16142,9 +16137,9 @@ var __webpack_modules__ = {
             opts.recursive = true;
             const parent = dirname(path);
             if (parent === path) return opts.mkdirAsync(path, opts);
-            return findMade(opts, path).then((made => opts.mkdirAsync(path, opts).then((() => made)).catch((er => {
+            return findMade(opts, path).then(made => opts.mkdirAsync(path, opts).then(() => made).catch(er => {
                 if (er.code === "ENOENT") return mkdirpManual(path, opts); else throw er;
-            }))));
+            }));
         };
         const mkdirpNativeSync = (path, opts) => {
             opts.recursive = true;
@@ -16168,7 +16163,7 @@ var __webpack_modules__ = {
         const u = __webpack_require__(9022).fromPromise;
         const fs = __webpack_require__(6203);
         function pathExists(path) {
-            return fs.access(path).then((() => true)).catch((() => false));
+            return fs.access(path).then(() => true).catch(() => false);
         }
         module.exports = {
             pathExists: u(pathExists),
@@ -16185,29 +16180,29 @@ var __webpack_modules__ = {
         const {areIdentical} = __webpack_require__(9276);
         function createLink(srcpath, dstpath, callback) {
             function makeLink(srcpath, dstpath) {
-                fs.link(srcpath, dstpath, (err => {
+                fs.link(srcpath, dstpath, err => {
                     if (err) return callback(err);
                     callback(null);
-                }));
+                });
             }
-            fs.lstat(dstpath, ((_, dstStat) => {
-                fs.lstat(srcpath, ((err, srcStat) => {
+            fs.lstat(dstpath, (_, dstStat) => {
+                fs.lstat(srcpath, (err, srcStat) => {
                     if (err) {
                         err.message = err.message.replace("lstat", "ensureLink");
                         return callback(err);
                     }
                     if (dstStat && areIdentical(srcStat, dstStat)) return callback(null);
                     const dir = path.dirname(dstpath);
-                    pathExists(dir, ((err, dirExists) => {
+                    pathExists(dir, (err, dirExists) => {
                         if (err) return callback(err);
                         if (dirExists) return makeLink(srcpath, dstpath);
-                        mkdir.mkdirs(dir, (err => {
+                        mkdir.mkdirs(dir, err => {
                             if (err) return callback(err);
                             makeLink(srcpath, dstpath);
-                        }));
-                    }));
-                }));
-            }));
+                        });
+                    });
+                });
+            });
         }
         function createLinkSync(srcpath, dstpath) {
             let dstStat;
@@ -16243,13 +16238,13 @@ var __webpack_modules__ = {
             }) : file => fs.lstat(file, {
                 bigint: true
             });
-            return Promise.all([ statFunc(src), statFunc(dest).catch((err => {
+            return Promise.all([ statFunc(src), statFunc(dest).catch(err => {
                 if (err.code === "ENOENT") return null;
                 throw err;
-            })) ]).then((([srcStat, destStat]) => ({
+            }) ]).then(([srcStat, destStat]) => ({
                 srcStat,
                 destStat
-            })));
+            }));
         }
         function getStatsSync(src, dest, opts) {
             let destStat;
@@ -16274,7 +16269,7 @@ var __webpack_modules__ = {
             };
         }
         function checkPaths(src, dest, funcName, opts, cb) {
-            util.callbackify(getStats)(src, dest, opts, ((err, stats) => {
+            util.callbackify(getStats)(src, dest, opts, (err, stats) => {
                 if (err) return cb(err);
                 const {srcStat, destStat} = stats;
                 if (destStat) {
@@ -16304,7 +16299,7 @@ var __webpack_modules__ = {
                     srcStat,
                     destStat
                 });
-            }));
+            });
         }
         function checkPathsSync(src, dest, funcName, opts) {
             const {srcStat, destStat} = getStatsSync(src, dest, opts);
@@ -16342,7 +16337,7 @@ var __webpack_modules__ = {
             if (destParent === srcParent || destParent === path.parse(destParent).root) return cb();
             fs.stat(destParent, {
                 bigint: true
-            }, ((err, destStat) => {
+            }, (err, destStat) => {
                 if (err) {
                     if (err.code === "ENOENT") return cb();
                     return cb(err);
@@ -16351,7 +16346,7 @@ var __webpack_modules__ = {
                     return cb(new Error(errMsg(src, dest, funcName)));
                 }
                 return checkParentPaths(src, srcStat, destParent, funcName, cb);
-            }));
+            });
         }
         function checkParentPathsSync(src, srcStat, dest, funcName) {
             const srcParent = path.resolve(path.dirname(src));
@@ -16375,9 +16370,9 @@ var __webpack_modules__ = {
             return destStat.ino && destStat.dev && destStat.ino === srcStat.ino && destStat.dev === srcStat.dev;
         }
         function isSrcSubdir(src, dest) {
-            const srcArr = path.resolve(src).split(path.sep).filter((i => i));
-            const destArr = path.resolve(dest).split(path.sep).filter((i => i));
-            return srcArr.reduce(((acc, cur, i) => acc && destArr[i] === cur), true);
+            const srcArr = path.resolve(src).split(path.sep).filter(i => i);
+            const destArr = path.resolve(dest).split(path.sep).filter(i => i);
+            return srcArr.reduce((acc, cur, i) => acc && destArr[i] === cur, true);
         }
         function errMsg(src, dest, funcName) {
             return `Cannot ${funcName} '${src}' to a subdirectory of itself, '${dest}'.`;
@@ -16425,12 +16420,12 @@ var __webpack_modules__ = {
             publishQueue(fs, queue);
             fs.close = function(fs$close) {
                 function close(fd, cb) {
-                    return fs$close.call(fs, fd, (function(err) {
+                    return fs$close.call(fs, fd, function(err) {
                         if (!err) {
                             resetQueue();
                         }
                         if (typeof cb === "function") cb.apply(this, arguments);
-                    }));
+                    });
                 }
                 Object.defineProperty(close, previousSymbol, {
                     value: fs$close
@@ -16448,10 +16443,10 @@ var __webpack_modules__ = {
                 return closeSync;
             }(fs.closeSync);
             if (/\bgfs4\b/i.test(process.env.NODE_DEBUG || "")) {
-                process.on("exit", (function() {
+                process.on("exit", function() {
                     debug(fs[gracefulQueue]);
                     __webpack_require__(2613).equal(fs[gracefulQueue].length, 0);
-                }));
+                });
             }
         }
         if (!global[gracefulQueue]) {
@@ -16473,11 +16468,11 @@ var __webpack_modules__ = {
                 if (typeof options === "function") cb = options, options = null;
                 return go$readFile(path, options, cb);
                 function go$readFile(path, options, cb, startTime) {
-                    return fs$readFile(path, options, (function(err) {
+                    return fs$readFile(path, options, function(err) {
                         if (err && (err.code === "EMFILE" || err.code === "ENFILE")) enqueue([ go$readFile, [ path, options, cb ], err, startTime || Date.now(), Date.now() ]); else {
                             if (typeof cb === "function") cb.apply(this, arguments);
                         }
-                    }));
+                    });
                 }
             }
             var fs$writeFile = fs.writeFile;
@@ -16486,11 +16481,11 @@ var __webpack_modules__ = {
                 if (typeof options === "function") cb = options, options = null;
                 return go$writeFile(path, data, options, cb);
                 function go$writeFile(path, data, options, cb, startTime) {
-                    return fs$writeFile(path, data, options, (function(err) {
+                    return fs$writeFile(path, data, options, function(err) {
                         if (err && (err.code === "EMFILE" || err.code === "ENFILE")) enqueue([ go$writeFile, [ path, data, options, cb ], err, startTime || Date.now(), Date.now() ]); else {
                             if (typeof cb === "function") cb.apply(this, arguments);
                         }
-                    }));
+                    });
                 }
             }
             var fs$appendFile = fs.appendFile;
@@ -16499,11 +16494,11 @@ var __webpack_modules__ = {
                 if (typeof options === "function") cb = options, options = null;
                 return go$appendFile(path, data, options, cb);
                 function go$appendFile(path, data, options, cb, startTime) {
-                    return fs$appendFile(path, data, options, (function(err) {
+                    return fs$appendFile(path, data, options, function(err) {
                         if (err && (err.code === "EMFILE" || err.code === "ENFILE")) enqueue([ go$appendFile, [ path, data, options, cb ], err, startTime || Date.now(), Date.now() ]); else {
                             if (typeof cb === "function") cb.apply(this, arguments);
                         }
-                    }));
+                    });
                 }
             }
             var fs$copyFile = fs.copyFile;
@@ -16515,11 +16510,11 @@ var __webpack_modules__ = {
                 }
                 return go$copyFile(src, dest, flags, cb);
                 function go$copyFile(src, dest, flags, cb, startTime) {
-                    return fs$copyFile(src, dest, flags, (function(err) {
+                    return fs$copyFile(src, dest, flags, function(err) {
                         if (err && (err.code === "EMFILE" || err.code === "ENFILE")) enqueue([ go$copyFile, [ src, dest, flags, cb ], err, startTime || Date.now(), Date.now() ]); else {
                             if (typeof cb === "function") cb.apply(this, arguments);
                         }
-                    }));
+                    });
                 }
             }
             var fs$readdir = fs.readdir;
@@ -16604,7 +16599,7 @@ var __webpack_modules__ = {
             }
             function ReadStream$open() {
                 var that = this;
-                open(that.path, that.flags, that.mode, (function(err, fd) {
+                open(that.path, that.flags, that.mode, function(err, fd) {
                     if (err) {
                         if (that.autoClose) that.destroy();
                         that.emit("error", err);
@@ -16613,14 +16608,14 @@ var __webpack_modules__ = {
                         that.emit("open", fd);
                         that.read();
                     }
-                }));
+                });
             }
             function WriteStream(path, options) {
                 if (this instanceof WriteStream) return fs$WriteStream.apply(this, arguments), this; else return WriteStream.apply(Object.create(WriteStream.prototype), arguments);
             }
             function WriteStream$open() {
                 var that = this;
-                open(that.path, that.flags, that.mode, (function(err, fd) {
+                open(that.path, that.flags, that.mode, function(err, fd) {
                     if (err) {
                         that.destroy();
                         that.emit("error", err);
@@ -16628,7 +16623,7 @@ var __webpack_modules__ = {
                         that.fd = fd;
                         that.emit("open", fd);
                     }
-                }));
+                });
             }
             function createReadStream(path, options) {
                 return new fs.ReadStream(path, options);
@@ -16642,11 +16637,11 @@ var __webpack_modules__ = {
                 if (typeof mode === "function") cb = mode, mode = null;
                 return go$open(path, flags, mode, cb);
                 function go$open(path, flags, mode, cb, startTime) {
-                    return fs$open(path, flags, mode, (function(err, fd) {
+                    return fs$open(path, flags, mode, function(err, fd) {
                         if (err && (err.code === "EMFILE" || err.code === "ENFILE")) enqueue([ go$open, [ path, flags, mode, cb ], err, startTime || Date.now(), Date.now() ]); else {
                             if (typeof cb === "function") cb.apply(this, arguments);
                         }
-                    }));
+                    });
                 }
             }
             return fs;
@@ -17058,7 +17053,7 @@ var __webpack_modules__ = {
                 }
                 checkKeyword.call(this, keyword, def);
                 if (!def) {
-                    (0, util_1.eachItem)(keyword, (kwd => addRule.call(this, kwd)));
+                    (0, util_1.eachItem)(keyword, kwd => addRule.call(this, kwd));
                     return this;
                 }
                 keywordMetaschema.call(this, def);
@@ -17067,7 +17062,7 @@ var __webpack_modules__ = {
                     type: (0, dataType_1.getJSONTypes)(def.type),
                     schemaType: (0, dataType_1.getJSONTypes)(def.schemaType)
                 };
-                (0, util_1.eachItem)(keyword, definition.type.length === 0 ? k => addRule.call(this, k, definition) : k => definition.type.forEach((t => addRule.call(this, k, definition, t))));
+                (0, util_1.eachItem)(keyword, definition.type.length === 0 ? k => addRule.call(this, k, definition) : k => definition.type.forEach(t => addRule.call(this, k, definition, t)));
                 return this;
             }
             getKeyword(keyword) {
@@ -17079,7 +17074,7 @@ var __webpack_modules__ = {
                 delete RULES.keywords[keyword];
                 delete RULES.all[keyword];
                 for (const group of RULES.rules) {
-                    const i = group.rules.findIndex((rule => rule.keyword === keyword));
+                    const i = group.rules.findIndex(rule => rule.keyword === keyword);
                     if (i >= 0) group.rules.splice(i, 1);
                 }
                 return this;
@@ -17091,7 +17086,7 @@ var __webpack_modules__ = {
             }
             errorsText(errors = this.errors, {separator = ", ", dataVar = "data"} = {}) {
                 if (!errors || errors.length === 0) return "No errors";
-                return errors.map((e => `${dataVar}${e.instancePath} ${e.message}`)).reduce(((text, msg) => text + separator + msg));
+                return errors.map(e => `${dataVar}${e.instancePath} ${e.message}`).reduce((text, msg) => text + separator + msg);
             }
             $dataMetaSchema(metaSchema, keywordsJsonPointers) {
                 const rules = this.RULES.all;
@@ -17227,10 +17222,10 @@ var __webpack_modules__ = {
         const KEYWORD_NAME = /^[a-z_$][a-z0-9_$:-]*$/i;
         function checkKeyword(keyword, def) {
             const {RULES} = this;
-            (0, util_1.eachItem)(keyword, (kwd => {
+            (0, util_1.eachItem)(keyword, kwd => {
                 if (RULES.keywords[kwd]) throw new Error(`Keyword ${kwd} is already defined`);
                 if (!KEYWORD_NAME.test(kwd)) throw new Error(`Keyword ${kwd} has invalid name`);
-            }));
+            });
             if (!def) return;
             if (def.$data && !("code" in def || "validate" in def)) {
                 throw new Error('$data keyword must have "code" or "validate" function');
@@ -17241,7 +17236,7 @@ var __webpack_modules__ = {
             const post = definition === null || definition === void 0 ? void 0 : definition.post;
             if (dataType && post) throw new Error('keyword with "post" flag cannot have "type"');
             const {RULES} = this;
-            let ruleGroup = post ? RULES.post : RULES.rules.find((({type: t}) => t === dataType));
+            let ruleGroup = post ? RULES.post : RULES.rules.find(({type: t}) => t === dataType);
             if (!ruleGroup) {
                 ruleGroup = {
                     type: dataType,
@@ -17261,10 +17256,10 @@ var __webpack_modules__ = {
             };
             if (definition.before) addBeforeRule.call(this, ruleGroup, rule, definition.before); else ruleGroup.rules.push(rule);
             RULES.all[keyword] = rule;
-            (_a = definition.implements) === null || _a === void 0 ? void 0 : _a.forEach((kwd => this.addKeyword(kwd)));
+            (_a = definition.implements) === null || _a === void 0 ? void 0 : _a.forEach(kwd => this.addKeyword(kwd));
         }
         function addBeforeRule(ruleGroup, rule, before) {
-            const i = ruleGroup.rules.findIndex((_rule => _rule.keyword === before));
+            const i = ruleGroup.rules.findIndex(_rule => _rule.keyword === before);
             if (i >= 0) {
                 ruleGroup.rules.splice(i, 0, rule);
             } else {
@@ -17422,7 +17417,7 @@ var __webpack_modules__ = {
             return setDestMode(dest, srcMode);
         }
         function copyDir(src, dest, opts) {
-            fs.readdirSync(src).forEach((item => copyDirItem(item, src, dest, opts)));
+            fs.readdirSync(src).forEach(item => copyDirItem(item, src, dest, opts));
         }
         function copyDirItem(item, src, dest, opts) {
             const srcItem = path.join(src, item);
@@ -17468,7 +17463,7 @@ var __webpack_modules__ = {
         Object.defineProperty(exports, "__esModule", {
             value: true
         });
-        exports.removeSync = void 0;
+        exports.removeSync = removeSync;
         const fs = __webpack_require__(8463);
         const process = __webpack_require__(932);
         const removeSyncPaths = new Array;
@@ -17476,7 +17471,6 @@ var __webpack_modules__ = {
             registerIfNeeded();
             removeSyncPaths.push(path);
         }
-        exports.removeSync = removeSync;
         let registered = false;
         function registerIfNeeded() {
             if (registered) {
@@ -17524,9 +17518,9 @@ var __webpack_modules__ = {
                 checkAdditionalProperties();
                 cxt.ok((0, codegen_1._)`${errsCount} === ${names_1.default.errors}`);
                 function checkAdditionalProperties() {
-                    gen.forIn("key", data, (key => {
-                        if (!props.length && !patProps.length) additionalPropertyCode(key); else gen.if(isAdditional(key), (() => additionalPropertyCode(key)));
-                    }));
+                    gen.forIn("key", data, key => {
+                        if (!props.length && !patProps.length) additionalPropertyCode(key); else gen.if(isAdditional(key), () => additionalPropertyCode(key));
+                    });
                 }
                 function isAdditional(key) {
                     let definedProp;
@@ -17534,13 +17528,13 @@ var __webpack_modules__ = {
                         const propsSchema = (0, util_1.schemaRefOrVal)(it, parentSchema.properties, "properties");
                         definedProp = (0, code_1.isOwnProperty)(gen, propsSchema, key);
                     } else if (props.length) {
-                        definedProp = (0, codegen_1.or)(...props.map((p => (0, codegen_1._)`${key} === ${p}`)));
+                        definedProp = (0, codegen_1.or)(...props.map(p => (0, codegen_1._)`${key} === ${p}`));
                     } else {
                         definedProp = codegen_1.nil;
                     }
                     if (patProps.length) {
-                        definedProp = (0, codegen_1.or)(definedProp, ...patProps.map((p => (0, codegen_1._)`${(0, 
-                        code_1.usePattern)(cxt, p)}.test(${key})`)));
+                        definedProp = (0, codegen_1.or)(definedProp, ...patProps.map(p => (0, codegen_1._)`${(0, 
+                        code_1.usePattern)(cxt, p)}.test(${key})`));
                     }
                     return (0, codegen_1.not)(definedProp);
                 }
@@ -17564,13 +17558,13 @@ var __webpack_modules__ = {
                         const valid = gen.name("valid");
                         if (opts.removeAdditional === "failing") {
                             applyAdditionalSchema(key, valid, false);
-                            gen.if((0, codegen_1.not)(valid), (() => {
+                            gen.if((0, codegen_1.not)(valid), () => {
                                 cxt.reset();
                                 deleteAdditional(key);
-                            }));
+                            });
                         } else {
                             applyAdditionalSchema(key, valid);
-                            if (!allErrors) gen.if((0, codegen_1.not)(valid), (() => gen.break()));
+                            if (!allErrors) gen.if((0, codegen_1.not)(valid), () => gen.break());
                         }
                     }
                 }
@@ -17604,15 +17598,15 @@ var __webpack_modules__ = {
         const path = __webpack_require__(6928);
         const mkdir = __webpack_require__(2924);
         const remove = __webpack_require__(7948);
-        const emptyDir = u((async function emptyDir(dir) {
+        const emptyDir = u(async function emptyDir(dir) {
             let items;
             try {
                 items = await fs.readdir(dir);
             } catch {
                 return mkdir.mkdirs(dir);
             }
-            return Promise.all(items.map((item => remove.remove(path.join(dir, item)))));
-        }));
+            return Promise.all(items.map(item => remove.remove(path.join(dir, item))));
+        });
         function emptyDirSync(dir) {
             let items;
             try {
@@ -17620,10 +17614,10 @@ var __webpack_modules__ = {
             } catch {
                 return mkdir.mkdirsSync(dir);
             }
-            items.forEach((item => {
+            items.forEach(item => {
                 item = path.join(dir, item);
                 remove.removeSync(item);
-            }));
+            });
         }
         module.exports = {
             emptyDirSync,
