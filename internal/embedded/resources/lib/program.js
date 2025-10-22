@@ -155,7 +155,7 @@ var __webpack_modules__ = {
         const onExit = __webpack_require__(9743);
         const wire = __webpack_require__(1663);
         const tar = __webpack_require__(7344);
-        exports.ASSEMBLY_SUPPORTED_FEATURES = [ "intersection-types" ];
+        exports.ASSEMBLY_SUPPORTED_FEATURES = [ "intersection-types", "class-covariant-overrides" ];
         class JsiiFault extends Error {
             constructor(message) {
                 super(message);
@@ -15171,7 +15171,7 @@ var __webpack_modules__ = {
     },
     8330: module => {
         "use strict";
-        module.exports = JSON.parse('{"name":"@jsii/runtime","version":"1.116.0","description":"jsii runtime kernel process","license":"Apache-2.0","author":{"name":"Amazon Web Services","url":"https://aws.amazon.com"},"homepage":"https://github.com/aws/jsii","bugs":{"url":"https://github.com/aws/jsii/issues"},"repository":{"type":"git","url":"https://github.com/aws/jsii.git","directory":"packages/@jsii/runtime"},"engines":{"node":">= 14.17.0"},"main":"lib/index.js","types":"lib/index.d.ts","bin":{"jsii-runtime":"bin/jsii-runtime"},"scripts":{"build":"tsc --build && chmod +x bin/jsii-runtime && npx webpack-cli && yarn lint","watch":"tsc --build -w","lint":"ESLINT_USE_FLAT_CONFIG=false eslint . --ext .js,.ts --ignore-path=.gitignore --ignore-pattern=webpack.config.js","lint:fix":"yarn lint --fix","test":"jest","test:update":"jest -u","package":"package-js"},"dependencies":{"@jsii/kernel":"^1.116.0","@jsii/check-node":"1.116.0","@jsii/spec":"1.116.0"},"devDependencies":{"@scope/jsii-calc-base":"^1.116.0","@scope/jsii-calc-lib":"^1.116.0","jsii-build-tools":"^1.116.0","jsii-calc":"^3.20.120","source-map-loader":"^5.0.0","webpack":"^5.101.3","webpack-cli":"^6.0.1"}}');
+        module.exports = JSON.parse('{"name":"@jsii/runtime","version":"1.117.0","description":"jsii runtime kernel process","license":"Apache-2.0","author":{"name":"Amazon Web Services","url":"https://aws.amazon.com"},"homepage":"https://github.com/aws/jsii","bugs":{"url":"https://github.com/aws/jsii/issues"},"repository":{"type":"git","url":"https://github.com/aws/jsii.git","directory":"packages/@jsii/runtime"},"engines":{"node":">= 14.17.0"},"main":"lib/index.js","types":"lib/index.d.ts","bin":{"jsii-runtime":"bin/jsii-runtime"},"scripts":{"build":"tsc --build && chmod +x bin/jsii-runtime && npx webpack-cli && yarn lint","watch":"tsc --build -w","lint":"ESLINT_USE_FLAT_CONFIG=false NODE_OPTIONS=\'--disable-warning=ESLintRCWarning\' eslint . --ext .js,.ts --ignore-path=.gitignore --ignore-pattern=webpack.config.js","lint:fix":"yarn lint --fix","test":"jest","test:update":"jest -u","package":"package-js"},"dependencies":{"@jsii/kernel":"^1.117.0","@jsii/check-node":"1.117.0","@jsii/spec":"1.117.0"},"devDependencies":{"@scope/jsii-calc-base":"^1.117.0","@scope/jsii-calc-lib":"^1.117.0","jsii-build-tools":"^1.117.0","jsii-calc":"^3.20.120","source-map-loader":"^5.0.0","webpack":"^5.101.3","webpack-cli":"^6.0.1"}}');
     },
     8463: (module, __unused_webpack_exports, __webpack_require__) => {
         "use strict";
