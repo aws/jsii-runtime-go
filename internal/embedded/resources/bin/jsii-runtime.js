@@ -1,134 +1,5 @@
 var __webpack_modules__ = {
-    268: (__unused_webpack_module, exports, __webpack_require__) => {
-        "use strict";
-        Object.defineProperty(exports, "__esModule", {
-            value: true
-        });
-        exports.NodeRelease = void 0;
-        const process = __webpack_require__(932);
-        const semver_1 = __webpack_require__(5263);
-        const ONE_DAY_IN_MILLISECONDS = 864e5;
-        class NodeRelease {
-            static forThisRuntime() {
-                const semver = new semver_1.SemVer(process.version);
-                const majorVersion = semver.major;
-                for (const nodeRelease of this.ALL_RELEASES) {
-                    if (nodeRelease.majorVersion === majorVersion) {
-                        return {
-                            nodeRelease,
-                            knownBroken: !nodeRelease.supportedRange.test(semver)
-                        };
-                    }
-                }
-                return {
-                    nodeRelease: undefined,
-                    knownBroken: false
-                };
-            }
-            constructor(majorVersion, opts) {
-                var _a, _b, _c;
-                this.untested = (_a = opts.untested) !== null && _a !== void 0 ? _a : false;
-                this.majorVersion = majorVersion;
-                this.supportedRange = new semver_1.Range((_b = opts.supportedRange) !== null && _b !== void 0 ? _b : `^${majorVersion}.0.0`);
-                this.endOfLifeDate = opts.endOfLife;
-                this.endOfLife = opts.endOfLife.getTime() + ONE_DAY_IN_MILLISECONDS <= Date.now();
-                this.endOfJsiiSupportDate = (_c = opts.endOfJsiiSupport) !== null && _c !== void 0 ? _c : new Date(this.endOfLifeDate.getFullYear(), this.endOfLifeDate.getMonth() + NodeRelease.DEFAULT_EXTENDED_SUPPORT_MONTHS, this.endOfLifeDate.getDate());
-                const endOfJsiiSupport = this.endOfJsiiSupportDate.getTime() + ONE_DAY_IN_MILLISECONDS <= Date.now();
-                this.deprecated = this.endOfLife && !endOfJsiiSupport;
-                this.supported = !this.untested && !endOfJsiiSupport;
-            }
-            toString() {
-                const eolInfo = this.endOfLifeDate ? ` (Planned end-of-life: ${this.endOfLifeDate.toISOString().slice(0, 10)})` : "";
-                return `${this.supportedRange.raw}${eolInfo}`;
-            }
-        }
-        exports.NodeRelease = NodeRelease;
-        NodeRelease.DEFAULT_EXTENDED_SUPPORT_MONTHS = 6;
-        NodeRelease.ALL_RELEASES = [ ...[ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 ].map(majorVersion => new NodeRelease(majorVersion, {
-            endOfLife: new Date("2018-01-01"),
-            untested: true
-        })), new NodeRelease(12, {
-            endOfLife: new Date("2022-04-30"),
-            supportedRange: "^12.7.0"
-        }), new NodeRelease(13, {
-            endOfLife: new Date("2020-06-01"),
-            untested: true
-        }), new NodeRelease(14, {
-            endOfLife: new Date("2023-04-30"),
-            supportedRange: "^14.17.0"
-        }), new NodeRelease(15, {
-            endOfLife: new Date("2021-06-01"),
-            untested: true
-        }), new NodeRelease(16, {
-            endOfLife: new Date("2023-09-11"),
-            supportedRange: "^16.3.0"
-        }), new NodeRelease(17, {
-            endOfLife: new Date("2022-06-01"),
-            supportedRange: "^17.3.0",
-            untested: true
-        }), new NodeRelease(19, {
-            endOfLife: new Date("2023-06-01"),
-            untested: true
-        }), new NodeRelease(21, {
-            endOfLife: new Date("2024-06-01"),
-            untested: true
-        }), new NodeRelease(23, {
-            endOfLife: new Date("2025-06-01"),
-            untested: true
-        }), new NodeRelease(18, {
-            endOfLife: new Date("2025-04-30"),
-            endOfJsiiSupport: new Date("2025-11-30")
-        }), new NodeRelease(20, {
-            endOfLife: new Date("2026-04-30")
-        }), new NodeRelease(22, {
-            endOfLife: new Date("2027-04-30")
-        }), new NodeRelease(24, {
-            endOfLife: new Date("2028-04-30")
-        }) ];
-    },
-    274: (module, __unused_webpack_exports, __webpack_require__) => {
-        "use strict";
-        const SemVer = __webpack_require__(8038);
-        const Range = __webpack_require__(3597);
-        const maxSatisfying = (versions, range, options) => {
-            let max = null;
-            let maxSV = null;
-            let rangeObj = null;
-            try {
-                rangeObj = new Range(range, options);
-            } catch (er) {
-                return null;
-            }
-            versions.forEach(v => {
-                if (rangeObj.test(v)) {
-                    if (!max || maxSV.compare(v) === -1) {
-                        max = v;
-                        maxSV = new SemVer(max, options);
-                    }
-                }
-            });
-            return max;
-        };
-        module.exports = maxSatisfying;
-    },
-    305: (module, __unused_webpack_exports, __webpack_require__) => {
-        "use strict";
-        const SemVer = __webpack_require__(8038);
-        const inc = (version, release, options, identifier, identifierBase) => {
-            if (typeof options === "string") {
-                identifierBase = identifier;
-                identifier = options;
-                options = undefined;
-            }
-            try {
-                return new SemVer(version instanceof SemVer ? version.version : version, options).inc(release, identifier, identifierBase).version;
-            } catch (er) {
-                return null;
-            }
-        };
-        module.exports = inc;
-    },
-    821: (module, __unused_webpack_exports, __webpack_require__) => {
+    821(module, __unused_webpack_exports, __webpack_require__) {
         "use strict";
         module = __webpack_require__.nmd(module);
         const wrapAnsi16 = (fn, offset) => (...args) => {
@@ -264,188 +135,312 @@ var __webpack_modules__ = {
             get: assembleStyles
         });
     },
-    857: module => {
+    6042(module, __unused_webpack_exports, __webpack_require__) {
         "use strict";
-        module.exports = require("os");
-    },
-    928: (module, exports, __webpack_require__) => {
-        "use strict";
-        const {MAX_SAFE_COMPONENT_LENGTH, MAX_SAFE_BUILD_LENGTH, MAX_LENGTH} = __webpack_require__(3932);
-        const debug = __webpack_require__(4122);
-        exports = module.exports = {};
-        const re = exports.re = [];
-        const safeRe = exports.safeRe = [];
-        const src = exports.src = [];
-        const safeSrc = exports.safeSrc = [];
-        const t = exports.t = {};
-        let R = 0;
-        const LETTERDASHNUMBER = "[a-zA-Z0-9-]";
-        const safeRegexReplacements = [ [ "\\s", 1 ], [ "\\d", MAX_LENGTH ], [ LETTERDASHNUMBER, MAX_SAFE_BUILD_LENGTH ] ];
-        const makeSafeRegex = value => {
-            for (const [token, max] of safeRegexReplacements) {
-                value = value.split(`${token}*`).join(`${token}{0,${max}}`).split(`${token}+`).join(`${token}{1,${max}}`);
+        const ansiStyles = __webpack_require__(821);
+        const {stdout: stdoutColor, stderr: stderrColor} = __webpack_require__(3533);
+        const {stringReplaceAll, stringEncaseCRLFWithFirstIndex} = __webpack_require__(4932);
+        const {isArray} = Array;
+        const levelMapping = [ "ansi", "ansi", "ansi256", "ansi16m" ];
+        const styles = Object.create(null);
+        const applyOptions = (object, options = {}) => {
+            if (options.level && !(Number.isInteger(options.level) && options.level >= 0 && options.level <= 3)) {
+                throw new Error("The `level` option should be an integer from 0 to 3");
             }
-            return value;
+            const colorLevel = stdoutColor ? stdoutColor.level : 0;
+            object.level = options.level === undefined ? colorLevel : options.level;
         };
-        const createToken = (name, value, isGlobal) => {
-            const safe = makeSafeRegex(value);
-            const index = R++;
-            debug(name, index, value);
-            t[name] = index;
-            src[index] = value;
-            safeSrc[index] = safe;
-            re[index] = new RegExp(value, isGlobal ? "g" : undefined);
-            safeRe[index] = new RegExp(safe, isGlobal ? "g" : undefined);
-        };
-        createToken("NUMERICIDENTIFIER", "0|[1-9]\\d*");
-        createToken("NUMERICIDENTIFIERLOOSE", "\\d+");
-        createToken("NONNUMERICIDENTIFIER", `\\d*[a-zA-Z-]${LETTERDASHNUMBER}*`);
-        createToken("MAINVERSION", `(${src[t.NUMERICIDENTIFIER]})\\.` + `(${src[t.NUMERICIDENTIFIER]})\\.` + `(${src[t.NUMERICIDENTIFIER]})`);
-        createToken("MAINVERSIONLOOSE", `(${src[t.NUMERICIDENTIFIERLOOSE]})\\.` + `(${src[t.NUMERICIDENTIFIERLOOSE]})\\.` + `(${src[t.NUMERICIDENTIFIERLOOSE]})`);
-        createToken("PRERELEASEIDENTIFIER", `(?:${src[t.NONNUMERICIDENTIFIER]}|${src[t.NUMERICIDENTIFIER]})`);
-        createToken("PRERELEASEIDENTIFIERLOOSE", `(?:${src[t.NONNUMERICIDENTIFIER]}|${src[t.NUMERICIDENTIFIERLOOSE]})`);
-        createToken("PRERELEASE", `(?:-(${src[t.PRERELEASEIDENTIFIER]}(?:\\.${src[t.PRERELEASEIDENTIFIER]})*))`);
-        createToken("PRERELEASELOOSE", `(?:-?(${src[t.PRERELEASEIDENTIFIERLOOSE]}(?:\\.${src[t.PRERELEASEIDENTIFIERLOOSE]})*))`);
-        createToken("BUILDIDENTIFIER", `${LETTERDASHNUMBER}+`);
-        createToken("BUILD", `(?:\\+(${src[t.BUILDIDENTIFIER]}(?:\\.${src[t.BUILDIDENTIFIER]})*))`);
-        createToken("FULLPLAIN", `v?${src[t.MAINVERSION]}${src[t.PRERELEASE]}?${src[t.BUILD]}?`);
-        createToken("FULL", `^${src[t.FULLPLAIN]}$`);
-        createToken("LOOSEPLAIN", `[v=\\s]*${src[t.MAINVERSIONLOOSE]}${src[t.PRERELEASELOOSE]}?${src[t.BUILD]}?`);
-        createToken("LOOSE", `^${src[t.LOOSEPLAIN]}$`);
-        createToken("GTLT", "((?:<|>)?=?)");
-        createToken("XRANGEIDENTIFIERLOOSE", `${src[t.NUMERICIDENTIFIERLOOSE]}|x|X|\\*`);
-        createToken("XRANGEIDENTIFIER", `${src[t.NUMERICIDENTIFIER]}|x|X|\\*`);
-        createToken("XRANGEPLAIN", `[v=\\s]*(${src[t.XRANGEIDENTIFIER]})` + `(?:\\.(${src[t.XRANGEIDENTIFIER]})` + `(?:\\.(${src[t.XRANGEIDENTIFIER]})` + `(?:${src[t.PRERELEASE]})?${src[t.BUILD]}?` + `)?)?`);
-        createToken("XRANGEPLAINLOOSE", `[v=\\s]*(${src[t.XRANGEIDENTIFIERLOOSE]})` + `(?:\\.(${src[t.XRANGEIDENTIFIERLOOSE]})` + `(?:\\.(${src[t.XRANGEIDENTIFIERLOOSE]})` + `(?:${src[t.PRERELEASELOOSE]})?${src[t.BUILD]}?` + `)?)?`);
-        createToken("XRANGE", `^${src[t.GTLT]}\\s*${src[t.XRANGEPLAIN]}$`);
-        createToken("XRANGELOOSE", `^${src[t.GTLT]}\\s*${src[t.XRANGEPLAINLOOSE]}$`);
-        createToken("COERCEPLAIN", `${"(^|[^\\d])" + "(\\d{1,"}${MAX_SAFE_COMPONENT_LENGTH}})` + `(?:\\.(\\d{1,${MAX_SAFE_COMPONENT_LENGTH}}))?` + `(?:\\.(\\d{1,${MAX_SAFE_COMPONENT_LENGTH}}))?`);
-        createToken("COERCE", `${src[t.COERCEPLAIN]}(?:$|[^\\d])`);
-        createToken("COERCEFULL", src[t.COERCEPLAIN] + `(?:${src[t.PRERELEASE]})?` + `(?:${src[t.BUILD]})?` + `(?:$|[^\\d])`);
-        createToken("COERCERTL", src[t.COERCE], true);
-        createToken("COERCERTLFULL", src[t.COERCEFULL], true);
-        createToken("LONETILDE", "(?:~>?)");
-        createToken("TILDETRIM", `(\\s*)${src[t.LONETILDE]}\\s+`, true);
-        exports.tildeTrimReplace = "$1~";
-        createToken("TILDE", `^${src[t.LONETILDE]}${src[t.XRANGEPLAIN]}$`);
-        createToken("TILDELOOSE", `^${src[t.LONETILDE]}${src[t.XRANGEPLAINLOOSE]}$`);
-        createToken("LONECARET", "(?:\\^)");
-        createToken("CARETTRIM", `(\\s*)${src[t.LONECARET]}\\s+`, true);
-        exports.caretTrimReplace = "$1^";
-        createToken("CARET", `^${src[t.LONECARET]}${src[t.XRANGEPLAIN]}$`);
-        createToken("CARETLOOSE", `^${src[t.LONECARET]}${src[t.XRANGEPLAINLOOSE]}$`);
-        createToken("COMPARATORLOOSE", `^${src[t.GTLT]}\\s*(${src[t.LOOSEPLAIN]})$|^$`);
-        createToken("COMPARATOR", `^${src[t.GTLT]}\\s*(${src[t.FULLPLAIN]})$|^$`);
-        createToken("COMPARATORTRIM", `(\\s*)${src[t.GTLT]}\\s*(${src[t.LOOSEPLAIN]}|${src[t.XRANGEPLAIN]})`, true);
-        exports.comparatorTrimReplace = "$1$2$3";
-        createToken("HYPHENRANGE", `^\\s*(${src[t.XRANGEPLAIN]})` + `\\s+-\\s+` + `(${src[t.XRANGEPLAIN]})` + `\\s*$`);
-        createToken("HYPHENRANGELOOSE", `^\\s*(${src[t.XRANGEPLAINLOOSE]})` + `\\s+-\\s+` + `(${src[t.XRANGEPLAINLOOSE]})` + `\\s*$`);
-        createToken("STAR", "(<|>)?=?\\s*\\*");
-        createToken("GTE0", "^\\s*>=\\s*0\\.0\\.0\\s*$");
-        createToken("GTE0PRE", "^\\s*>=\\s*0\\.0\\.0-0\\s*$");
-    },
-    932: module => {
-        "use strict";
-        module.exports = require("process");
-    },
-    1005: (module, __unused_webpack_exports, __webpack_require__) => {
-        "use strict";
-        const eq = __webpack_require__(8935);
-        const neq = __webpack_require__(8661);
-        const gt = __webpack_require__(6670);
-        const gte = __webpack_require__(6999);
-        const lt = __webpack_require__(5169);
-        const lte = __webpack_require__(9746);
-        const cmp = (a, op, b, loose) => {
-            switch (op) {
-              case "===":
-                if (typeof a === "object") {
-                    a = a.version;
-                }
-                if (typeof b === "object") {
-                    b = b.version;
-                }
-                return a === b;
-
-              case "!==":
-                if (typeof a === "object") {
-                    a = a.version;
-                }
-                if (typeof b === "object") {
-                    b = b.version;
-                }
-                return a !== b;
-
-              case "":
-              case "=":
-              case "==":
-                return eq(a, b, loose);
-
-              case "!=":
-                return neq(a, b, loose);
-
-              case ">":
-                return gt(a, b, loose);
-
-              case ">=":
-                return gte(a, b, loose);
-
-              case "<":
-                return lt(a, b, loose);
-
-              case "<=":
-                return lte(a, b, loose);
-
-              default:
-                throw new TypeError(`Invalid operator: ${op}`);
-            }
-        };
-        module.exports = cmp;
-    },
-    1380: module => {
-        "use strict";
-        class LRUCache {
-            constructor() {
-                this.max = 1e3;
-                this.map = new Map;
-            }
-            get(key) {
-                const value = this.map.get(key);
-                if (value === undefined) {
-                    return undefined;
-                } else {
-                    this.map.delete(key);
-                    this.map.set(key, value);
-                    return value;
-                }
-            }
-            delete(key) {
-                return this.map.delete(key);
-            }
-            set(key, value) {
-                const deleted = this.delete(key);
-                if (!deleted && value !== undefined) {
-                    if (this.map.size >= this.max) {
-                        const firstKey = this.map.keys().next().value;
-                        this.delete(firstKey);
-                    }
-                    this.map.set(key, value);
-                }
-                return this;
+        class ChalkClass {
+            constructor(options) {
+                return chalkFactory(options);
             }
         }
-        module.exports = LRUCache;
-    },
-    1519: (module, __unused_webpack_exports, __webpack_require__) => {
-        "use strict";
-        const parse = __webpack_require__(3770);
-        const valid = (version, options) => {
-            const v = parse(version, options);
-            return v ? v.version : null;
+        const chalkFactory = options => {
+            const chalk = {};
+            applyOptions(chalk, options);
+            chalk.template = (...arguments_) => chalkTag(chalk.template, ...arguments_);
+            Object.setPrototypeOf(chalk, Chalk.prototype);
+            Object.setPrototypeOf(chalk.template, chalk);
+            chalk.template.constructor = () => {
+                throw new Error("`chalk.constructor()` is deprecated. Use `new chalk.Instance()` instead.");
+            };
+            chalk.template.Instance = ChalkClass;
+            return chalk.template;
         };
-        module.exports = valid;
+        function Chalk(options) {
+            return chalkFactory(options);
+        }
+        for (const [styleName, style] of Object.entries(ansiStyles)) {
+            styles[styleName] = {
+                get() {
+                    const builder = createBuilder(this, createStyler(style.open, style.close, this._styler), this._isEmpty);
+                    Object.defineProperty(this, styleName, {
+                        value: builder
+                    });
+                    return builder;
+                }
+            };
+        }
+        styles.visible = {
+            get() {
+                const builder = createBuilder(this, this._styler, true);
+                Object.defineProperty(this, "visible", {
+                    value: builder
+                });
+                return builder;
+            }
+        };
+        const usedModels = [ "rgb", "hex", "keyword", "hsl", "hsv", "hwb", "ansi", "ansi256" ];
+        for (const model of usedModels) {
+            styles[model] = {
+                get() {
+                    const {level} = this;
+                    return function(...arguments_) {
+                        const styler = createStyler(ansiStyles.color[levelMapping[level]][model](...arguments_), ansiStyles.color.close, this._styler);
+                        return createBuilder(this, styler, this._isEmpty);
+                    };
+                }
+            };
+        }
+        for (const model of usedModels) {
+            const bgModel = "bg" + model[0].toUpperCase() + model.slice(1);
+            styles[bgModel] = {
+                get() {
+                    const {level} = this;
+                    return function(...arguments_) {
+                        const styler = createStyler(ansiStyles.bgColor[levelMapping[level]][model](...arguments_), ansiStyles.bgColor.close, this._styler);
+                        return createBuilder(this, styler, this._isEmpty);
+                    };
+                }
+            };
+        }
+        const proto = Object.defineProperties(() => {}, {
+            ...styles,
+            level: {
+                enumerable: true,
+                get() {
+                    return this._generator.level;
+                },
+                set(level) {
+                    this._generator.level = level;
+                }
+            }
+        });
+        const createStyler = (open, close, parent) => {
+            let openAll;
+            let closeAll;
+            if (parent === undefined) {
+                openAll = open;
+                closeAll = close;
+            } else {
+                openAll = parent.openAll + open;
+                closeAll = close + parent.closeAll;
+            }
+            return {
+                open,
+                close,
+                openAll,
+                closeAll,
+                parent
+            };
+        };
+        const createBuilder = (self, _styler, _isEmpty) => {
+            const builder = (...arguments_) => {
+                if (isArray(arguments_[0]) && isArray(arguments_[0].raw)) {
+                    return applyStyle(builder, chalkTag(builder, ...arguments_));
+                }
+                return applyStyle(builder, arguments_.length === 1 ? "" + arguments_[0] : arguments_.join(" "));
+            };
+            Object.setPrototypeOf(builder, proto);
+            builder._generator = self;
+            builder._styler = _styler;
+            builder._isEmpty = _isEmpty;
+            return builder;
+        };
+        const applyStyle = (self, string) => {
+            if (self.level <= 0 || !string) {
+                return self._isEmpty ? "" : string;
+            }
+            let styler = self._styler;
+            if (styler === undefined) {
+                return string;
+            }
+            const {openAll, closeAll} = styler;
+            if (string.indexOf("") !== -1) {
+                while (styler !== undefined) {
+                    string = stringReplaceAll(string, styler.close, styler.open);
+                    styler = styler.parent;
+                }
+            }
+            const lfIndex = string.indexOf("\n");
+            if (lfIndex !== -1) {
+                string = stringEncaseCRLFWithFirstIndex(string, closeAll, openAll, lfIndex);
+            }
+            return openAll + string + closeAll;
+        };
+        let template;
+        const chalkTag = (chalk, ...strings) => {
+            const [firstString] = strings;
+            if (!isArray(firstString) || !isArray(firstString.raw)) {
+                return strings.join(" ");
+            }
+            const arguments_ = strings.slice(1);
+            const parts = [ firstString.raw[0] ];
+            for (let i = 1; i < firstString.length; i++) {
+                parts.push(String(arguments_[i - 1]).replace(/[{}\\]/g, "\\$&"), String(firstString.raw[i]));
+            }
+            if (template === undefined) {
+                template = __webpack_require__(8993);
+            }
+            return template(chalk, parts.join(""));
+        };
+        Object.defineProperties(Chalk.prototype, styles);
+        const chalk = Chalk();
+        chalk.supportsColor = stdoutColor;
+        chalk.stderr = Chalk({
+            level: stderrColor ? stderrColor.level : 0
+        });
+        chalk.stderr.supportsColor = stderrColor;
+        module.exports = chalk;
     },
-    1873: (module, __unused_webpack_exports, __webpack_require__) => {
+    8993(module) {
+        "use strict";
+        const TEMPLATE_REGEX = /(?:\\(u(?:[a-f\d]{4}|\{[a-f\d]{1,6}\})|x[a-f\d]{2}|.))|(?:\{(~)?(\w+(?:\([^)]*\))?(?:\.\w+(?:\([^)]*\))?)*)(?:[ \t]|(?=\r?\n)))|(\})|((?:.|[\r\n\f])+?)/gi;
+        const STYLE_REGEX = /(?:^|\.)(\w+)(?:\(([^)]*)\))?/g;
+        const STRING_REGEX = /^(['"])((?:\\.|(?!\1)[^\\])*)\1$/;
+        const ESCAPE_REGEX = /\\(u(?:[a-f\d]{4}|{[a-f\d]{1,6}})|x[a-f\d]{2}|.)|([^\\])/gi;
+        const ESCAPES = new Map([ [ "n", "\n" ], [ "r", "\r" ], [ "t", "\t" ], [ "b", "\b" ], [ "f", "\f" ], [ "v", "\v" ], [ "0", "\0" ], [ "\\", "\\" ], [ "e", "" ], [ "a", "" ] ]);
+        function unescape(c) {
+            const u = c[0] === "u";
+            const bracket = c[1] === "{";
+            if (u && !bracket && c.length === 5 || c[0] === "x" && c.length === 3) {
+                return String.fromCharCode(parseInt(c.slice(1), 16));
+            }
+            if (u && bracket) {
+                return String.fromCodePoint(parseInt(c.slice(2, -1), 16));
+            }
+            return ESCAPES.get(c) || c;
+        }
+        function parseArguments(name, arguments_) {
+            const results = [];
+            const chunks = arguments_.trim().split(/\s*,\s*/g);
+            let matches;
+            for (const chunk of chunks) {
+                const number = Number(chunk);
+                if (!Number.isNaN(number)) {
+                    results.push(number);
+                } else if (matches = chunk.match(STRING_REGEX)) {
+                    results.push(matches[2].replace(ESCAPE_REGEX, (m, escape, character) => escape ? unescape(escape) : character));
+                } else {
+                    throw new Error(`Invalid Chalk template style argument: ${chunk} (in style '${name}')`);
+                }
+            }
+            return results;
+        }
+        function parseStyle(style) {
+            STYLE_REGEX.lastIndex = 0;
+            const results = [];
+            let matches;
+            while ((matches = STYLE_REGEX.exec(style)) !== null) {
+                const name = matches[1];
+                if (matches[2]) {
+                    const args = parseArguments(name, matches[2]);
+                    results.push([ name ].concat(args));
+                } else {
+                    results.push([ name ]);
+                }
+            }
+            return results;
+        }
+        function buildStyle(chalk, styles) {
+            const enabled = {};
+            for (const layer of styles) {
+                for (const style of layer.styles) {
+                    enabled[style[0]] = layer.inverse ? null : style.slice(1);
+                }
+            }
+            let current = chalk;
+            for (const [styleName, styles] of Object.entries(enabled)) {
+                if (!Array.isArray(styles)) {
+                    continue;
+                }
+                if (!(styleName in current)) {
+                    throw new Error(`Unknown Chalk style: ${styleName}`);
+                }
+                current = styles.length > 0 ? current[styleName](...styles) : current[styleName];
+            }
+            return current;
+        }
+        module.exports = (chalk, temporary) => {
+            const styles = [];
+            const chunks = [];
+            let chunk = [];
+            temporary.replace(TEMPLATE_REGEX, (m, escapeCharacter, inverse, style, close, character) => {
+                if (escapeCharacter) {
+                    chunk.push(unescape(escapeCharacter));
+                } else if (style) {
+                    const string = chunk.join("");
+                    chunk = [];
+                    chunks.push(styles.length === 0 ? string : buildStyle(chalk, styles)(string));
+                    styles.push({
+                        inverse,
+                        styles: parseStyle(style)
+                    });
+                } else if (close) {
+                    if (styles.length === 0) {
+                        throw new Error("Found extraneous } in Chalk template literal");
+                    }
+                    chunks.push(buildStyle(chalk, styles)(chunk.join("")));
+                    chunk = [];
+                    styles.pop();
+                } else {
+                    chunk.push(character);
+                }
+            });
+            chunks.push(chunk.join(""));
+            if (styles.length > 0) {
+                const errMessage = `Chalk template literal is missing ${styles.length} closing bracket${styles.length === 1 ? "" : "s"} (\`}\`)`;
+                throw new Error(errMessage);
+            }
+            return chunks.join("");
+        };
+    },
+    4932(module) {
+        "use strict";
+        const stringReplaceAll = (string, substring, replacer) => {
+            let index = string.indexOf(substring);
+            if (index === -1) {
+                return string;
+            }
+            const substringLength = substring.length;
+            let endIndex = 0;
+            let returnValue = "";
+            do {
+                returnValue += string.substr(endIndex, index - endIndex) + substring + replacer;
+                endIndex = index + substringLength;
+                index = string.indexOf(substring, endIndex);
+            } while (index !== -1);
+            returnValue += string.substr(endIndex);
+            return returnValue;
+        };
+        const stringEncaseCRLFWithFirstIndex = (string, prefix, postfix, index) => {
+            let endIndex = 0;
+            let returnValue = "";
+            do {
+                const gotCR = string[index - 1] === "\r";
+                returnValue += string.substr(endIndex, (gotCR ? index - 1 : index) - endIndex) + prefix + (gotCR ? "\r\n" : "\n") + postfix;
+                endIndex = index + 1;
+                index = string.indexOf("\n", endIndex);
+            } while (index !== -1);
+            returnValue += string.substr(endIndex);
+            return returnValue;
+        };
+        module.exports = {
+            stringReplaceAll,
+            stringEncaseCRLFWithFirstIndex
+        };
+    },
+    1873(module, __unused_webpack_exports, __webpack_require__) {
         const cssKeywords = __webpack_require__(2694);
         const reverseKeywords = {};
         for (const key of Object.keys(cssKeywords)) {
@@ -1166,11 +1161,7 @@ var __webpack_modules__ = {
             return [ val / 255 * 100 ];
         };
     },
-    2018: module => {
-        "use strict";
-        module.exports = require("tty");
-    },
-    2172: (module, __unused_webpack_exports, __webpack_require__) => {
+    2172(module, __unused_webpack_exports, __webpack_require__) {
         const conversions = __webpack_require__(1873);
         const route = __webpack_require__(3701);
         const convert = {};
@@ -1231,80 +1222,71 @@ var __webpack_modules__ = {
         });
         module.exports = convert;
     },
-    2393: (module, __unused_webpack_exports, __webpack_require__) => {
-        "use strict";
-        const compareBuild = __webpack_require__(8471);
-        const sort = (list, loose) => list.sort((a, b) => compareBuild(a, b, loose));
-        module.exports = sort;
-    },
-    2641: (module, __unused_webpack_exports, __webpack_require__) => {
-        "use strict";
-        const SemVer = __webpack_require__(8038);
-        const Comparator = __webpack_require__(3114);
-        const {ANY} = Comparator;
-        const Range = __webpack_require__(3597);
-        const satisfies = __webpack_require__(6336);
-        const gt = __webpack_require__(6670);
-        const lt = __webpack_require__(5169);
-        const lte = __webpack_require__(9746);
-        const gte = __webpack_require__(6999);
-        const outside = (version, range, hilo, options) => {
-            version = new SemVer(version, options);
-            range = new Range(range, options);
-            let gtfn, ltefn, ltfn, comp, ecomp;
-            switch (hilo) {
-              case ">":
-                gtfn = gt;
-                ltefn = lte;
-                ltfn = lt;
-                comp = ">";
-                ecomp = ">=";
-                break;
-
-              case "<":
-                gtfn = lt;
-                ltefn = gte;
-                ltfn = gt;
-                comp = "<";
-                ecomp = "<=";
-                break;
-
-              default:
-                throw new TypeError('Must provide a hilo val of "<" or ">"');
+    3701(module, __unused_webpack_exports, __webpack_require__) {
+        const conversions = __webpack_require__(1873);
+        function buildGraph() {
+            const graph = {};
+            const models = Object.keys(conversions);
+            for (let len = models.length, i = 0; i < len; i++) {
+                graph[models[i]] = {
+                    distance: -1,
+                    parent: null
+                };
             }
-            if (satisfies(version, range, options)) {
-                return false;
-            }
-            for (let i = 0; i < range.set.length; ++i) {
-                const comparators = range.set[i];
-                let high = null;
-                let low = null;
-                comparators.forEach(comparator => {
-                    if (comparator.semver === ANY) {
-                        comparator = new Comparator(">=0.0.0");
+            return graph;
+        }
+        function deriveBFS(fromModel) {
+            const graph = buildGraph();
+            const queue = [ fromModel ];
+            graph[fromModel].distance = 0;
+            while (queue.length) {
+                const current = queue.pop();
+                const adjacents = Object.keys(conversions[current]);
+                for (let len = adjacents.length, i = 0; i < len; i++) {
+                    const adjacent = adjacents[i];
+                    const node = graph[adjacent];
+                    if (node.distance === -1) {
+                        node.distance = graph[current].distance + 1;
+                        node.parent = current;
+                        queue.unshift(adjacent);
                     }
-                    high = high || comparator;
-                    low = low || comparator;
-                    if (gtfn(comparator.semver, high.semver, options)) {
-                        high = comparator;
-                    } else if (ltfn(comparator.semver, low.semver, options)) {
-                        low = comparator;
-                    }
-                });
-                if (high.operator === comp || high.operator === ecomp) {
-                    return false;
-                }
-                if ((!low.operator || low.operator === comp) && ltefn(version, low.semver)) {
-                    return false;
-                } else if (low.operator === ecomp && ltfn(version, low.semver)) {
-                    return false;
                 }
             }
-            return true;
+            return graph;
+        }
+        function link(from, to) {
+            return function(args) {
+                return to(from(args));
+            };
+        }
+        function wrapConversion(toModel, graph) {
+            const path = [ graph[toModel].parent, toModel ];
+            let fn = conversions[graph[toModel].parent][toModel];
+            let cur = graph[toModel].parent;
+            while (graph[cur].parent) {
+                path.unshift(graph[cur].parent);
+                fn = link(conversions[graph[cur].parent][cur], fn);
+                cur = graph[cur].parent;
+            }
+            fn.conversion = path;
+            return fn;
+        }
+        module.exports = function(fromModel) {
+            const graph = deriveBFS(fromModel);
+            const conversion = {};
+            const models = Object.keys(graph);
+            for (let len = models.length, i = 0; i < len; i++) {
+                const toModel = models[i];
+                const node = graph[toModel];
+                if (node.parent === null) {
+                    continue;
+                }
+                conversion[toModel] = wrapConversion(toModel, graph);
+            }
+            return conversion;
         };
-        module.exports = outside;
     },
-    2694: module => {
+    2694(module) {
         "use strict";
         module.exports = {
             aliceblue: [ 240, 248, 255 ],
@@ -1457,7 +1439,16 @@ var __webpack_modules__ = {
             yellowgreen: [ 154, 205, 50 ]
         };
     },
-    3114: (module, __unused_webpack_exports, __webpack_require__) => {
+    9614(module) {
+        "use strict";
+        module.exports = (flag, argv = process.argv) => {
+            const prefix = flag.startsWith("-") ? "" : flag.length === 1 ? "-" : "--";
+            const position = argv.indexOf(prefix + flag);
+            const terminatorPosition = argv.indexOf("--");
+            return position !== -1 && (terminatorPosition === -1 || position < terminatorPosition);
+        };
+    },
+    3114(module, __unused_webpack_exports, __webpack_require__) {
         "use strict";
         const ANY = Symbol("SemVer ANY");
         class Comparator {
@@ -1566,154 +1557,7 @@ var __webpack_modules__ = {
         const SemVer = __webpack_require__(8038);
         const Range = __webpack_require__(3597);
     },
-    3328: (module, __unused_webpack_exports, __webpack_require__) => {
-        "use strict";
-        const SemVer = __webpack_require__(8038);
-        const parse = __webpack_require__(3770);
-        const {safeRe: re, t} = __webpack_require__(928);
-        const coerce = (version, options) => {
-            if (version instanceof SemVer) {
-                return version;
-            }
-            if (typeof version === "number") {
-                version = String(version);
-            }
-            if (typeof version !== "string") {
-                return null;
-            }
-            options = options || {};
-            let match = null;
-            if (!options.rtl) {
-                match = version.match(options.includePrerelease ? re[t.COERCEFULL] : re[t.COERCE]);
-            } else {
-                const coerceRtlRegex = options.includePrerelease ? re[t.COERCERTLFULL] : re[t.COERCERTL];
-                let next;
-                while ((next = coerceRtlRegex.exec(version)) && (!match || match.index + match[0].length !== version.length)) {
-                    if (!match || next.index + next[0].length !== match.index + match[0].length) {
-                        match = next;
-                    }
-                    coerceRtlRegex.lastIndex = next.index + next[1].length + next[2].length;
-                }
-                coerceRtlRegex.lastIndex = -1;
-            }
-            if (match === null) {
-                return null;
-            }
-            const major = match[2];
-            const minor = match[3] || "0";
-            const patch = match[4] || "0";
-            const prerelease = options.includePrerelease && match[5] ? `-${match[5]}` : "";
-            const build = options.includePrerelease && match[6] ? `+${match[6]}` : "";
-            return parse(`${major}.${minor}.${patch}${prerelease}${build}`, options);
-        };
-        module.exports = coerce;
-    },
-    3360: (module, __unused_webpack_exports, __webpack_require__) => {
-        "use strict";
-        const compare = __webpack_require__(6278);
-        const rcompare = (a, b, loose) => compare(b, a, loose);
-        module.exports = rcompare;
-    },
-    3533: (module, __unused_webpack_exports, __webpack_require__) => {
-        "use strict";
-        const os = __webpack_require__(857);
-        const tty = __webpack_require__(2018);
-        const hasFlag = __webpack_require__(9614);
-        const {env} = process;
-        let forceColor;
-        if (hasFlag("no-color") || hasFlag("no-colors") || hasFlag("color=false") || hasFlag("color=never")) {
-            forceColor = 0;
-        } else if (hasFlag("color") || hasFlag("colors") || hasFlag("color=true") || hasFlag("color=always")) {
-            forceColor = 1;
-        }
-        if ("FORCE_COLOR" in env) {
-            if (env.FORCE_COLOR === "true") {
-                forceColor = 1;
-            } else if (env.FORCE_COLOR === "false") {
-                forceColor = 0;
-            } else {
-                forceColor = env.FORCE_COLOR.length === 0 ? 1 : Math.min(parseInt(env.FORCE_COLOR, 10), 3);
-            }
-        }
-        function translateLevel(level) {
-            if (level === 0) {
-                return false;
-            }
-            return {
-                level,
-                hasBasic: true,
-                has256: level >= 2,
-                has16m: level >= 3
-            };
-        }
-        function supportsColor(haveStream, streamIsTTY) {
-            if (forceColor === 0) {
-                return 0;
-            }
-            if (hasFlag("color=16m") || hasFlag("color=full") || hasFlag("color=truecolor")) {
-                return 3;
-            }
-            if (hasFlag("color=256")) {
-                return 2;
-            }
-            if (haveStream && !streamIsTTY && forceColor === undefined) {
-                return 0;
-            }
-            const min = forceColor || 0;
-            if (env.TERM === "dumb") {
-                return min;
-            }
-            if (process.platform === "win32") {
-                const osRelease = os.release().split(".");
-                if (Number(osRelease[0]) >= 10 && Number(osRelease[2]) >= 10586) {
-                    return Number(osRelease[2]) >= 14931 ? 3 : 2;
-                }
-                return 1;
-            }
-            if ("CI" in env) {
-                if ([ "TRAVIS", "CIRCLECI", "APPVEYOR", "GITLAB_CI", "GITHUB_ACTIONS", "BUILDKITE" ].some(sign => sign in env) || env.CI_NAME === "codeship") {
-                    return 1;
-                }
-                return min;
-            }
-            if ("TEAMCITY_VERSION" in env) {
-                return /^(9\.(0*[1-9]\d*)\.|\d{2,}\.)/.test(env.TEAMCITY_VERSION) ? 1 : 0;
-            }
-            if (env.COLORTERM === "truecolor") {
-                return 3;
-            }
-            if ("TERM_PROGRAM" in env) {
-                const version = parseInt((env.TERM_PROGRAM_VERSION || "").split(".")[0], 10);
-                switch (env.TERM_PROGRAM) {
-                  case "iTerm.app":
-                    return version >= 3 ? 3 : 2;
-
-                  case "Apple_Terminal":
-                    return 2;
-                }
-            }
-            if (/-256(color)?$/i.test(env.TERM)) {
-                return 2;
-            }
-            if (/^screen|^xterm|^vt100|^vt220|^rxvt|color|ansi|cygwin|linux/i.test(env.TERM)) {
-                return 1;
-            }
-            if ("COLORTERM" in env) {
-                return 1;
-            }
-            return min;
-        }
-        function getSupportLevel(stream) {
-            const level = supportsColor(stream, stream && stream.isTTY);
-            return translateLevel(level);
-        }
-        module.exports = {
-            supportsColor: getSupportLevel,
-            stdout: translateLevel(supportsColor(true, tty.isatty(1))),
-            stderr: translateLevel(supportsColor(true, tty.isatty(2)))
-        };
-    },
-    3597: (module, __unused_webpack_exports, __webpack_require__) => {
+    3597(module, __unused_webpack_exports, __webpack_require__) {
         "use strict";
         const SPACE_CHARACTERS = /\s+/g;
         class Range {
@@ -1867,6 +1711,7 @@ var __webpack_modules__ = {
             return result;
         };
         const parseComparator = (comp, options) => {
+            comp = comp.replace(re[t.BUILD], "");
             debug("comp", comp, options);
             comp = replaceCarets(comp, options);
             debug("caret", comp);
@@ -2064,863 +1909,7 @@ var __webpack_modules__ = {
             return true;
         };
     },
-    3701: (module, __unused_webpack_exports, __webpack_require__) => {
-        const conversions = __webpack_require__(1873);
-        function buildGraph() {
-            const graph = {};
-            const models = Object.keys(conversions);
-            for (let len = models.length, i = 0; i < len; i++) {
-                graph[models[i]] = {
-                    distance: -1,
-                    parent: null
-                };
-            }
-            return graph;
-        }
-        function deriveBFS(fromModel) {
-            const graph = buildGraph();
-            const queue = [ fromModel ];
-            graph[fromModel].distance = 0;
-            while (queue.length) {
-                const current = queue.pop();
-                const adjacents = Object.keys(conversions[current]);
-                for (let len = adjacents.length, i = 0; i < len; i++) {
-                    const adjacent = adjacents[i];
-                    const node = graph[adjacent];
-                    if (node.distance === -1) {
-                        node.distance = graph[current].distance + 1;
-                        node.parent = current;
-                        queue.unshift(adjacent);
-                    }
-                }
-            }
-            return graph;
-        }
-        function link(from, to) {
-            return function(args) {
-                return to(from(args));
-            };
-        }
-        function wrapConversion(toModel, graph) {
-            const path = [ graph[toModel].parent, toModel ];
-            let fn = conversions[graph[toModel].parent][toModel];
-            let cur = graph[toModel].parent;
-            while (graph[cur].parent) {
-                path.unshift(graph[cur].parent);
-                fn = link(conversions[graph[cur].parent][cur], fn);
-                cur = graph[cur].parent;
-            }
-            fn.conversion = path;
-            return fn;
-        }
-        module.exports = function(fromModel) {
-            const graph = deriveBFS(fromModel);
-            const conversion = {};
-            const models = Object.keys(graph);
-            for (let len = models.length, i = 0; i < len; i++) {
-                const toModel = models[i];
-                const node = graph[toModel];
-                if (node.parent === null) {
-                    continue;
-                }
-                conversion[toModel] = wrapConversion(toModel, graph);
-            }
-            return conversion;
-        };
-    },
-    3770: (module, __unused_webpack_exports, __webpack_require__) => {
-        "use strict";
-        const SemVer = __webpack_require__(8038);
-        const parse = (version, options, throwErrors = false) => {
-            if (version instanceof SemVer) {
-                return version;
-            }
-            try {
-                return new SemVer(version, options);
-            } catch (er) {
-                if (!throwErrors) {
-                    return null;
-                }
-                throw er;
-            }
-        };
-        module.exports = parse;
-    },
-    3932: module => {
-        "use strict";
-        const SEMVER_SPEC_VERSION = "2.0.0";
-        const MAX_LENGTH = 256;
-        const MAX_SAFE_INTEGER = Number.MAX_SAFE_INTEGER || 9007199254740991;
-        const MAX_SAFE_COMPONENT_LENGTH = 16;
-        const MAX_SAFE_BUILD_LENGTH = MAX_LENGTH - 6;
-        const RELEASE_TYPES = [ "major", "premajor", "minor", "preminor", "patch", "prepatch", "prerelease" ];
-        module.exports = {
-            MAX_LENGTH,
-            MAX_SAFE_COMPONENT_LENGTH,
-            MAX_SAFE_BUILD_LENGTH,
-            MAX_SAFE_INTEGER,
-            RELEASE_TYPES,
-            SEMVER_SPEC_VERSION,
-            FLAG_INCLUDE_PRERELEASE: 1,
-            FLAG_LOOSE: 2
-        };
-    },
-    3949: (module, __unused_webpack_exports, __webpack_require__) => {
-        "use strict";
-        const compare = __webpack_require__(6278);
-        const compareLoose = (a, b) => compare(a, b, true);
-        module.exports = compareLoose;
-    },
-    4122: module => {
-        "use strict";
-        const debug = typeof process === "object" && process.env && process.env.NODE_DEBUG && /\bsemver\b/i.test(process.env.NODE_DEBUG) ? (...args) => console.error("SEMVER", ...args) : () => {};
-        module.exports = debug;
-    },
-    4236: module => {
-        "use strict";
-        module.exports = require("console");
-    },
-    4302: (module, __unused_webpack_exports, __webpack_require__) => {
-        "use strict";
-        const Range = __webpack_require__(3597);
-        const Comparator = __webpack_require__(3114);
-        const {ANY} = Comparator;
-        const satisfies = __webpack_require__(6336);
-        const compare = __webpack_require__(6278);
-        const subset = (sub, dom, options = {}) => {
-            if (sub === dom) {
-                return true;
-            }
-            sub = new Range(sub, options);
-            dom = new Range(dom, options);
-            let sawNonNull = false;
-            OUTER: for (const simpleSub of sub.set) {
-                for (const simpleDom of dom.set) {
-                    const isSub = simpleSubset(simpleSub, simpleDom, options);
-                    sawNonNull = sawNonNull || isSub !== null;
-                    if (isSub) {
-                        continue OUTER;
-                    }
-                }
-                if (sawNonNull) {
-                    return false;
-                }
-            }
-            return true;
-        };
-        const minimumVersionWithPreRelease = [ new Comparator(">=0.0.0-0") ];
-        const minimumVersion = [ new Comparator(">=0.0.0") ];
-        const simpleSubset = (sub, dom, options) => {
-            if (sub === dom) {
-                return true;
-            }
-            if (sub.length === 1 && sub[0].semver === ANY) {
-                if (dom.length === 1 && dom[0].semver === ANY) {
-                    return true;
-                } else if (options.includePrerelease) {
-                    sub = minimumVersionWithPreRelease;
-                } else {
-                    sub = minimumVersion;
-                }
-            }
-            if (dom.length === 1 && dom[0].semver === ANY) {
-                if (options.includePrerelease) {
-                    return true;
-                } else {
-                    dom = minimumVersion;
-                }
-            }
-            const eqSet = new Set;
-            let gt, lt;
-            for (const c of sub) {
-                if (c.operator === ">" || c.operator === ">=") {
-                    gt = higherGT(gt, c, options);
-                } else if (c.operator === "<" || c.operator === "<=") {
-                    lt = lowerLT(lt, c, options);
-                } else {
-                    eqSet.add(c.semver);
-                }
-            }
-            if (eqSet.size > 1) {
-                return null;
-            }
-            let gtltComp;
-            if (gt && lt) {
-                gtltComp = compare(gt.semver, lt.semver, options);
-                if (gtltComp > 0) {
-                    return null;
-                } else if (gtltComp === 0 && (gt.operator !== ">=" || lt.operator !== "<=")) {
-                    return null;
-                }
-            }
-            for (const eq of eqSet) {
-                if (gt && !satisfies(eq, String(gt), options)) {
-                    return null;
-                }
-                if (lt && !satisfies(eq, String(lt), options)) {
-                    return null;
-                }
-                for (const c of dom) {
-                    if (!satisfies(eq, String(c), options)) {
-                        return false;
-                    }
-                }
-                return true;
-            }
-            let higher, lower;
-            let hasDomLT, hasDomGT;
-            let needDomLTPre = lt && !options.includePrerelease && lt.semver.prerelease.length ? lt.semver : false;
-            let needDomGTPre = gt && !options.includePrerelease && gt.semver.prerelease.length ? gt.semver : false;
-            if (needDomLTPre && needDomLTPre.prerelease.length === 1 && lt.operator === "<" && needDomLTPre.prerelease[0] === 0) {
-                needDomLTPre = false;
-            }
-            for (const c of dom) {
-                hasDomGT = hasDomGT || c.operator === ">" || c.operator === ">=";
-                hasDomLT = hasDomLT || c.operator === "<" || c.operator === "<=";
-                if (gt) {
-                    if (needDomGTPre) {
-                        if (c.semver.prerelease && c.semver.prerelease.length && c.semver.major === needDomGTPre.major && c.semver.minor === needDomGTPre.minor && c.semver.patch === needDomGTPre.patch) {
-                            needDomGTPre = false;
-                        }
-                    }
-                    if (c.operator === ">" || c.operator === ">=") {
-                        higher = higherGT(gt, c, options);
-                        if (higher === c && higher !== gt) {
-                            return false;
-                        }
-                    } else if (gt.operator === ">=" && !satisfies(gt.semver, String(c), options)) {
-                        return false;
-                    }
-                }
-                if (lt) {
-                    if (needDomLTPre) {
-                        if (c.semver.prerelease && c.semver.prerelease.length && c.semver.major === needDomLTPre.major && c.semver.minor === needDomLTPre.minor && c.semver.patch === needDomLTPre.patch) {
-                            needDomLTPre = false;
-                        }
-                    }
-                    if (c.operator === "<" || c.operator === "<=") {
-                        lower = lowerLT(lt, c, options);
-                        if (lower === c && lower !== lt) {
-                            return false;
-                        }
-                    } else if (lt.operator === "<=" && !satisfies(lt.semver, String(c), options)) {
-                        return false;
-                    }
-                }
-                if (!c.operator && (lt || gt) && gtltComp !== 0) {
-                    return false;
-                }
-            }
-            if (gt && hasDomLT && !lt && gtltComp !== 0) {
-                return false;
-            }
-            if (lt && hasDomGT && !gt && gtltComp !== 0) {
-                return false;
-            }
-            if (needDomGTPre || needDomLTPre) {
-                return false;
-            }
-            return true;
-        };
-        const higherGT = (a, b, options) => {
-            if (!a) {
-                return b;
-            }
-            const comp = compare(a.semver, b.semver, options);
-            return comp > 0 ? a : comp < 0 ? b : b.operator === ">" && a.operator === ">=" ? b : a;
-        };
-        const lowerLT = (a, b, options) => {
-            if (!a) {
-                return b;
-            }
-            const comp = compare(a.semver, b.semver, options);
-            return comp < 0 ? a : comp > 0 ? b : b.operator === "<" && a.operator === "<=" ? b : a;
-        };
-        module.exports = subset;
-    },
-    4592: (module, __unused_webpack_exports, __webpack_require__) => {
-        "use strict";
-        const parse = __webpack_require__(3770);
-        const clean = (version, options) => {
-            const s = parse(version.trim().replace(/^[=v]+/, ""), options);
-            return s ? s.version : null;
-        };
-        module.exports = clean;
-    },
-    4932: module => {
-        "use strict";
-        const stringReplaceAll = (string, substring, replacer) => {
-            let index = string.indexOf(substring);
-            if (index === -1) {
-                return string;
-            }
-            const substringLength = substring.length;
-            let endIndex = 0;
-            let returnValue = "";
-            do {
-                returnValue += string.substr(endIndex, index - endIndex) + substring + replacer;
-                endIndex = index + substringLength;
-                index = string.indexOf(substring, endIndex);
-            } while (index !== -1);
-            returnValue += string.substr(endIndex);
-            return returnValue;
-        };
-        const stringEncaseCRLFWithFirstIndex = (string, prefix, postfix, index) => {
-            let endIndex = 0;
-            let returnValue = "";
-            do {
-                const gotCR = string[index - 1] === "\r";
-                returnValue += string.substr(endIndex, (gotCR ? index - 1 : index) - endIndex) + prefix + (gotCR ? "\r\n" : "\n") + postfix;
-                endIndex = index + 1;
-                index = string.indexOf("\n", endIndex);
-            } while (index !== -1);
-            returnValue += string.substr(endIndex);
-            return returnValue;
-        };
-        module.exports = {
-            stringReplaceAll,
-            stringEncaseCRLFWithFirstIndex
-        };
-    },
-    5003: (module, __unused_webpack_exports, __webpack_require__) => {
-        "use strict";
-        const parse = __webpack_require__(3770);
-        const prerelease = (version, options) => {
-            const parsed = parse(version, options);
-            return parsed && parsed.prerelease.length ? parsed.prerelease : null;
-        };
-        module.exports = prerelease;
-    },
-    5063: (module, __unused_webpack_exports, __webpack_require__) => {
-        "use strict";
-        const compareBuild = __webpack_require__(8471);
-        const rsort = (list, loose) => list.sort((a, b) => compareBuild(b, a, loose));
-        module.exports = rsort;
-    },
-    5169: (module, __unused_webpack_exports, __webpack_require__) => {
-        "use strict";
-        const compare = __webpack_require__(6278);
-        const lt = (a, b, loose) => compare(a, b, loose) < 0;
-        module.exports = lt;
-    },
-    5263: (module, __unused_webpack_exports, __webpack_require__) => {
-        "use strict";
-        const internalRe = __webpack_require__(928);
-        const constants = __webpack_require__(3932);
-        const SemVer = __webpack_require__(8038);
-        const identifiers = __webpack_require__(6741);
-        const parse = __webpack_require__(3770);
-        const valid = __webpack_require__(1519);
-        const clean = __webpack_require__(4592);
-        const inc = __webpack_require__(305);
-        const diff = __webpack_require__(5782);
-        const major = __webpack_require__(6680);
-        const minor = __webpack_require__(7748);
-        const patch = __webpack_require__(6219);
-        const prerelease = __webpack_require__(5003);
-        const compare = __webpack_require__(6278);
-        const rcompare = __webpack_require__(3360);
-        const compareLoose = __webpack_require__(3949);
-        const compareBuild = __webpack_require__(8471);
-        const sort = __webpack_require__(2393);
-        const rsort = __webpack_require__(5063);
-        const gt = __webpack_require__(6670);
-        const lt = __webpack_require__(5169);
-        const eq = __webpack_require__(8935);
-        const neq = __webpack_require__(8661);
-        const gte = __webpack_require__(6999);
-        const lte = __webpack_require__(9746);
-        const cmp = __webpack_require__(1005);
-        const coerce = __webpack_require__(3328);
-        const Comparator = __webpack_require__(3114);
-        const Range = __webpack_require__(3597);
-        const satisfies = __webpack_require__(6336);
-        const toComparators = __webpack_require__(9533);
-        const maxSatisfying = __webpack_require__(274);
-        const minSatisfying = __webpack_require__(9304);
-        const minVersion = __webpack_require__(7955);
-        const validRange = __webpack_require__(7348);
-        const outside = __webpack_require__(2641);
-        const gtr = __webpack_require__(7369);
-        const ltr = __webpack_require__(9024);
-        const intersects = __webpack_require__(8474);
-        const simplifyRange = __webpack_require__(6927);
-        const subset = __webpack_require__(4302);
-        module.exports = {
-            parse,
-            valid,
-            clean,
-            inc,
-            diff,
-            major,
-            minor,
-            patch,
-            prerelease,
-            compare,
-            rcompare,
-            compareLoose,
-            compareBuild,
-            sort,
-            rsort,
-            gt,
-            lt,
-            eq,
-            neq,
-            gte,
-            lte,
-            cmp,
-            coerce,
-            Comparator,
-            Range,
-            satisfies,
-            toComparators,
-            maxSatisfying,
-            minSatisfying,
-            minVersion,
-            validRange,
-            outside,
-            gtr,
-            ltr,
-            intersects,
-            simplifyRange,
-            subset,
-            SemVer,
-            re: internalRe.re,
-            src: internalRe.src,
-            tokens: internalRe.t,
-            SEMVER_SPEC_VERSION: constants.SEMVER_SPEC_VERSION,
-            RELEASE_TYPES: constants.RELEASE_TYPES,
-            compareIdentifiers: identifiers.compareIdentifiers,
-            rcompareIdentifiers: identifiers.rcompareIdentifiers
-        };
-    },
-    5276: (module, __unused_webpack_exports, __webpack_require__) => {
-        "use strict";
-        const index_1 = __webpack_require__(8261);
-        (0, index_1.checkNode)();
-        module.exports = {};
-    },
-    5317: module => {
-        "use strict";
-        module.exports = require("child_process");
-    },
-    5782: (module, __unused_webpack_exports, __webpack_require__) => {
-        "use strict";
-        const parse = __webpack_require__(3770);
-        const diff = (version1, version2) => {
-            const v1 = parse(version1, null, true);
-            const v2 = parse(version2, null, true);
-            const comparison = v1.compare(v2);
-            if (comparison === 0) {
-                return null;
-            }
-            const v1Higher = comparison > 0;
-            const highVersion = v1Higher ? v1 : v2;
-            const lowVersion = v1Higher ? v2 : v1;
-            const highHasPre = !!highVersion.prerelease.length;
-            const lowHasPre = !!lowVersion.prerelease.length;
-            if (lowHasPre && !highHasPre) {
-                if (!lowVersion.patch && !lowVersion.minor) {
-                    return "major";
-                }
-                if (lowVersion.compareMain(highVersion) === 0) {
-                    if (lowVersion.minor && !lowVersion.patch) {
-                        return "minor";
-                    }
-                    return "patch";
-                }
-            }
-            const prefix = highHasPre ? "pre" : "";
-            if (v1.major !== v2.major) {
-                return prefix + "major";
-            }
-            if (v1.minor !== v2.minor) {
-                return prefix + "minor";
-            }
-            if (v1.patch !== v2.patch) {
-                return prefix + "patch";
-            }
-            return "prerelease";
-        };
-        module.exports = diff;
-    },
-    6042: (module, __unused_webpack_exports, __webpack_require__) => {
-        "use strict";
-        const ansiStyles = __webpack_require__(821);
-        const {stdout: stdoutColor, stderr: stderrColor} = __webpack_require__(3533);
-        const {stringReplaceAll, stringEncaseCRLFWithFirstIndex} = __webpack_require__(4932);
-        const {isArray} = Array;
-        const levelMapping = [ "ansi", "ansi", "ansi256", "ansi16m" ];
-        const styles = Object.create(null);
-        const applyOptions = (object, options = {}) => {
-            if (options.level && !(Number.isInteger(options.level) && options.level >= 0 && options.level <= 3)) {
-                throw new Error("The `level` option should be an integer from 0 to 3");
-            }
-            const colorLevel = stdoutColor ? stdoutColor.level : 0;
-            object.level = options.level === undefined ? colorLevel : options.level;
-        };
-        class ChalkClass {
-            constructor(options) {
-                return chalkFactory(options);
-            }
-        }
-        const chalkFactory = options => {
-            const chalk = {};
-            applyOptions(chalk, options);
-            chalk.template = (...arguments_) => chalkTag(chalk.template, ...arguments_);
-            Object.setPrototypeOf(chalk, Chalk.prototype);
-            Object.setPrototypeOf(chalk.template, chalk);
-            chalk.template.constructor = () => {
-                throw new Error("`chalk.constructor()` is deprecated. Use `new chalk.Instance()` instead.");
-            };
-            chalk.template.Instance = ChalkClass;
-            return chalk.template;
-        };
-        function Chalk(options) {
-            return chalkFactory(options);
-        }
-        for (const [styleName, style] of Object.entries(ansiStyles)) {
-            styles[styleName] = {
-                get() {
-                    const builder = createBuilder(this, createStyler(style.open, style.close, this._styler), this._isEmpty);
-                    Object.defineProperty(this, styleName, {
-                        value: builder
-                    });
-                    return builder;
-                }
-            };
-        }
-        styles.visible = {
-            get() {
-                const builder = createBuilder(this, this._styler, true);
-                Object.defineProperty(this, "visible", {
-                    value: builder
-                });
-                return builder;
-            }
-        };
-        const usedModels = [ "rgb", "hex", "keyword", "hsl", "hsv", "hwb", "ansi", "ansi256" ];
-        for (const model of usedModels) {
-            styles[model] = {
-                get() {
-                    const {level} = this;
-                    return function(...arguments_) {
-                        const styler = createStyler(ansiStyles.color[levelMapping[level]][model](...arguments_), ansiStyles.color.close, this._styler);
-                        return createBuilder(this, styler, this._isEmpty);
-                    };
-                }
-            };
-        }
-        for (const model of usedModels) {
-            const bgModel = "bg" + model[0].toUpperCase() + model.slice(1);
-            styles[bgModel] = {
-                get() {
-                    const {level} = this;
-                    return function(...arguments_) {
-                        const styler = createStyler(ansiStyles.bgColor[levelMapping[level]][model](...arguments_), ansiStyles.bgColor.close, this._styler);
-                        return createBuilder(this, styler, this._isEmpty);
-                    };
-                }
-            };
-        }
-        const proto = Object.defineProperties(() => {}, {
-            ...styles,
-            level: {
-                enumerable: true,
-                get() {
-                    return this._generator.level;
-                },
-                set(level) {
-                    this._generator.level = level;
-                }
-            }
-        });
-        const createStyler = (open, close, parent) => {
-            let openAll;
-            let closeAll;
-            if (parent === undefined) {
-                openAll = open;
-                closeAll = close;
-            } else {
-                openAll = parent.openAll + open;
-                closeAll = close + parent.closeAll;
-            }
-            return {
-                open,
-                close,
-                openAll,
-                closeAll,
-                parent
-            };
-        };
-        const createBuilder = (self, _styler, _isEmpty) => {
-            const builder = (...arguments_) => {
-                if (isArray(arguments_[0]) && isArray(arguments_[0].raw)) {
-                    return applyStyle(builder, chalkTag(builder, ...arguments_));
-                }
-                return applyStyle(builder, arguments_.length === 1 ? "" + arguments_[0] : arguments_.join(" "));
-            };
-            Object.setPrototypeOf(builder, proto);
-            builder._generator = self;
-            builder._styler = _styler;
-            builder._isEmpty = _isEmpty;
-            return builder;
-        };
-        const applyStyle = (self, string) => {
-            if (self.level <= 0 || !string) {
-                return self._isEmpty ? "" : string;
-            }
-            let styler = self._styler;
-            if (styler === undefined) {
-                return string;
-            }
-            const {openAll, closeAll} = styler;
-            if (string.indexOf("") !== -1) {
-                while (styler !== undefined) {
-                    string = stringReplaceAll(string, styler.close, styler.open);
-                    styler = styler.parent;
-                }
-            }
-            const lfIndex = string.indexOf("\n");
-            if (lfIndex !== -1) {
-                string = stringEncaseCRLFWithFirstIndex(string, closeAll, openAll, lfIndex);
-            }
-            return openAll + string + closeAll;
-        };
-        let template;
-        const chalkTag = (chalk, ...strings) => {
-            const [firstString] = strings;
-            if (!isArray(firstString) || !isArray(firstString.raw)) {
-                return strings.join(" ");
-            }
-            const arguments_ = strings.slice(1);
-            const parts = [ firstString.raw[0] ];
-            for (let i = 1; i < firstString.length; i++) {
-                parts.push(String(arguments_[i - 1]).replace(/[{}\\]/g, "\\$&"), String(firstString.raw[i]));
-            }
-            if (template === undefined) {
-                template = __webpack_require__(8993);
-            }
-            return template(chalk, parts.join(""));
-        };
-        Object.defineProperties(Chalk.prototype, styles);
-        const chalk = Chalk();
-        chalk.supportsColor = stdoutColor;
-        chalk.stderr = Chalk({
-            level: stderrColor ? stderrColor.level : 0
-        });
-        chalk.stderr.supportsColor = stderrColor;
-        module.exports = chalk;
-    },
-    6219: (module, __unused_webpack_exports, __webpack_require__) => {
-        "use strict";
-        const SemVer = __webpack_require__(8038);
-        const patch = (a, loose) => new SemVer(a, loose).patch;
-        module.exports = patch;
-    },
-    6278: (module, __unused_webpack_exports, __webpack_require__) => {
-        "use strict";
-        const SemVer = __webpack_require__(8038);
-        const compare = (a, b, loose) => new SemVer(a, loose).compare(new SemVer(b, loose));
-        module.exports = compare;
-    },
-    6336: (module, __unused_webpack_exports, __webpack_require__) => {
-        "use strict";
-        const Range = __webpack_require__(3597);
-        const satisfies = (version, range, options) => {
-            try {
-                range = new Range(range, options);
-            } catch (er) {
-                return false;
-            }
-            return range.test(version);
-        };
-        module.exports = satisfies;
-    },
-    6670: (module, __unused_webpack_exports, __webpack_require__) => {
-        "use strict";
-        const compare = __webpack_require__(6278);
-        const gt = (a, b, loose) => compare(a, b, loose) > 0;
-        module.exports = gt;
-    },
-    6680: (module, __unused_webpack_exports, __webpack_require__) => {
-        "use strict";
-        const SemVer = __webpack_require__(8038);
-        const major = (a, loose) => new SemVer(a, loose).major;
-        module.exports = major;
-    },
-    6741: module => {
-        "use strict";
-        const numeric = /^[0-9]+$/;
-        const compareIdentifiers = (a, b) => {
-            const anum = numeric.test(a);
-            const bnum = numeric.test(b);
-            if (anum && bnum) {
-                a = +a;
-                b = +b;
-            }
-            return a === b ? 0 : anum && !bnum ? -1 : bnum && !anum ? 1 : a < b ? -1 : 1;
-        };
-        const rcompareIdentifiers = (a, b) => compareIdentifiers(b, a);
-        module.exports = {
-            compareIdentifiers,
-            rcompareIdentifiers
-        };
-    },
-    6837: module => {
-        "use strict";
-        const looseOption = Object.freeze({
-            loose: true
-        });
-        const emptyOpts = Object.freeze({});
-        const parseOptions = options => {
-            if (!options) {
-                return emptyOpts;
-            }
-            if (typeof options !== "object") {
-                return looseOption;
-            }
-            return options;
-        };
-        module.exports = parseOptions;
-    },
-    6927: (module, __unused_webpack_exports, __webpack_require__) => {
-        "use strict";
-        const satisfies = __webpack_require__(6336);
-        const compare = __webpack_require__(6278);
-        module.exports = (versions, range, options) => {
-            const set = [];
-            let first = null;
-            let prev = null;
-            const v = versions.sort((a, b) => compare(a, b, options));
-            for (const version of v) {
-                const included = satisfies(version, range, options);
-                if (included) {
-                    prev = version;
-                    if (!first) {
-                        first = version;
-                    }
-                } else {
-                    if (prev) {
-                        set.push([ first, prev ]);
-                    }
-                    prev = null;
-                    first = null;
-                }
-            }
-            if (first) {
-                set.push([ first, null ]);
-            }
-            const ranges = [];
-            for (const [min, max] of set) {
-                if (min === max) {
-                    ranges.push(min);
-                } else if (!max && min === v[0]) {
-                    ranges.push("*");
-                } else if (!max) {
-                    ranges.push(`>=${min}`);
-                } else if (min === v[0]) {
-                    ranges.push(`<=${max}`);
-                } else {
-                    ranges.push(`${min} - ${max}`);
-                }
-            }
-            const simplified = ranges.join(" || ");
-            const original = typeof range.raw === "string" ? range.raw : String(range);
-            return simplified.length < original.length ? simplified : range;
-        };
-    },
-    6928: module => {
-        "use strict";
-        module.exports = require("path");
-    },
-    6999: (module, __unused_webpack_exports, __webpack_require__) => {
-        "use strict";
-        const compare = __webpack_require__(6278);
-        const gte = (a, b, loose) => compare(a, b, loose) >= 0;
-        module.exports = gte;
-    },
-    7348: (module, __unused_webpack_exports, __webpack_require__) => {
-        "use strict";
-        const Range = __webpack_require__(3597);
-        const validRange = (range, options) => {
-            try {
-                return new Range(range, options).range || "*";
-            } catch (er) {
-                return null;
-            }
-        };
-        module.exports = validRange;
-    },
-    7369: (module, __unused_webpack_exports, __webpack_require__) => {
-        "use strict";
-        const outside = __webpack_require__(2641);
-        const gtr = (version, range, options) => outside(version, range, ">", options);
-        module.exports = gtr;
-    },
-    7748: (module, __unused_webpack_exports, __webpack_require__) => {
-        "use strict";
-        const SemVer = __webpack_require__(8038);
-        const minor = (a, loose) => new SemVer(a, loose).minor;
-        module.exports = minor;
-    },
-    7955: (module, __unused_webpack_exports, __webpack_require__) => {
-        "use strict";
-        const SemVer = __webpack_require__(8038);
-        const Range = __webpack_require__(3597);
-        const gt = __webpack_require__(6670);
-        const minVersion = (range, loose) => {
-            range = new Range(range, loose);
-            let minver = new SemVer("0.0.0");
-            if (range.test(minver)) {
-                return minver;
-            }
-            minver = new SemVer("0.0.0-0");
-            if (range.test(minver)) {
-                return minver;
-            }
-            minver = null;
-            for (let i = 0; i < range.set.length; ++i) {
-                const comparators = range.set[i];
-                let setMin = null;
-                comparators.forEach(comparator => {
-                    const compver = new SemVer(comparator.semver.version);
-                    switch (comparator.operator) {
-                      case ">":
-                        if (compver.prerelease.length === 0) {
-                            compver.patch++;
-                        } else {
-                            compver.prerelease.push(0);
-                        }
-                        compver.raw = compver.format();
-
-                      case "":
-                      case ">=":
-                        if (!setMin || gt(compver, setMin)) {
-                            setMin = compver;
-                        }
-                        break;
-
-                      case "<":
-                      case "<=":
-                        break;
-
-                      default:
-                        throw new Error(`Unexpected operation: ${comparator.operator}`);
-                    }
-                });
-                if (setMin && (!minver || gt(minver, setMin))) {
-                    minver = setMin;
-                }
-            }
-            if (minver && range.test(minver)) {
-                return minver;
-            }
-            return null;
-        };
-        module.exports = minVersion;
-    },
-    8038: (module, __unused_webpack_exports, __webpack_require__) => {
+    8038(module, __unused_webpack_exports, __webpack_require__) {
         "use strict";
         const debug = __webpack_require__(4122);
         const {MAX_LENGTH, MAX_SAFE_INTEGER} = __webpack_require__(3932);
@@ -3006,7 +1995,25 @@ var __webpack_modules__ = {
                 if (!(other instanceof SemVer)) {
                     other = new SemVer(other, this.options);
                 }
-                return compareIdentifiers(this.major, other.major) || compareIdentifiers(this.minor, other.minor) || compareIdentifiers(this.patch, other.patch);
+                if (this.major < other.major) {
+                    return -1;
+                }
+                if (this.major > other.major) {
+                    return 1;
+                }
+                if (this.minor < other.minor) {
+                    return -1;
+                }
+                if (this.minor > other.minor) {
+                    return 1;
+                }
+                if (this.patch < other.patch) {
+                    return -1;
+                }
+                if (this.patch > other.patch) {
+                    return 1;
+                }
+                return 0;
             }
             comparePre(other) {
                 if (!(other instanceof SemVer)) {
@@ -3179,7 +2186,1178 @@ var __webpack_modules__ = {
         }
         module.exports = SemVer;
     },
-    8261: (__unused_webpack_module, exports, __webpack_require__) => {
+    4592(module, __unused_webpack_exports, __webpack_require__) {
+        "use strict";
+        const parse = __webpack_require__(3770);
+        const clean = (version, options) => {
+            const s = parse(version.trim().replace(/^[=v]+/, ""), options);
+            return s ? s.version : null;
+        };
+        module.exports = clean;
+    },
+    1005(module, __unused_webpack_exports, __webpack_require__) {
+        "use strict";
+        const eq = __webpack_require__(8935);
+        const neq = __webpack_require__(8661);
+        const gt = __webpack_require__(6670);
+        const gte = __webpack_require__(6999);
+        const lt = __webpack_require__(5169);
+        const lte = __webpack_require__(9746);
+        const cmp = (a, op, b, loose) => {
+            switch (op) {
+              case "===":
+                if (typeof a === "object") {
+                    a = a.version;
+                }
+                if (typeof b === "object") {
+                    b = b.version;
+                }
+                return a === b;
+
+              case "!==":
+                if (typeof a === "object") {
+                    a = a.version;
+                }
+                if (typeof b === "object") {
+                    b = b.version;
+                }
+                return a !== b;
+
+              case "":
+              case "=":
+              case "==":
+                return eq(a, b, loose);
+
+              case "!=":
+                return neq(a, b, loose);
+
+              case ">":
+                return gt(a, b, loose);
+
+              case ">=":
+                return gte(a, b, loose);
+
+              case "<":
+                return lt(a, b, loose);
+
+              case "<=":
+                return lte(a, b, loose);
+
+              default:
+                throw new TypeError(`Invalid operator: ${op}`);
+            }
+        };
+        module.exports = cmp;
+    },
+    3328(module, __unused_webpack_exports, __webpack_require__) {
+        "use strict";
+        const SemVer = __webpack_require__(8038);
+        const parse = __webpack_require__(3770);
+        const {safeRe: re, t} = __webpack_require__(928);
+        const coerce = (version, options) => {
+            if (version instanceof SemVer) {
+                return version;
+            }
+            if (typeof version === "number") {
+                version = String(version);
+            }
+            if (typeof version !== "string") {
+                return null;
+            }
+            options = options || {};
+            let match = null;
+            if (!options.rtl) {
+                match = version.match(options.includePrerelease ? re[t.COERCEFULL] : re[t.COERCE]);
+            } else {
+                const coerceRtlRegex = options.includePrerelease ? re[t.COERCERTLFULL] : re[t.COERCERTL];
+                let next;
+                while ((next = coerceRtlRegex.exec(version)) && (!match || match.index + match[0].length !== version.length)) {
+                    if (!match || next.index + next[0].length !== match.index + match[0].length) {
+                        match = next;
+                    }
+                    coerceRtlRegex.lastIndex = next.index + next[1].length + next[2].length;
+                }
+                coerceRtlRegex.lastIndex = -1;
+            }
+            if (match === null) {
+                return null;
+            }
+            const major = match[2];
+            const minor = match[3] || "0";
+            const patch = match[4] || "0";
+            const prerelease = options.includePrerelease && match[5] ? `-${match[5]}` : "";
+            const build = options.includePrerelease && match[6] ? `+${match[6]}` : "";
+            return parse(`${major}.${minor}.${patch}${prerelease}${build}`, options);
+        };
+        module.exports = coerce;
+    },
+    8471(module, __unused_webpack_exports, __webpack_require__) {
+        "use strict";
+        const SemVer = __webpack_require__(8038);
+        const compareBuild = (a, b, loose) => {
+            const versionA = new SemVer(a, loose);
+            const versionB = new SemVer(b, loose);
+            return versionA.compare(versionB) || versionA.compareBuild(versionB);
+        };
+        module.exports = compareBuild;
+    },
+    3949(module, __unused_webpack_exports, __webpack_require__) {
+        "use strict";
+        const compare = __webpack_require__(6278);
+        const compareLoose = (a, b) => compare(a, b, true);
+        module.exports = compareLoose;
+    },
+    6278(module, __unused_webpack_exports, __webpack_require__) {
+        "use strict";
+        const SemVer = __webpack_require__(8038);
+        const compare = (a, b, loose) => new SemVer(a, loose).compare(new SemVer(b, loose));
+        module.exports = compare;
+    },
+    5782(module, __unused_webpack_exports, __webpack_require__) {
+        "use strict";
+        const parse = __webpack_require__(3770);
+        const diff = (version1, version2) => {
+            const v1 = parse(version1, null, true);
+            const v2 = parse(version2, null, true);
+            const comparison = v1.compare(v2);
+            if (comparison === 0) {
+                return null;
+            }
+            const v1Higher = comparison > 0;
+            const highVersion = v1Higher ? v1 : v2;
+            const lowVersion = v1Higher ? v2 : v1;
+            const highHasPre = !!highVersion.prerelease.length;
+            const lowHasPre = !!lowVersion.prerelease.length;
+            if (lowHasPre && !highHasPre) {
+                if (!lowVersion.patch && !lowVersion.minor) {
+                    return "major";
+                }
+                if (lowVersion.compareMain(highVersion) === 0) {
+                    if (lowVersion.minor && !lowVersion.patch) {
+                        return "minor";
+                    }
+                    return "patch";
+                }
+            }
+            const prefix = highHasPre ? "pre" : "";
+            if (v1.major !== v2.major) {
+                return prefix + "major";
+            }
+            if (v1.minor !== v2.minor) {
+                return prefix + "minor";
+            }
+            if (v1.patch !== v2.patch) {
+                return prefix + "patch";
+            }
+            return "prerelease";
+        };
+        module.exports = diff;
+    },
+    8935(module, __unused_webpack_exports, __webpack_require__) {
+        "use strict";
+        const compare = __webpack_require__(6278);
+        const eq = (a, b, loose) => compare(a, b, loose) === 0;
+        module.exports = eq;
+    },
+    6670(module, __unused_webpack_exports, __webpack_require__) {
+        "use strict";
+        const compare = __webpack_require__(6278);
+        const gt = (a, b, loose) => compare(a, b, loose) > 0;
+        module.exports = gt;
+    },
+    6999(module, __unused_webpack_exports, __webpack_require__) {
+        "use strict";
+        const compare = __webpack_require__(6278);
+        const gte = (a, b, loose) => compare(a, b, loose) >= 0;
+        module.exports = gte;
+    },
+    305(module, __unused_webpack_exports, __webpack_require__) {
+        "use strict";
+        const SemVer = __webpack_require__(8038);
+        const inc = (version, release, options, identifier, identifierBase) => {
+            if (typeof options === "string") {
+                identifierBase = identifier;
+                identifier = options;
+                options = undefined;
+            }
+            try {
+                return new SemVer(version instanceof SemVer ? version.version : version, options).inc(release, identifier, identifierBase).version;
+            } catch (er) {
+                return null;
+            }
+        };
+        module.exports = inc;
+    },
+    5169(module, __unused_webpack_exports, __webpack_require__) {
+        "use strict";
+        const compare = __webpack_require__(6278);
+        const lt = (a, b, loose) => compare(a, b, loose) < 0;
+        module.exports = lt;
+    },
+    9746(module, __unused_webpack_exports, __webpack_require__) {
+        "use strict";
+        const compare = __webpack_require__(6278);
+        const lte = (a, b, loose) => compare(a, b, loose) <= 0;
+        module.exports = lte;
+    },
+    6680(module, __unused_webpack_exports, __webpack_require__) {
+        "use strict";
+        const SemVer = __webpack_require__(8038);
+        const major = (a, loose) => new SemVer(a, loose).major;
+        module.exports = major;
+    },
+    7748(module, __unused_webpack_exports, __webpack_require__) {
+        "use strict";
+        const SemVer = __webpack_require__(8038);
+        const minor = (a, loose) => new SemVer(a, loose).minor;
+        module.exports = minor;
+    },
+    8661(module, __unused_webpack_exports, __webpack_require__) {
+        "use strict";
+        const compare = __webpack_require__(6278);
+        const neq = (a, b, loose) => compare(a, b, loose) !== 0;
+        module.exports = neq;
+    },
+    3770(module, __unused_webpack_exports, __webpack_require__) {
+        "use strict";
+        const SemVer = __webpack_require__(8038);
+        const parse = (version, options, throwErrors = false) => {
+            if (version instanceof SemVer) {
+                return version;
+            }
+            try {
+                return new SemVer(version, options);
+            } catch (er) {
+                if (!throwErrors) {
+                    return null;
+                }
+                throw er;
+            }
+        };
+        module.exports = parse;
+    },
+    6219(module, __unused_webpack_exports, __webpack_require__) {
+        "use strict";
+        const SemVer = __webpack_require__(8038);
+        const patch = (a, loose) => new SemVer(a, loose).patch;
+        module.exports = patch;
+    },
+    5003(module, __unused_webpack_exports, __webpack_require__) {
+        "use strict";
+        const parse = __webpack_require__(3770);
+        const prerelease = (version, options) => {
+            const parsed = parse(version, options);
+            return parsed && parsed.prerelease.length ? parsed.prerelease : null;
+        };
+        module.exports = prerelease;
+    },
+    3360(module, __unused_webpack_exports, __webpack_require__) {
+        "use strict";
+        const compare = __webpack_require__(6278);
+        const rcompare = (a, b, loose) => compare(b, a, loose);
+        module.exports = rcompare;
+    },
+    5063(module, __unused_webpack_exports, __webpack_require__) {
+        "use strict";
+        const compareBuild = __webpack_require__(8471);
+        const rsort = (list, loose) => list.sort((a, b) => compareBuild(b, a, loose));
+        module.exports = rsort;
+    },
+    6336(module, __unused_webpack_exports, __webpack_require__) {
+        "use strict";
+        const Range = __webpack_require__(3597);
+        const satisfies = (version, range, options) => {
+            try {
+                range = new Range(range, options);
+            } catch (er) {
+                return false;
+            }
+            return range.test(version);
+        };
+        module.exports = satisfies;
+    },
+    2393(module, __unused_webpack_exports, __webpack_require__) {
+        "use strict";
+        const compareBuild = __webpack_require__(8471);
+        const sort = (list, loose) => list.sort((a, b) => compareBuild(a, b, loose));
+        module.exports = sort;
+    },
+    1519(module, __unused_webpack_exports, __webpack_require__) {
+        "use strict";
+        const parse = __webpack_require__(3770);
+        const valid = (version, options) => {
+            const v = parse(version, options);
+            return v ? v.version : null;
+        };
+        module.exports = valid;
+    },
+    5263(module, __unused_webpack_exports, __webpack_require__) {
+        "use strict";
+        const internalRe = __webpack_require__(928);
+        const constants = __webpack_require__(3932);
+        const SemVer = __webpack_require__(8038);
+        const identifiers = __webpack_require__(6741);
+        const parse = __webpack_require__(3770);
+        const valid = __webpack_require__(1519);
+        const clean = __webpack_require__(4592);
+        const inc = __webpack_require__(305);
+        const diff = __webpack_require__(5782);
+        const major = __webpack_require__(6680);
+        const minor = __webpack_require__(7748);
+        const patch = __webpack_require__(6219);
+        const prerelease = __webpack_require__(5003);
+        const compare = __webpack_require__(6278);
+        const rcompare = __webpack_require__(3360);
+        const compareLoose = __webpack_require__(3949);
+        const compareBuild = __webpack_require__(8471);
+        const sort = __webpack_require__(2393);
+        const rsort = __webpack_require__(5063);
+        const gt = __webpack_require__(6670);
+        const lt = __webpack_require__(5169);
+        const eq = __webpack_require__(8935);
+        const neq = __webpack_require__(8661);
+        const gte = __webpack_require__(6999);
+        const lte = __webpack_require__(9746);
+        const cmp = __webpack_require__(1005);
+        const coerce = __webpack_require__(3328);
+        const Comparator = __webpack_require__(3114);
+        const Range = __webpack_require__(3597);
+        const satisfies = __webpack_require__(6336);
+        const toComparators = __webpack_require__(9533);
+        const maxSatisfying = __webpack_require__(274);
+        const minSatisfying = __webpack_require__(9304);
+        const minVersion = __webpack_require__(7955);
+        const validRange = __webpack_require__(7348);
+        const outside = __webpack_require__(2641);
+        const gtr = __webpack_require__(7369);
+        const ltr = __webpack_require__(9024);
+        const intersects = __webpack_require__(8474);
+        const simplifyRange = __webpack_require__(6927);
+        const subset = __webpack_require__(4302);
+        module.exports = {
+            parse,
+            valid,
+            clean,
+            inc,
+            diff,
+            major,
+            minor,
+            patch,
+            prerelease,
+            compare,
+            rcompare,
+            compareLoose,
+            compareBuild,
+            sort,
+            rsort,
+            gt,
+            lt,
+            eq,
+            neq,
+            gte,
+            lte,
+            cmp,
+            coerce,
+            Comparator,
+            Range,
+            satisfies,
+            toComparators,
+            maxSatisfying,
+            minSatisfying,
+            minVersion,
+            validRange,
+            outside,
+            gtr,
+            ltr,
+            intersects,
+            simplifyRange,
+            subset,
+            SemVer,
+            re: internalRe.re,
+            src: internalRe.src,
+            tokens: internalRe.t,
+            SEMVER_SPEC_VERSION: constants.SEMVER_SPEC_VERSION,
+            RELEASE_TYPES: constants.RELEASE_TYPES,
+            compareIdentifiers: identifiers.compareIdentifiers,
+            rcompareIdentifiers: identifiers.rcompareIdentifiers
+        };
+    },
+    3932(module) {
+        "use strict";
+        const SEMVER_SPEC_VERSION = "2.0.0";
+        const MAX_LENGTH = 256;
+        const MAX_SAFE_INTEGER = Number.MAX_SAFE_INTEGER || 9007199254740991;
+        const MAX_SAFE_COMPONENT_LENGTH = 16;
+        const MAX_SAFE_BUILD_LENGTH = MAX_LENGTH - 6;
+        const RELEASE_TYPES = [ "major", "premajor", "minor", "preminor", "patch", "prepatch", "prerelease" ];
+        module.exports = {
+            MAX_LENGTH,
+            MAX_SAFE_COMPONENT_LENGTH,
+            MAX_SAFE_BUILD_LENGTH,
+            MAX_SAFE_INTEGER,
+            RELEASE_TYPES,
+            SEMVER_SPEC_VERSION,
+            FLAG_INCLUDE_PRERELEASE: 1,
+            FLAG_LOOSE: 2
+        };
+    },
+    4122(module) {
+        "use strict";
+        const debug = typeof process === "object" && process.env && process.env.NODE_DEBUG && /\bsemver\b/i.test(process.env.NODE_DEBUG) ? (...args) => console.error("SEMVER", ...args) : () => {};
+        module.exports = debug;
+    },
+    6741(module) {
+        "use strict";
+        const numeric = /^[0-9]+$/;
+        const compareIdentifiers = (a, b) => {
+            if (typeof a === "number" && typeof b === "number") {
+                return a === b ? 0 : a < b ? -1 : 1;
+            }
+            const anum = numeric.test(a);
+            const bnum = numeric.test(b);
+            if (anum && bnum) {
+                a = +a;
+                b = +b;
+            }
+            return a === b ? 0 : anum && !bnum ? -1 : bnum && !anum ? 1 : a < b ? -1 : 1;
+        };
+        const rcompareIdentifiers = (a, b) => compareIdentifiers(b, a);
+        module.exports = {
+            compareIdentifiers,
+            rcompareIdentifiers
+        };
+    },
+    1380(module) {
+        "use strict";
+        class LRUCache {
+            constructor() {
+                this.max = 1e3;
+                this.map = new Map;
+            }
+            get(key) {
+                const value = this.map.get(key);
+                if (value === undefined) {
+                    return undefined;
+                } else {
+                    this.map.delete(key);
+                    this.map.set(key, value);
+                    return value;
+                }
+            }
+            delete(key) {
+                return this.map.delete(key);
+            }
+            set(key, value) {
+                const deleted = this.delete(key);
+                if (!deleted && value !== undefined) {
+                    if (this.map.size >= this.max) {
+                        const firstKey = this.map.keys().next().value;
+                        this.delete(firstKey);
+                    }
+                    this.map.set(key, value);
+                }
+                return this;
+            }
+        }
+        module.exports = LRUCache;
+    },
+    6837(module) {
+        "use strict";
+        const looseOption = Object.freeze({
+            loose: true
+        });
+        const emptyOpts = Object.freeze({});
+        const parseOptions = options => {
+            if (!options) {
+                return emptyOpts;
+            }
+            if (typeof options !== "object") {
+                return looseOption;
+            }
+            return options;
+        };
+        module.exports = parseOptions;
+    },
+    928(module, exports, __webpack_require__) {
+        "use strict";
+        const {MAX_SAFE_COMPONENT_LENGTH, MAX_SAFE_BUILD_LENGTH, MAX_LENGTH} = __webpack_require__(3932);
+        const debug = __webpack_require__(4122);
+        exports = module.exports = {};
+        const re = exports.re = [];
+        const safeRe = exports.safeRe = [];
+        const src = exports.src = [];
+        const safeSrc = exports.safeSrc = [];
+        const t = exports.t = {};
+        let R = 0;
+        const LETTERDASHNUMBER = "[a-zA-Z0-9-]";
+        const safeRegexReplacements = [ [ "\\s", 1 ], [ "\\d", MAX_LENGTH ], [ LETTERDASHNUMBER, MAX_SAFE_BUILD_LENGTH ] ];
+        const makeSafeRegex = value => {
+            for (const [token, max] of safeRegexReplacements) {
+                value = value.split(`${token}*`).join(`${token}{0,${max}}`).split(`${token}+`).join(`${token}{1,${max}}`);
+            }
+            return value;
+        };
+        const createToken = (name, value, isGlobal) => {
+            const safe = makeSafeRegex(value);
+            const index = R++;
+            debug(name, index, value);
+            t[name] = index;
+            src[index] = value;
+            safeSrc[index] = safe;
+            re[index] = new RegExp(value, isGlobal ? "g" : undefined);
+            safeRe[index] = new RegExp(safe, isGlobal ? "g" : undefined);
+        };
+        createToken("NUMERICIDENTIFIER", "0|[1-9]\\d*");
+        createToken("NUMERICIDENTIFIERLOOSE", "\\d+");
+        createToken("NONNUMERICIDENTIFIER", `\\d*[a-zA-Z-]${LETTERDASHNUMBER}*`);
+        createToken("MAINVERSION", `(${src[t.NUMERICIDENTIFIER]})\\.` + `(${src[t.NUMERICIDENTIFIER]})\\.` + `(${src[t.NUMERICIDENTIFIER]})`);
+        createToken("MAINVERSIONLOOSE", `(${src[t.NUMERICIDENTIFIERLOOSE]})\\.` + `(${src[t.NUMERICIDENTIFIERLOOSE]})\\.` + `(${src[t.NUMERICIDENTIFIERLOOSE]})`);
+        createToken("PRERELEASEIDENTIFIER", `(?:${src[t.NONNUMERICIDENTIFIER]}|${src[t.NUMERICIDENTIFIER]})`);
+        createToken("PRERELEASEIDENTIFIERLOOSE", `(?:${src[t.NONNUMERICIDENTIFIER]}|${src[t.NUMERICIDENTIFIERLOOSE]})`);
+        createToken("PRERELEASE", `(?:-(${src[t.PRERELEASEIDENTIFIER]}(?:\\.${src[t.PRERELEASEIDENTIFIER]})*))`);
+        createToken("PRERELEASELOOSE", `(?:-?(${src[t.PRERELEASEIDENTIFIERLOOSE]}(?:\\.${src[t.PRERELEASEIDENTIFIERLOOSE]})*))`);
+        createToken("BUILDIDENTIFIER", `${LETTERDASHNUMBER}+`);
+        createToken("BUILD", `(?:\\+(${src[t.BUILDIDENTIFIER]}(?:\\.${src[t.BUILDIDENTIFIER]})*))`);
+        createToken("FULLPLAIN", `v?${src[t.MAINVERSION]}${src[t.PRERELEASE]}?${src[t.BUILD]}?`);
+        createToken("FULL", `^${src[t.FULLPLAIN]}$`);
+        createToken("LOOSEPLAIN", `[v=\\s]*${src[t.MAINVERSIONLOOSE]}${src[t.PRERELEASELOOSE]}?${src[t.BUILD]}?`);
+        createToken("LOOSE", `^${src[t.LOOSEPLAIN]}$`);
+        createToken("GTLT", "((?:<|>)?=?)");
+        createToken("XRANGEIDENTIFIERLOOSE", `${src[t.NUMERICIDENTIFIERLOOSE]}|x|X|\\*`);
+        createToken("XRANGEIDENTIFIER", `${src[t.NUMERICIDENTIFIER]}|x|X|\\*`);
+        createToken("XRANGEPLAIN", `[v=\\s]*(${src[t.XRANGEIDENTIFIER]})` + `(?:\\.(${src[t.XRANGEIDENTIFIER]})` + `(?:\\.(${src[t.XRANGEIDENTIFIER]})` + `(?:${src[t.PRERELEASE]})?${src[t.BUILD]}?` + `)?)?`);
+        createToken("XRANGEPLAINLOOSE", `[v=\\s]*(${src[t.XRANGEIDENTIFIERLOOSE]})` + `(?:\\.(${src[t.XRANGEIDENTIFIERLOOSE]})` + `(?:\\.(${src[t.XRANGEIDENTIFIERLOOSE]})` + `(?:${src[t.PRERELEASELOOSE]})?${src[t.BUILD]}?` + `)?)?`);
+        createToken("XRANGE", `^${src[t.GTLT]}\\s*${src[t.XRANGEPLAIN]}$`);
+        createToken("XRANGELOOSE", `^${src[t.GTLT]}\\s*${src[t.XRANGEPLAINLOOSE]}$`);
+        createToken("COERCEPLAIN", `${"(^|[^\\d])" + "(\\d{1,"}${MAX_SAFE_COMPONENT_LENGTH}})` + `(?:\\.(\\d{1,${MAX_SAFE_COMPONENT_LENGTH}}))?` + `(?:\\.(\\d{1,${MAX_SAFE_COMPONENT_LENGTH}}))?`);
+        createToken("COERCE", `${src[t.COERCEPLAIN]}(?:$|[^\\d])`);
+        createToken("COERCEFULL", src[t.COERCEPLAIN] + `(?:${src[t.PRERELEASE]})?` + `(?:${src[t.BUILD]})?` + `(?:$|[^\\d])`);
+        createToken("COERCERTL", src[t.COERCE], true);
+        createToken("COERCERTLFULL", src[t.COERCEFULL], true);
+        createToken("LONETILDE", "(?:~>?)");
+        createToken("TILDETRIM", `(\\s*)${src[t.LONETILDE]}\\s+`, true);
+        exports.tildeTrimReplace = "$1~";
+        createToken("TILDE", `^${src[t.LONETILDE]}${src[t.XRANGEPLAIN]}$`);
+        createToken("TILDELOOSE", `^${src[t.LONETILDE]}${src[t.XRANGEPLAINLOOSE]}$`);
+        createToken("LONECARET", "(?:\\^)");
+        createToken("CARETTRIM", `(\\s*)${src[t.LONECARET]}\\s+`, true);
+        exports.caretTrimReplace = "$1^";
+        createToken("CARET", `^${src[t.LONECARET]}${src[t.XRANGEPLAIN]}$`);
+        createToken("CARETLOOSE", `^${src[t.LONECARET]}${src[t.XRANGEPLAINLOOSE]}$`);
+        createToken("COMPARATORLOOSE", `^${src[t.GTLT]}\\s*(${src[t.LOOSEPLAIN]})$|^$`);
+        createToken("COMPARATOR", `^${src[t.GTLT]}\\s*(${src[t.FULLPLAIN]})$|^$`);
+        createToken("COMPARATORTRIM", `(\\s*)${src[t.GTLT]}\\s*(${src[t.LOOSEPLAIN]}|${src[t.XRANGEPLAIN]})`, true);
+        exports.comparatorTrimReplace = "$1$2$3";
+        createToken("HYPHENRANGE", `^\\s*(${src[t.XRANGEPLAIN]})` + `\\s+-\\s+` + `(${src[t.XRANGEPLAIN]})` + `\\s*$`);
+        createToken("HYPHENRANGELOOSE", `^\\s*(${src[t.XRANGEPLAINLOOSE]})` + `\\s+-\\s+` + `(${src[t.XRANGEPLAINLOOSE]})` + `\\s*$`);
+        createToken("STAR", "(<|>)?=?\\s*\\*");
+        createToken("GTE0", "^\\s*>=\\s*0\\.0\\.0\\s*$");
+        createToken("GTE0PRE", "^\\s*>=\\s*0\\.0\\.0-0\\s*$");
+    },
+    7369(module, __unused_webpack_exports, __webpack_require__) {
+        "use strict";
+        const outside = __webpack_require__(2641);
+        const gtr = (version, range, options) => outside(version, range, ">", options);
+        module.exports = gtr;
+    },
+    8474(module, __unused_webpack_exports, __webpack_require__) {
+        "use strict";
+        const Range = __webpack_require__(3597);
+        const intersects = (r1, r2, options) => {
+            r1 = new Range(r1, options);
+            r2 = new Range(r2, options);
+            return r1.intersects(r2, options);
+        };
+        module.exports = intersects;
+    },
+    9024(module, __unused_webpack_exports, __webpack_require__) {
+        "use strict";
+        const outside = __webpack_require__(2641);
+        const ltr = (version, range, options) => outside(version, range, "<", options);
+        module.exports = ltr;
+    },
+    274(module, __unused_webpack_exports, __webpack_require__) {
+        "use strict";
+        const SemVer = __webpack_require__(8038);
+        const Range = __webpack_require__(3597);
+        const maxSatisfying = (versions, range, options) => {
+            let max = null;
+            let maxSV = null;
+            let rangeObj = null;
+            try {
+                rangeObj = new Range(range, options);
+            } catch (er) {
+                return null;
+            }
+            versions.forEach(v => {
+                if (rangeObj.test(v)) {
+                    if (!max || maxSV.compare(v) === -1) {
+                        max = v;
+                        maxSV = new SemVer(max, options);
+                    }
+                }
+            });
+            return max;
+        };
+        module.exports = maxSatisfying;
+    },
+    9304(module, __unused_webpack_exports, __webpack_require__) {
+        "use strict";
+        const SemVer = __webpack_require__(8038);
+        const Range = __webpack_require__(3597);
+        const minSatisfying = (versions, range, options) => {
+            let min = null;
+            let minSV = null;
+            let rangeObj = null;
+            try {
+                rangeObj = new Range(range, options);
+            } catch (er) {
+                return null;
+            }
+            versions.forEach(v => {
+                if (rangeObj.test(v)) {
+                    if (!min || minSV.compare(v) === 1) {
+                        min = v;
+                        minSV = new SemVer(min, options);
+                    }
+                }
+            });
+            return min;
+        };
+        module.exports = minSatisfying;
+    },
+    7955(module, __unused_webpack_exports, __webpack_require__) {
+        "use strict";
+        const SemVer = __webpack_require__(8038);
+        const Range = __webpack_require__(3597);
+        const gt = __webpack_require__(6670);
+        const minVersion = (range, loose) => {
+            range = new Range(range, loose);
+            let minver = new SemVer("0.0.0");
+            if (range.test(minver)) {
+                return minver;
+            }
+            minver = new SemVer("0.0.0-0");
+            if (range.test(minver)) {
+                return minver;
+            }
+            minver = null;
+            for (let i = 0; i < range.set.length; ++i) {
+                const comparators = range.set[i];
+                let setMin = null;
+                comparators.forEach(comparator => {
+                    const compver = new SemVer(comparator.semver.version);
+                    switch (comparator.operator) {
+                      case ">":
+                        if (compver.prerelease.length === 0) {
+                            compver.patch++;
+                        } else {
+                            compver.prerelease.push(0);
+                        }
+                        compver.raw = compver.format();
+
+                      case "":
+                      case ">=":
+                        if (!setMin || gt(compver, setMin)) {
+                            setMin = compver;
+                        }
+                        break;
+
+                      case "<":
+                      case "<=":
+                        break;
+
+                      default:
+                        throw new Error(`Unexpected operation: ${comparator.operator}`);
+                    }
+                });
+                if (setMin && (!minver || gt(minver, setMin))) {
+                    minver = setMin;
+                }
+            }
+            if (minver && range.test(minver)) {
+                return minver;
+            }
+            return null;
+        };
+        module.exports = minVersion;
+    },
+    2641(module, __unused_webpack_exports, __webpack_require__) {
+        "use strict";
+        const SemVer = __webpack_require__(8038);
+        const Comparator = __webpack_require__(3114);
+        const {ANY} = Comparator;
+        const Range = __webpack_require__(3597);
+        const satisfies = __webpack_require__(6336);
+        const gt = __webpack_require__(6670);
+        const lt = __webpack_require__(5169);
+        const lte = __webpack_require__(9746);
+        const gte = __webpack_require__(6999);
+        const outside = (version, range, hilo, options) => {
+            version = new SemVer(version, options);
+            range = new Range(range, options);
+            let gtfn, ltefn, ltfn, comp, ecomp;
+            switch (hilo) {
+              case ">":
+                gtfn = gt;
+                ltefn = lte;
+                ltfn = lt;
+                comp = ">";
+                ecomp = ">=";
+                break;
+
+              case "<":
+                gtfn = lt;
+                ltefn = gte;
+                ltfn = gt;
+                comp = "<";
+                ecomp = "<=";
+                break;
+
+              default:
+                throw new TypeError('Must provide a hilo val of "<" or ">"');
+            }
+            if (satisfies(version, range, options)) {
+                return false;
+            }
+            for (let i = 0; i < range.set.length; ++i) {
+                const comparators = range.set[i];
+                let high = null;
+                let low = null;
+                comparators.forEach(comparator => {
+                    if (comparator.semver === ANY) {
+                        comparator = new Comparator(">=0.0.0");
+                    }
+                    high = high || comparator;
+                    low = low || comparator;
+                    if (gtfn(comparator.semver, high.semver, options)) {
+                        high = comparator;
+                    } else if (ltfn(comparator.semver, low.semver, options)) {
+                        low = comparator;
+                    }
+                });
+                if (high.operator === comp || high.operator === ecomp) {
+                    return false;
+                }
+                if ((!low.operator || low.operator === comp) && ltefn(version, low.semver)) {
+                    return false;
+                } else if (low.operator === ecomp && ltfn(version, low.semver)) {
+                    return false;
+                }
+            }
+            return true;
+        };
+        module.exports = outside;
+    },
+    6927(module, __unused_webpack_exports, __webpack_require__) {
+        "use strict";
+        const satisfies = __webpack_require__(6336);
+        const compare = __webpack_require__(6278);
+        module.exports = (versions, range, options) => {
+            const set = [];
+            let first = null;
+            let prev = null;
+            const v = versions.sort((a, b) => compare(a, b, options));
+            for (const version of v) {
+                const included = satisfies(version, range, options);
+                if (included) {
+                    prev = version;
+                    if (!first) {
+                        first = version;
+                    }
+                } else {
+                    if (prev) {
+                        set.push([ first, prev ]);
+                    }
+                    prev = null;
+                    first = null;
+                }
+            }
+            if (first) {
+                set.push([ first, null ]);
+            }
+            const ranges = [];
+            for (const [min, max] of set) {
+                if (min === max) {
+                    ranges.push(min);
+                } else if (!max && min === v[0]) {
+                    ranges.push("*");
+                } else if (!max) {
+                    ranges.push(`>=${min}`);
+                } else if (min === v[0]) {
+                    ranges.push(`<=${max}`);
+                } else {
+                    ranges.push(`${min} - ${max}`);
+                }
+            }
+            const simplified = ranges.join(" || ");
+            const original = typeof range.raw === "string" ? range.raw : String(range);
+            return simplified.length < original.length ? simplified : range;
+        };
+    },
+    4302(module, __unused_webpack_exports, __webpack_require__) {
+        "use strict";
+        const Range = __webpack_require__(3597);
+        const Comparator = __webpack_require__(3114);
+        const {ANY} = Comparator;
+        const satisfies = __webpack_require__(6336);
+        const compare = __webpack_require__(6278);
+        const subset = (sub, dom, options = {}) => {
+            if (sub === dom) {
+                return true;
+            }
+            sub = new Range(sub, options);
+            dom = new Range(dom, options);
+            let sawNonNull = false;
+            OUTER: for (const simpleSub of sub.set) {
+                for (const simpleDom of dom.set) {
+                    const isSub = simpleSubset(simpleSub, simpleDom, options);
+                    sawNonNull = sawNonNull || isSub !== null;
+                    if (isSub) {
+                        continue OUTER;
+                    }
+                }
+                if (sawNonNull) {
+                    return false;
+                }
+            }
+            return true;
+        };
+        const minimumVersionWithPreRelease = [ new Comparator(">=0.0.0-0") ];
+        const minimumVersion = [ new Comparator(">=0.0.0") ];
+        const simpleSubset = (sub, dom, options) => {
+            if (sub === dom) {
+                return true;
+            }
+            if (sub.length === 1 && sub[0].semver === ANY) {
+                if (dom.length === 1 && dom[0].semver === ANY) {
+                    return true;
+                } else if (options.includePrerelease) {
+                    sub = minimumVersionWithPreRelease;
+                } else {
+                    sub = minimumVersion;
+                }
+            }
+            if (dom.length === 1 && dom[0].semver === ANY) {
+                if (options.includePrerelease) {
+                    return true;
+                } else {
+                    dom = minimumVersion;
+                }
+            }
+            const eqSet = new Set;
+            let gt, lt;
+            for (const c of sub) {
+                if (c.operator === ">" || c.operator === ">=") {
+                    gt = higherGT(gt, c, options);
+                } else if (c.operator === "<" || c.operator === "<=") {
+                    lt = lowerLT(lt, c, options);
+                } else {
+                    eqSet.add(c.semver);
+                }
+            }
+            if (eqSet.size > 1) {
+                return null;
+            }
+            let gtltComp;
+            if (gt && lt) {
+                gtltComp = compare(gt.semver, lt.semver, options);
+                if (gtltComp > 0) {
+                    return null;
+                } else if (gtltComp === 0 && (gt.operator !== ">=" || lt.operator !== "<=")) {
+                    return null;
+                }
+            }
+            for (const eq of eqSet) {
+                if (gt && !satisfies(eq, String(gt), options)) {
+                    return null;
+                }
+                if (lt && !satisfies(eq, String(lt), options)) {
+                    return null;
+                }
+                for (const c of dom) {
+                    if (!satisfies(eq, String(c), options)) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+            let higher, lower;
+            let hasDomLT, hasDomGT;
+            let needDomLTPre = lt && !options.includePrerelease && lt.semver.prerelease.length ? lt.semver : false;
+            let needDomGTPre = gt && !options.includePrerelease && gt.semver.prerelease.length ? gt.semver : false;
+            if (needDomLTPre && needDomLTPre.prerelease.length === 1 && lt.operator === "<" && needDomLTPre.prerelease[0] === 0) {
+                needDomLTPre = false;
+            }
+            for (const c of dom) {
+                hasDomGT = hasDomGT || c.operator === ">" || c.operator === ">=";
+                hasDomLT = hasDomLT || c.operator === "<" || c.operator === "<=";
+                if (gt) {
+                    if (needDomGTPre) {
+                        if (c.semver.prerelease && c.semver.prerelease.length && c.semver.major === needDomGTPre.major && c.semver.minor === needDomGTPre.minor && c.semver.patch === needDomGTPre.patch) {
+                            needDomGTPre = false;
+                        }
+                    }
+                    if (c.operator === ">" || c.operator === ">=") {
+                        higher = higherGT(gt, c, options);
+                        if (higher === c && higher !== gt) {
+                            return false;
+                        }
+                    } else if (gt.operator === ">=" && !satisfies(gt.semver, String(c), options)) {
+                        return false;
+                    }
+                }
+                if (lt) {
+                    if (needDomLTPre) {
+                        if (c.semver.prerelease && c.semver.prerelease.length && c.semver.major === needDomLTPre.major && c.semver.minor === needDomLTPre.minor && c.semver.patch === needDomLTPre.patch) {
+                            needDomLTPre = false;
+                        }
+                    }
+                    if (c.operator === "<" || c.operator === "<=") {
+                        lower = lowerLT(lt, c, options);
+                        if (lower === c && lower !== lt) {
+                            return false;
+                        }
+                    } else if (lt.operator === "<=" && !satisfies(lt.semver, String(c), options)) {
+                        return false;
+                    }
+                }
+                if (!c.operator && (lt || gt) && gtltComp !== 0) {
+                    return false;
+                }
+            }
+            if (gt && hasDomLT && !lt && gtltComp !== 0) {
+                return false;
+            }
+            if (lt && hasDomGT && !gt && gtltComp !== 0) {
+                return false;
+            }
+            if (needDomGTPre || needDomLTPre) {
+                return false;
+            }
+            return true;
+        };
+        const higherGT = (a, b, options) => {
+            if (!a) {
+                return b;
+            }
+            const comp = compare(a.semver, b.semver, options);
+            return comp > 0 ? a : comp < 0 ? b : b.operator === ">" && a.operator === ">=" ? b : a;
+        };
+        const lowerLT = (a, b, options) => {
+            if (!a) {
+                return b;
+            }
+            const comp = compare(a.semver, b.semver, options);
+            return comp < 0 ? a : comp > 0 ? b : b.operator === "<" && a.operator === "<=" ? b : a;
+        };
+        module.exports = subset;
+    },
+    9533(module, __unused_webpack_exports, __webpack_require__) {
+        "use strict";
+        const Range = __webpack_require__(3597);
+        const toComparators = (range, options) => new Range(range, options).set.map(comp => comp.map(c => c.value).join(" ").trim().split(" "));
+        module.exports = toComparators;
+    },
+    7348(module, __unused_webpack_exports, __webpack_require__) {
+        "use strict";
+        const Range = __webpack_require__(3597);
+        const validRange = (range, options) => {
+            try {
+                return new Range(range, options).range || "*";
+            } catch (er) {
+                return null;
+            }
+        };
+        module.exports = validRange;
+    },
+    3533(module, __unused_webpack_exports, __webpack_require__) {
+        "use strict";
+        const os = __webpack_require__(857);
+        const tty = __webpack_require__(2018);
+        const hasFlag = __webpack_require__(9614);
+        const {env} = process;
+        let forceColor;
+        if (hasFlag("no-color") || hasFlag("no-colors") || hasFlag("color=false") || hasFlag("color=never")) {
+            forceColor = 0;
+        } else if (hasFlag("color") || hasFlag("colors") || hasFlag("color=true") || hasFlag("color=always")) {
+            forceColor = 1;
+        }
+        if ("FORCE_COLOR" in env) {
+            if (env.FORCE_COLOR === "true") {
+                forceColor = 1;
+            } else if (env.FORCE_COLOR === "false") {
+                forceColor = 0;
+            } else {
+                forceColor = env.FORCE_COLOR.length === 0 ? 1 : Math.min(parseInt(env.FORCE_COLOR, 10), 3);
+            }
+        }
+        function translateLevel(level) {
+            if (level === 0) {
+                return false;
+            }
+            return {
+                level,
+                hasBasic: true,
+                has256: level >= 2,
+                has16m: level >= 3
+            };
+        }
+        function supportsColor(haveStream, streamIsTTY) {
+            if (forceColor === 0) {
+                return 0;
+            }
+            if (hasFlag("color=16m") || hasFlag("color=full") || hasFlag("color=truecolor")) {
+                return 3;
+            }
+            if (hasFlag("color=256")) {
+                return 2;
+            }
+            if (haveStream && !streamIsTTY && forceColor === undefined) {
+                return 0;
+            }
+            const min = forceColor || 0;
+            if (env.TERM === "dumb") {
+                return min;
+            }
+            if (process.platform === "win32") {
+                const osRelease = os.release().split(".");
+                if (Number(osRelease[0]) >= 10 && Number(osRelease[2]) >= 10586) {
+                    return Number(osRelease[2]) >= 14931 ? 3 : 2;
+                }
+                return 1;
+            }
+            if ("CI" in env) {
+                if ([ "TRAVIS", "CIRCLECI", "APPVEYOR", "GITLAB_CI", "GITHUB_ACTIONS", "BUILDKITE" ].some(sign => sign in env) || env.CI_NAME === "codeship") {
+                    return 1;
+                }
+                return min;
+            }
+            if ("TEAMCITY_VERSION" in env) {
+                return /^(9\.(0*[1-9]\d*)\.|\d{2,}\.)/.test(env.TEAMCITY_VERSION) ? 1 : 0;
+            }
+            if (env.COLORTERM === "truecolor") {
+                return 3;
+            }
+            if ("TERM_PROGRAM" in env) {
+                const version = parseInt((env.TERM_PROGRAM_VERSION || "").split(".")[0], 10);
+                switch (env.TERM_PROGRAM) {
+                  case "iTerm.app":
+                    return version >= 3 ? 3 : 2;
+
+                  case "Apple_Terminal":
+                    return 2;
+                }
+            }
+            if (/-256(color)?$/i.test(env.TERM)) {
+                return 2;
+            }
+            if (/^screen|^xterm|^vt100|^vt220|^rxvt|color|ansi|cygwin|linux/i.test(env.TERM)) {
+                return 1;
+            }
+            if ("COLORTERM" in env) {
+                return 1;
+            }
+            return min;
+        }
+        function getSupportLevel(stream) {
+            const level = supportsColor(stream, stream && stream.isTTY);
+            return translateLevel(level);
+        }
+        module.exports = {
+            supportsColor: getSupportLevel,
+            stdout: translateLevel(supportsColor(true, tty.isatty(1))),
+            stderr: translateLevel(supportsColor(true, tty.isatty(2)))
+        };
+    },
+    268(__unused_webpack_module, exports, __webpack_require__) {
+        "use strict";
+        Object.defineProperty(exports, "__esModule", {
+            value: true
+        });
+        exports.NodeRelease = void 0;
+        const process = __webpack_require__(932);
+        const semver_1 = __webpack_require__(5263);
+        const ONE_DAY_IN_MILLISECONDS = 864e5;
+        class NodeRelease {
+            static forThisRuntime() {
+                const semver = new semver_1.SemVer(process.version);
+                const majorVersion = semver.major;
+                for (const nodeRelease of this.ALL_RELEASES) {
+                    if (nodeRelease.majorVersion === majorVersion) {
+                        return {
+                            nodeRelease,
+                            knownBroken: !nodeRelease.supportedRange.test(semver)
+                        };
+                    }
+                }
+                return {
+                    nodeRelease: undefined,
+                    knownBroken: false
+                };
+            }
+            constructor(majorVersion, opts) {
+                var _a, _b, _c;
+                this.untested = (_a = opts.untested) !== null && _a !== void 0 ? _a : false;
+                this.majorVersion = majorVersion;
+                this.supportedRange = new semver_1.Range((_b = opts.supportedRange) !== null && _b !== void 0 ? _b : `^${majorVersion}.0.0`);
+                this.endOfLifeDate = opts.endOfLife;
+                this.endOfLife = opts.endOfLife.getTime() + ONE_DAY_IN_MILLISECONDS <= Date.now();
+                this.endOfJsiiSupportDate = (_c = opts.endOfJsiiSupport) !== null && _c !== void 0 ? _c : new Date(this.endOfLifeDate.getFullYear(), this.endOfLifeDate.getMonth() + NodeRelease.DEFAULT_EXTENDED_SUPPORT_MONTHS, this.endOfLifeDate.getDate());
+                const endOfJsiiSupport = this.endOfJsiiSupportDate.getTime() + ONE_DAY_IN_MILLISECONDS <= Date.now();
+                this.deprecated = this.endOfLife && !endOfJsiiSupport;
+                this.supported = !this.untested && !endOfJsiiSupport;
+            }
+            toString() {
+                const eolInfo = this.endOfLifeDate ? ` (Planned end-of-life: ${this.endOfLifeDate.toISOString().slice(0, 10)})` : "";
+                return `${this.supportedRange.raw}${eolInfo}`;
+            }
+        }
+        exports.NodeRelease = NodeRelease;
+        NodeRelease.DEFAULT_EXTENDED_SUPPORT_MONTHS = 6;
+        NodeRelease.ALL_RELEASES = [ ...[ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 ].map(majorVersion => new NodeRelease(majorVersion, {
+            endOfLife: new Date("2018-01-01"),
+            untested: true
+        })), new NodeRelease(12, {
+            endOfLife: new Date("2022-04-30"),
+            supportedRange: "^12.7.0"
+        }), new NodeRelease(13, {
+            endOfLife: new Date("2020-06-01"),
+            untested: true
+        }), new NodeRelease(14, {
+            endOfLife: new Date("2023-04-30"),
+            supportedRange: "^14.17.0"
+        }), new NodeRelease(15, {
+            endOfLife: new Date("2021-06-01"),
+            untested: true
+        }), new NodeRelease(16, {
+            endOfLife: new Date("2023-09-11"),
+            supportedRange: "^16.3.0"
+        }), new NodeRelease(17, {
+            endOfLife: new Date("2022-06-01"),
+            supportedRange: "^17.3.0",
+            untested: true
+        }), new NodeRelease(19, {
+            endOfLife: new Date("2023-06-01"),
+            untested: true
+        }), new NodeRelease(21, {
+            endOfLife: new Date("2024-06-01"),
+            untested: true
+        }), new NodeRelease(23, {
+            endOfLife: new Date("2025-06-01"),
+            untested: true
+        }), new NodeRelease(18, {
+            endOfLife: new Date("2025-04-30"),
+            endOfJsiiSupport: new Date("2025-11-30")
+        }), new NodeRelease(20, {
+            endOfLife: new Date("2026-04-30")
+        }), new NodeRelease(22, {
+            endOfLife: new Date("2027-04-30")
+        }), new NodeRelease(24, {
+            endOfLife: new Date("2028-04-30")
+        }) ];
+    },
+    8261(__unused_webpack_module, exports, __webpack_require__) {
         "use strict";
         Object.defineProperty(exports, "__esModule", {
             value: true
@@ -3242,191 +3420,35 @@ var __webpack_modules__ = {
             }
         }
     },
-    8471: (module, __unused_webpack_exports, __webpack_require__) => {
+    5276(module, __unused_webpack_exports, __webpack_require__) {
         "use strict";
-        const SemVer = __webpack_require__(8038);
-        const compareBuild = (a, b, loose) => {
-            const versionA = new SemVer(a, loose);
-            const versionB = new SemVer(b, loose);
-            return versionA.compare(versionB) || versionA.compareBuild(versionB);
-        };
-        module.exports = compareBuild;
+        const index_1 = __webpack_require__(8261);
+        (0, index_1.checkNode)();
+        module.exports = {};
     },
-    8474: (module, __unused_webpack_exports, __webpack_require__) => {
+    5317(module) {
         "use strict";
-        const Range = __webpack_require__(3597);
-        const intersects = (r1, r2, options) => {
-            r1 = new Range(r1, options);
-            r2 = new Range(r2, options);
-            return r1.intersects(r2, options);
-        };
-        module.exports = intersects;
+        module.exports = require("child_process");
     },
-    8661: (module, __unused_webpack_exports, __webpack_require__) => {
+    4236(module) {
         "use strict";
-        const compare = __webpack_require__(6278);
-        const neq = (a, b, loose) => compare(a, b, loose) !== 0;
-        module.exports = neq;
+        module.exports = require("console");
     },
-    8935: (module, __unused_webpack_exports, __webpack_require__) => {
+    857(module) {
         "use strict";
-        const compare = __webpack_require__(6278);
-        const eq = (a, b, loose) => compare(a, b, loose) === 0;
-        module.exports = eq;
+        module.exports = require("os");
     },
-    8993: module => {
+    6928(module) {
         "use strict";
-        const TEMPLATE_REGEX = /(?:\\(u(?:[a-f\d]{4}|\{[a-f\d]{1,6}\})|x[a-f\d]{2}|.))|(?:\{(~)?(\w+(?:\([^)]*\))?(?:\.\w+(?:\([^)]*\))?)*)(?:[ \t]|(?=\r?\n)))|(\})|((?:.|[\r\n\f])+?)/gi;
-        const STYLE_REGEX = /(?:^|\.)(\w+)(?:\(([^)]*)\))?/g;
-        const STRING_REGEX = /^(['"])((?:\\.|(?!\1)[^\\])*)\1$/;
-        const ESCAPE_REGEX = /\\(u(?:[a-f\d]{4}|{[a-f\d]{1,6}})|x[a-f\d]{2}|.)|([^\\])/gi;
-        const ESCAPES = new Map([ [ "n", "\n" ], [ "r", "\r" ], [ "t", "\t" ], [ "b", "\b" ], [ "f", "\f" ], [ "v", "\v" ], [ "0", "\0" ], [ "\\", "\\" ], [ "e", "" ], [ "a", "" ] ]);
-        function unescape(c) {
-            const u = c[0] === "u";
-            const bracket = c[1] === "{";
-            if (u && !bracket && c.length === 5 || c[0] === "x" && c.length === 3) {
-                return String.fromCharCode(parseInt(c.slice(1), 16));
-            }
-            if (u && bracket) {
-                return String.fromCodePoint(parseInt(c.slice(2, -1), 16));
-            }
-            return ESCAPES.get(c) || c;
-        }
-        function parseArguments(name, arguments_) {
-            const results = [];
-            const chunks = arguments_.trim().split(/\s*,\s*/g);
-            let matches;
-            for (const chunk of chunks) {
-                const number = Number(chunk);
-                if (!Number.isNaN(number)) {
-                    results.push(number);
-                } else if (matches = chunk.match(STRING_REGEX)) {
-                    results.push(matches[2].replace(ESCAPE_REGEX, (m, escape, character) => escape ? unescape(escape) : character));
-                } else {
-                    throw new Error(`Invalid Chalk template style argument: ${chunk} (in style '${name}')`);
-                }
-            }
-            return results;
-        }
-        function parseStyle(style) {
-            STYLE_REGEX.lastIndex = 0;
-            const results = [];
-            let matches;
-            while ((matches = STYLE_REGEX.exec(style)) !== null) {
-                const name = matches[1];
-                if (matches[2]) {
-                    const args = parseArguments(name, matches[2]);
-                    results.push([ name ].concat(args));
-                } else {
-                    results.push([ name ]);
-                }
-            }
-            return results;
-        }
-        function buildStyle(chalk, styles) {
-            const enabled = {};
-            for (const layer of styles) {
-                for (const style of layer.styles) {
-                    enabled[style[0]] = layer.inverse ? null : style.slice(1);
-                }
-            }
-            let current = chalk;
-            for (const [styleName, styles] of Object.entries(enabled)) {
-                if (!Array.isArray(styles)) {
-                    continue;
-                }
-                if (!(styleName in current)) {
-                    throw new Error(`Unknown Chalk style: ${styleName}`);
-                }
-                current = styles.length > 0 ? current[styleName](...styles) : current[styleName];
-            }
-            return current;
-        }
-        module.exports = (chalk, temporary) => {
-            const styles = [];
-            const chunks = [];
-            let chunk = [];
-            temporary.replace(TEMPLATE_REGEX, (m, escapeCharacter, inverse, style, close, character) => {
-                if (escapeCharacter) {
-                    chunk.push(unescape(escapeCharacter));
-                } else if (style) {
-                    const string = chunk.join("");
-                    chunk = [];
-                    chunks.push(styles.length === 0 ? string : buildStyle(chalk, styles)(string));
-                    styles.push({
-                        inverse,
-                        styles: parseStyle(style)
-                    });
-                } else if (close) {
-                    if (styles.length === 0) {
-                        throw new Error("Found extraneous } in Chalk template literal");
-                    }
-                    chunks.push(buildStyle(chalk, styles)(chunk.join("")));
-                    chunk = [];
-                    styles.pop();
-                } else {
-                    chunk.push(character);
-                }
-            });
-            chunks.push(chunk.join(""));
-            if (styles.length > 0) {
-                const errMessage = `Chalk template literal is missing ${styles.length} closing bracket${styles.length === 1 ? "" : "s"} (\`}\`)`;
-                throw new Error(errMessage);
-            }
-            return chunks.join("");
-        };
+        module.exports = require("path");
     },
-    9024: (module, __unused_webpack_exports, __webpack_require__) => {
+    932(module) {
         "use strict";
-        const outside = __webpack_require__(2641);
-        const ltr = (version, range, options) => outside(version, range, "<", options);
-        module.exports = ltr;
+        module.exports = require("process");
     },
-    9304: (module, __unused_webpack_exports, __webpack_require__) => {
+    2018(module) {
         "use strict";
-        const SemVer = __webpack_require__(8038);
-        const Range = __webpack_require__(3597);
-        const minSatisfying = (versions, range, options) => {
-            let min = null;
-            let minSV = null;
-            let rangeObj = null;
-            try {
-                rangeObj = new Range(range, options);
-            } catch (er) {
-                return null;
-            }
-            versions.forEach(v => {
-                if (rangeObj.test(v)) {
-                    if (!min || minSV.compare(v) === 1) {
-                        min = v;
-                        minSV = new SemVer(min, options);
-                    }
-                }
-            });
-            return min;
-        };
-        module.exports = minSatisfying;
-    },
-    9533: (module, __unused_webpack_exports, __webpack_require__) => {
-        "use strict";
-        const Range = __webpack_require__(3597);
-        const toComparators = (range, options) => new Range(range, options).set.map(comp => comp.map(c => c.value).join(" ").trim().split(" "));
-        module.exports = toComparators;
-    },
-    9614: module => {
-        "use strict";
-        module.exports = (flag, argv = process.argv) => {
-            const prefix = flag.startsWith("-") ? "" : flag.length === 1 ? "-" : "--";
-            const position = argv.indexOf(prefix + flag);
-            const terminatorPosition = argv.indexOf("--");
-            return position !== -1 && (terminatorPosition === -1 || position < terminatorPosition);
-        };
-    },
-    9746: (module, __unused_webpack_exports, __webpack_require__) => {
-        "use strict";
-        const compare = __webpack_require__(6278);
-        const lte = (a, b, loose) => compare(a, b, loose) <= 0;
-        module.exports = lte;
+        module.exports = require("tty");
     }
 };
 
